@@ -15,7 +15,7 @@ class CreateVendorsTable extends Migration
             $table->text('description')->nullable();
             $table->string('location');
             $table->string('contact_number');
-            $table->string('email')->unique();
+            // $table->string('email')->unique();
             $table->string('profile_image')->nullable(); // optional profile photo
             $table->timestamps();
         });

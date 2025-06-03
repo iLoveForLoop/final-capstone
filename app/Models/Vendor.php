@@ -20,8 +20,5 @@ class Vendor extends Model
         return $this->hasMany(Service::class);
     }
 
-    public function media()
-    {
-        return $this->hasMany(VendorMedia::class);
-    }
+    protected $guarded = [];
 }
