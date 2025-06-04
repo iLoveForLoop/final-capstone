@@ -4,7 +4,9 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 
 <template>
     <AuthenticatedLayout>
-        <h1>This is the vendor main page</h1>
+        <div class="w-full h-full flex items-center justify-center">
+            <h1 class="text-white text-4xl">This is the vendor page</h1>
+        </div>
     </AuthenticatedLayout>
 
 </template>

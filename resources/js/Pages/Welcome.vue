@@ -44,5 +44,7 @@ defineProps({
                 </Link>
             </template>
         </nav>
+
+        <p class="text-9xl text-black">Landing Page</p>
     </div>
 </template>

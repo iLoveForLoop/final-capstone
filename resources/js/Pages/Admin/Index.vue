@@ -4,7 +4,10 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 
 <template>
     <AuthenticatedLayout>
-        <h1>This is the admin page</h1>
+        <div class="w-full h-full flex items-center justify-center">
+            <h1 class="text-white text-4xl">This is the admin page</h1>
+        </div>
+
     </AuthenticatedLayout>
 
 </template>

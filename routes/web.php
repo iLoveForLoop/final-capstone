@@ -24,21 +24,21 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin', function () {
         return inertia('Admin/Index');
     })->name('admin.index');
 
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'role:vendor'])->group(function () {
     Route::get('/vendor', function () {
         return inertia('Vendor/Index');
     })->name('vendor.index');
 
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'role:client'])->group(function () {
     Route::get('/client', function () {
         return inertia('Client/Index');
     })->name('client.index');
