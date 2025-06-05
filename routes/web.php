@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ServiceController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -44,5 +45,7 @@ Route::middleware(['auth', 'role:client'])->group(function () {
     })->name('client.index');
 
 });
+
+Route::resource('service', ServiceController::class);
 
 require __DIR__.'/auth.php';

@@ -52,6 +52,11 @@ class User extends Authenticatable
         return $this->hasMany(Vendor::class);
     }
 
+    public function vendor()
+    {
+        return $this->hasOne(Vendor::class);
+    }
+
     public function bookings()
     {
         return $this->hasMany(Booking::class);

@@ -27,9 +27,29 @@ class ServiceController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        //
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'price' => 'required|numeric|min:0',
+    ]);
+
+    $vendor = auth()->user()->vendor;
+
+    if (!$vendor) {
+        return redirect()->back()->withErrors(['error' => 'You are not registered as a vendor.']);
     }
+
+    $vendor->services()->create([
+        'service_category_id' => 1,
+        'name' => $request->name,
+        'description' => $request->description,
+        'price' => $request->price,
+    ]);
+
+    return redirect()->back()->with('success', 'Service added successfully.');
+}
+
 
     /**
      * Display the specified resource.

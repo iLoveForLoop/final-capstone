@@ -25,8 +25,10 @@ class Service extends Model
         return $this->hasMany(Booking::class);
     }
 
-    public function availabilitySlots()
-    {
-        return $this->hasMany(AvailabilitySlot::class);
-    }
+    // public function availabilitySlots()
+    // {
+    //     return $this->hasMany(AvailabilitySlot::class);
+    // }
+
+    protected $guarded = [];
 }
