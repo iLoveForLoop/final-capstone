@@ -11,16 +11,20 @@ const form = useForm({
 
 const submit = () => {
     form.post(route('service.store'), {
-        onFinish: () => form.reset('name', 'description', 'price'),
+        onSuccess: () => {
+            console.log('Finish')
+            form.reset()
+        }
     })
 
-    console.log('Here')
+
 }
 
 </script>
 
 <template>
     <form @submit.prevent="submit" class="p-5">
+        <p>{{ form.price }}</p>
         <div class="mt-4">
             <InputLabel for="name" value="name" />
 
@@ -37,7 +41,7 @@ const submit = () => {
             <InputLabel for="price" value="price" />
 
 
-            <input type="number" id="price" class="mt-1 block w-full">
+            <input type="number" id="price" v-model="form.price" class="mt-1 block w-full">
         </div>
 
         <div class="mt-4">

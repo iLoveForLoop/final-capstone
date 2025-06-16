@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Service;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ServiceController extends Controller
@@ -34,11 +35,20 @@ class ServiceController extends Controller
         'price' => 'required|numeric|min:0',
     ]);
 
+
+
     $vendor = auth()->user()->vendor;
 
+
+
+
+
     if (!$vendor) {
+        dd('error');
         return redirect()->back()->withErrors(['error' => 'You are not registered as a vendor.']);
     }
+
+
 
     $vendor->services()->create([
         'service_category_id' => 1,
@@ -46,6 +56,7 @@ class ServiceController extends Controller
         'description' => $request->description,
         'price' => $request->price,
     ]);
+
 
     return redirect()->back()->with('success', 'Service added successfully.');
 }

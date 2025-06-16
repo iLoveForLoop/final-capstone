@@ -13,8 +13,6 @@ class ServiceCategorySeeder extends Seeder
      */
     public function run(): void
     {
-        ServiceCategory::create([
-            'name' => 'Test'
-        ]);
+
     }
 }
