@@ -6,14 +6,17 @@ import InputLabel from '../InputLabel.vue';
 const form = useForm({
     name: "",
     description: "",
-    price: 0.00
+    price: null
 })
+
+const emit = defineEmits(['close-form'])
 
 const submit = () => {
     form.post(route('service.store'), {
         onSuccess: () => {
             console.log('Finish')
             form.reset()
+            emit('close-form');
         }
     })
 
@@ -24,7 +27,6 @@ const submit = () => {
 
 <template>
     <form @submit.prevent="submit" class="p-5">
-        <p>{{ form.price }}</p>
         <div class="mt-4">
             <InputLabel for="name" value="name" />
 

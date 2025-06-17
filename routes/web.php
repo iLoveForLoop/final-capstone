@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\VendorController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -33,9 +34,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 });
 
 Route::middleware(['auth', 'role:vendor'])->group(function () {
-    Route::get('/vendor', function () {
-        return inertia('Vendor/Index');
-    })->name('vendor.index');
+    Route::get('/vendor', [VendorController::class, 'index'])->name('vendor.index');
 
 });
 

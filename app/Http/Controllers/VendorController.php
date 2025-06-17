@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Service;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
 
@@ -12,7 +13,11 @@ class VendorController extends Controller
      */
     public function index()
     {
-        //
+
+        $services = auth()->user()->vendor->services()->get();
+        // dd($services);
+
+        return inertia('Vendor/Index', compact('services'));
     }
 
     /**
