@@ -28,7 +28,7 @@ class LoginRequest extends FormRequest
     {
         return [
             'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string'],
+            'password' => ['required', 'string']
         ];
     }
 
@@ -48,6 +48,30 @@ class LoginRequest extends FormRequest
                 'email' => trans('auth.failed'),
             ]);
         }
+
+        // --- THIS IS THE NEW LOGIC YOU NEED TO ADD ---
+
+        // Get the user who was just authenticated
+        $user = Auth::user();
+        // dd($user->hasRole('vendor'));
+        // Check if the user's 'is_approved' column is true (or 1)
+        if($user->hasRole('vendor')){
+            // dd(!$user->vendor->is_approved);
+            if (!$user->vendor->is_approved) {
+                // dd($user->vendor->is_approved);
+            // If not approved, log them out immediately
+            Auth::logout();
+
+            // And throw an error, sending them back to the login page
+            throw ValidationException::withMessages([
+                'email' => 'Your account has not been approved yet. Please contact an administrator.',
+            ]);
+        }
+        }
+
+
+
+        // --- END OF NEW LOGIC ---
 
         RateLimiter::clear($this->throttleKey());
     }

@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Client;
+use App\Models\ServiceCategory;
 use App\Models\User;
 use App\Models\Vendor;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -24,6 +26,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $admin = User::create([
             "name" => "admin",
             "email" => "admin@email.com",
+            // "is_approved" => true,
             "password" => bcrypt("admin")
 
         ]);
@@ -33,8 +36,16 @@ class RolesAndPermissionsSeeder extends Seeder
         $client = User::create([
             "name" => "client",
             "email" => "client@email.com",
+            // "is_approved" => true,
             "password" => bcrypt("client")
         ]);
+
+        Client::create([
+                'user_id' => $client->id,
+                'full_name' => $client->name,
+                'contact_number' => 'not available',
+                'location' => 'ilaha'
+            ]);
 
 
 
@@ -44,6 +55,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $vendor = User::create([
             "name" => "vendor",
             "email" => "vendor@email.com",
+            // "is_approved" => true,
             "password" => bcrypt("vendor")
         ]);
 
@@ -51,10 +63,14 @@ class RolesAndPermissionsSeeder extends Seeder
 
         Vendor::create([
                 'user_id' => $vendor->id,
+                'full_name' => $vendor->name,
                 'business_name' => 'First Vendor',
                 'location' => 'Amoa',
-                'contact_number' => 'Secret'
+                'contact_number' => 'Secret',
+                "is_approved" => true,
             ]);
+
+        $vendor->vendor->serviceCategories()->attach([1, 3]);
 
 
 

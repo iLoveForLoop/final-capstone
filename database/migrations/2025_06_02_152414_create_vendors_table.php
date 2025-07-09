@@ -10,12 +10,13 @@ class CreateVendorsTable extends Migration
     {
         Schema::create('vendors', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Owner
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');// Owner
+            $table->string('full_name');
+            $table->boolean('is_approved')->default(false);
             $table->string('business_name');
             $table->text('description')->nullable();
             $table->string('location');
             $table->string('contact_number');
-            // $table->string('email')->unique();
             $table->string('profile_image')->nullable(); // optional profile photo
             $table->timestamps();
         });

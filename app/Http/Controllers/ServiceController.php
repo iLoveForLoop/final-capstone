@@ -13,7 +13,9 @@ class ServiceController extends Controller
      */
     public function index()
     {
-        //
+        $services = auth()->user()->vendor->services()->get();
+
+        return inertia('Vendor/Index', compact('services'));
     }
 
     /**

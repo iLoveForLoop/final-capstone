@@ -12,7 +12,9 @@ class ServiceCategoryController extends Controller
      */
     public function index()
     {
-        //
+        $categories = ServiceCategory::paginate(15);
+
+        return inertia('Admin/Categories/Index', compact('categories'));
     }
 
     /**
@@ -28,7 +30,15 @@ class ServiceCategoryController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255'
+        ]);
+
+        ServiceCategory::create([
+            'name' => $request->name
+        ]);
+
+        return back()->with('success', 'Category added with successfully');
     }
 
     /**
@@ -50,16 +60,34 @@ class ServiceCategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ServiceCategory $serviceCategory)
+    public function update(Request $request, ServiceCategory $category)
     {
-        //
+
+        // dd('herer');
+        $request->validate([
+            'name' => 'required|string|max:255'
+        ]);
+
+        $category->update([
+            'name' => $request->name
+        ]);
+
+        return back()->with('success', 'Category updated with successfully');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(ServiceCategory $serviceCategory)
+    public function destroy(ServiceCategory $category)
     {
-        //
+        // dd($serviceCategory);
+
+        // $serviceCategory->services()->detach(); // or detach
+        // $serviceCategory->vendors()->detach();
+        $category->delete();
+
+        // $serviceCategory->forceDelete();
+
+        return back()->with('success', 'Category deleted with successfully');
     }
 }

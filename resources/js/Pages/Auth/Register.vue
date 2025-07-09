@@ -6,7 +6,10 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import Checkbox from '@/Components/Checkbox.vue';
-import { ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+
+const page = usePage();
+console.log('Shared flash values:', page.props.flash);;
 
 const form = useForm({
     name: '',
@@ -27,6 +30,7 @@ const submit = () => {
 };
 
 
+
 </script>
 
 <template>
@@ -35,8 +39,10 @@ const submit = () => {
         <Head title="Register" />
 
         <form @submit.prevent="submit">
+            <!-- <p class="text-green-500">Fuck u</p> -->
+            <!-- <p v-if="flash?.success" class="text-green-500">{{ flash?.test }}</p> -->
             <div>
-                <InputLabel for="name" value="Name" />
+                <InputLabel for="name" value="Full Name" />
 
                 <TextInput id="name" type="text" class="mt-1 block w-full" v-model="form.name" required autofocus
                     autocomplete="name" />
@@ -62,7 +68,7 @@ const submit = () => {
                 <InputError class="mt-2" :message="form.errors.name" />
             </div>
 
-            <div v-if="form.is_vendor">
+            <div>
                 <InputLabel for="location" value="Location" />
 
                 <TextInput id="location" type="text" class="mt-1 block w-full" v-model="form.location" required />
@@ -70,7 +76,7 @@ const submit = () => {
                 <InputError class="mt-2" :message="form.errors.name" />
             </div>
 
-            <div v-if="form.is_vendor">
+            <div>
                 <InputLabel for="contact_number" value="Contact Number" />
 
                 <TextInput id="contact_number" type="text" class="mt-1 block w-full" v-model="form.contact_number"

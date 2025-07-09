@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Client;
 use App\Models\User;
 use App\Models\Vendor;
 use Illuminate\Auth\Events\Registered;
@@ -48,27 +49,35 @@ class RegisteredUserController extends Controller
 
         if($request->is_vendor){
             $user->assignRole('vendor');
+            // dd('here');
+
             Vendor::create([
                 'user_id' => $user->id,
+                'full_name' => $user->name,
                 'business_name' => $request->business_name,
                 'location' => $request->location,
+                'is_approved' => false,
                 'contact_number' => $request->contact_number
             ]);
+            $user->vendor->serviceCategories()->attach(1);
+
+            return redirect()->route('login')->with('info', 'Registered Successfully. Please wait for admin approval.');
+
         }else{
-            $user->assignRole(roles: 'client');
+            $user->assignRole('client');
+            Client::create([
+                'user_id' => $user->id,
+                'full_name' => $user->name,
+                'contact_number' => $request->contact_number,
+                'location' => $request->location
+            ]);
         }
+
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        $redirect = match (true) {
-        $user->hasRole('admin') => route('admin.index', absolute: false),
-        $user->hasRole('vendor') => route('vendor.index', absolute: false),
-        $user->hasRole('client') => route('client.index', absolute: false),
-        default => route('dashboard', absolute: false),
-    };
-
-    return redirect()->intended($redirect);
+        return redirect()->route('client.index');
     }
 }

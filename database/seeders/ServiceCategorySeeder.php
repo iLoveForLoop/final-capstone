@@ -13,6 +13,21 @@ class ServiceCategorySeeder extends Seeder
      */
     public function run(): void
     {
+        $categories = [
+            'Photography',
+            'Videography',
+            'Catering',
+            'Venue Rental',
+            'Makeup Artist',
+            'Sound System',
+            'Lights and Effects',
+            'Host / Emcee',
+            'Live Band / DJ',
+            'Event Styling / Decoration'
+        ];
 
+        foreach ($categories as $name) {
+            ServiceCategory::create(['name' => $name]);
+        }
     }
 }

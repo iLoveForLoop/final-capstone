@@ -16,15 +16,6 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
-
-        ServiceCategory::create([
-            'name' => 'Test'
-        ]);
-
-        $this->call(RolesAndPermissionsSeeder::class);
+        $this->call([ServiceCategorySeeder::class, RolesAndPermissionsSeeder::class]);
     }
 }

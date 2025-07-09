@@ -20,5 +20,26 @@ class Vendor extends Model
         return $this->hasMany(Service::class);
     }
 
+    // public function category()
+    // {
+    //     return $this->belongsTo(ServiceCategory::class);
+    // }
+
+    public function serviceCategories()
+    {
+        return $this->belongsToMany(ServiceCategory::class, 'service_category_vendor');
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class); // vendor_id on reviews
+    }
+
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class); // vendor_id on bookings
+    }
+
+
     protected $guarded = [];
 }

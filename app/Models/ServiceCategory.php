@@ -14,4 +14,13 @@ class ServiceCategory extends Model
     {
         return $this->hasMany(Service::class);
     }
+
+    public function vendors()
+    {
+        return $this->belongsToMany(Vendor::class, 'service_category_vendor');
+    }
+
+
+    protected $guarded = [];
+
 }
