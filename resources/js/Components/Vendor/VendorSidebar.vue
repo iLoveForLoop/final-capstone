@@ -29,7 +29,7 @@ const ui = ref(useUIStore())
                     :class="ui.sidebarCollapsed ? 'justify-center' : 'justify-between'">
                     <div v-if="!ui.sidebarCollapsed" class="flex gap-2 items-center">
                         <LogoPlaceholder />
-                        <span class="text-xl font-bold text-gray-50">TestIt</span>
+                        <span class="text-xl font-bold text-gray-50">Eventory</span>
                     </div>
 
                     <div class="flex items-center ">
@@ -45,7 +45,7 @@ const ui = ref(useUIStore())
             <!-- Navigation Links -->
             <div class="flex-1 flex flex-col overflow-y-auto no-scrollbar">
                 <nav class="flex-1 px-2 py-4 space-y-3">
-                    <NewNavLink :href="route('admin.index')" :active="route().current('admin.index')"
+                    <NewNavLink :href="route('vendor.index')" :active="route().current('vendor.index')"
                         :isCollapsed="ui.sidebarCollapsed">
                         <template #icon>
                             <BarChart3 class="h-5 w-5" />
@@ -56,15 +56,27 @@ const ui = ref(useUIStore())
                             Dashboard</span>
                     </NewNavLink>
 
-                    <NewNavLink :href="route('admin.users.index')" :active="route().current('admin.user.index')"
-                        :isCollapsed="ui.sidebarCollapsed">
+                    <NewNavLink :href="route('vendor.services.index')"
+                        :active="route().current('vendor.services.index')" :isCollapsed="ui.sidebarCollapsed">
                         <template #icon>
-                            <Users class="h-5 w-5" />
+                            <Briefcase class="h-5 w-5" />
                         </template>
 
 
-                        <span class="text-gray-400" v-if="!ui.sidebarCollapsed">
-                            Users</span>
+                        <span class="text-gray-400 truncate" v-if="!ui.sidebarCollapsed">
+                            My Services</span>
+                    </NewNavLink>
+
+                    <NewNavLink v-if="$page.props.auth?.hasCatering" :href="route('vendor.dishes.index')"
+                        :active="route().current('vendor.dishes.index')" :isCollapsed="ui.sidebarCollapsed">
+
+                        <template #icon>
+                            <Briefcase class="h-5 w-5" />
+                        </template>
+
+
+                        <span class="text-gray-400 truncate" v-if="!ui.sidebarCollapsed">
+                            Dishes</span>
                     </NewNavLink>
 
                     <NewNavLink :href="route('admin.vendor-application.index')"
@@ -75,7 +87,7 @@ const ui = ref(useUIStore())
 
 
                         <span class="text-gray-400 truncate" v-if="!ui.sidebarCollapsed">
-                            Vendor Applications</span>
+                            Bookings</span>
                     </NewNavLink>
 
                     <NewNavLink :href="route('admin.categories.index')"
@@ -86,21 +98,12 @@ const ui = ref(useUIStore())
 
 
                         <span class="text-gray-400" v-if="!ui.sidebarCollapsed">
-                            Categories</span>
+                            Reviews</span>
                     </NewNavLink>
 
-                    <NewNavLink :href="route('admin.services.index')" :active="route().current('admin.services.index')"
-                        :isCollapsed="ui.sidebarCollapsed">
-                        <template #icon>
-                            <Briefcase class="h-5 w-5" />
-                        </template>
 
 
-                        <span class="text-gray-400" v-if="!ui.sidebarCollapsed">
-                            Services</span>
-                    </NewNavLink>
-
-                    <NewNavLink :href="route('admin.bookings.index')" :active="route().current('admin.bookings.index')"
+                    <NewNavLink :href="route('dashboard')" :active="route().current('dashboard')"
                         :isCollapsed="ui.sidebarCollapsed">
                         <template #icon>
                             <Calendar class="h-5 w-5" />
@@ -108,10 +111,10 @@ const ui = ref(useUIStore())
 
 
                         <span class="text-gray-400" v-if="!ui.sidebarCollapsed">
-                            Bookings</span>
+                            Messages</span>
                     </NewNavLink>
 
-                    <NewNavLink :href="route('admin.reviews.index')" :active="route().current('admin.reviews.index')"
+                    <NewNavLink :href="route('dashboard')" :active="route().current('dashboard')"
                         :isCollapsed="ui.sidebarCollapsed">
                         <template #icon>
                             <Star class="h-5 w-5" />
@@ -119,21 +122,21 @@ const ui = ref(useUIStore())
 
 
                         <span class="text-gray-400" v-if="!ui.sidebarCollapsed">
-                            Reviews</span>
+                            Calendar</span>
                     </NewNavLink>
 
-                    <NewNavLink :href="route('admin.payments.index')" :active="route().current('admin.payments.index')"
+                    <NewNavLink :href="route('dashboard')" :active="route().current('dashboard')"
                         :isCollapsed="ui.sidebarCollapsed">
                         <template #icon>
                             <CreditCard class="h-5 w-5" />
                         </template>
 
 
-                        <span class="text-gray-400" v-if="!ui.sidebarCollapsed">
-                            Payments</span>
+                        <span class="text-gray-400 truncate" v-if="!ui.sidebarCollapsed">
+                            Profile Settings</span>
                     </NewNavLink>
 
-                    <NewNavLink :href="route('admin.settings.index')" :active="route().current('admin.settings.index')"
+                    <NewNavLink :href="route('dashboard')" :active="route().current('dashboard')"
                         :isCollapsed="ui.sidebarCollapsed">
                         <template #icon>
                             <Settings class="h-5 w-5" />
@@ -141,7 +144,7 @@ const ui = ref(useUIStore())
 
 
                         <span class="text-gray-400" v-if="!ui.sidebarCollapsed">
-                            Settings
+                            Account
                         </span>
                     </NewNavLink>
                 </nav>

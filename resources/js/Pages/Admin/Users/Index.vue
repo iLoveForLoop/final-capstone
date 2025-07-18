@@ -41,7 +41,7 @@ const selectedRole = ref(props.filters.role || 'all');
 const searchQuery = ref(props.filters.search || '');
 
 const applyFilters = () => {
-    router.get(route('admin.user.index'), {
+    router.get(route('admin.users.index'), {
         role: selectedRole.value,
         search: searchQuery.value
     }, {
@@ -58,7 +58,7 @@ const resetFilters = () => {
 
 const deleteUser = (userId) => {
     if (confirm('Are you sure you want to delete this user?')) {
-        router.delete(route('admin.user.destroy', userId), {
+        router.delete(route('admin.users.destroy', userId), {
             onSuccess: () => {
                 toast.success('User deleted successfully');
             },
@@ -74,7 +74,7 @@ const editUser = (user) => {
 }
 
 const viewUser = (userId) => {
-    router.get(route('admin.user.show', userId))
+    router.get(route('admin.users.show', userId))
 }
 
 const formatDate = (dateString) => {

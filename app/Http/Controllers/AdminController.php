@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Models\User;
 use App\Models\Vendor;
 use Carbon\Carbon;
@@ -88,10 +90,78 @@ class AdminController extends Controller
     }
 
 
-    public function servicesPage() {
+    public function servicesPage(Request $request)
+    {
+        $query = Service::with(['vendor', 'category']);
+        $categories = ServiceCategory::all();
+        $vendors = Vendor::with('serviceCategories')
+            ->where('is_approved', true)
+            ->get();
 
-        return inertia('Admin/Services/Index');
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+
+        if ($request->filled('category') && $request->category != 'all') {
+            $query->where('service_category_id', $request->category);
+        }
+
+
+        if ($request->filled('vendor') && $request->vendor != 'all') {
+            $query->where('vendor_id', $request->vendor);
+        }
+
+        $services = $query->paginate(10)->withQueryString();
+
+        return inertia('Admin/Services/Index', compact('services', 'categories', 'vendors'));
     }
+
+    public function addService(Request $request) {
+        $request->validate([
+            'vendor_id' => 'required|exists:vendors,id',
+            'service_category_id' => 'required|exists:service_categories,id',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'is_available' => 'boolean',
+            'image' => 'nullable|image|max:2048'
+        ]);
+
+        $service = Service::create([
+            'vendor_id' => $request->vendor_id,
+            'service_category_id' => $request->service_category_id,
+            'name' => $request->name,
+            'description' => $request->description,
+            'price' => $request->price,
+            'is_available' => $request->is_available,
+        ]);
+
+        if($request->hasFile('image')){
+            $service->addMediaFromRequest('image')->toMediaCollection('images', 'public');
+        }
+
+        return redirect()->back()->with('success', 'Service Added Successfully');
+    }
+
+
+    public function bookingsPage(){
+        return inertia('Admin/Bookings/Index');
+    }
+
+    public function reviewsPage(){
+        return inertia('Admin/Reviews/Index');
+    }
+
+    public function paymentsPage(){
+        return inertia('Admin/Payments/Index');
+    }
+
+    public function settingsPage() {
+        return inertia('Admin/Settings/Index');
+    }
+
+
 
 
 }

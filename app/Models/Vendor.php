@@ -40,6 +40,10 @@ class Vendor extends Model
         return $this->hasMany(Booking::class); // vendor_id on bookings
     }
 
+    public function dishes(){
+        return $this->hasMany(Dish::class);
+    }
+
 
     protected $guarded = [];
 }

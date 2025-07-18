@@ -18,9 +18,9 @@ class VendorController extends Controller
     public function index()
     {
 
-        $vendors = User::role('vendor')->get();
 
-        return inertia('Admin/Users/Vendor/Index', compact('vendors'));
+
+        return inertia('Vendor/Index');
     }
 
     /**

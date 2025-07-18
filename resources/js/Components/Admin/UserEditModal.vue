@@ -84,7 +84,7 @@ const handleFileUpload = (event) => {
 const submit = () => {
     // console.log('full_name: ', form.name)
     form.selected_role = selectedRole.value;
-    form.post(route('admin.user.update', currentUserId.value), {
+    form.post(route('admin.users.update', currentUserId.value), {
         preserveScroll: true,
         onSuccess: () => {
             show.value = false;
@@ -163,7 +163,7 @@ defineExpose({
                                             class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                         <p v-if="form.errors.full_name" class="mt-1 text-sm text-red-600">{{
                                             form.errors.full_name
-                                            }}</p>
+                                        }}</p>
                                     </div>
                                     <div>
                                         <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
@@ -301,7 +301,7 @@ defineExpose({
                                                     class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
                                                 <p v-if="form.errors.description" class="mt-1 text-sm text-red-600">{{
                                                     form.errors.description
-                                                    }}</p>
+                                                }}</p>
                                             </div>
                                             <div>
                                                 <label for="profile_image"

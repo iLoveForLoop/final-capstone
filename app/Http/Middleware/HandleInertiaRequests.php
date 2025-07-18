@@ -3,6 +3,8 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -30,12 +32,36 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
 
-        // dd('wroking');
+        $user = Auth::user();
+        $hasCatering = false;
+
+
+
+        if ($user && $user->hasRole('vendor')) {
+
+
+            $user->load('vendor.serviceCategories');
+            $hasCatering = optional($user->vendor)->serviceCategories
+                ? $user->vendor->serviceCategories->contains(
+                    fn($category) => strtolower($category->name) == 'catering'
+                )
+                : false;
+
+            // dd( $hasCatering);
+        }
+
+
+
+
+
+
 
         return [
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
+                'hasCatering' => $hasCatering
+
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

@@ -1,5 +1,5 @@
 <script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
+import VendorLayout from '@/Layouts/VendorLayout.vue'
 import ServiceForm from '@/Components/Vendor/ServiceForm.vue';
 import Services from '@/Components/Vendor/Services.vue'
 import Modal from '@/Components/Modal.vue';
@@ -24,15 +24,9 @@ const toggle = () => {
 
 
 
-    <AuthenticatedLayout>
+    <VendorLayout>
 
-        <div class="w-full h-full flex flex-col items-center justify-center ">
-            <h1 class="text-white text-4xl">This is the vendor page</h1>
-            <button class=" px-3 py-2 bg-blue-200" @click="toggle" @close="isAddingService = false">Add</button>
-
-            <Services :services="services" />
-
-        </div>
+        <h1>Dashboard</h1>
 
         <Modal :show="isAddingService" @close="toggle" :closeable="true">
             <ServiceForm @close-form="toggle" />
@@ -43,7 +37,7 @@ const toggle = () => {
 
 
 
-    </AuthenticatedLayout>
+    </VendorLayout>
 
 </template>
 

@@ -19,6 +19,7 @@ class UserController extends Controller
         ->whereDoesntHave('vendor', function ($query) {
             $query->where('is_approved', false);
         });
+
     $service_categories = ServiceCategory::all();
 
     // Apply role filter
@@ -234,8 +235,8 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        dd($user);
+        // dd($user);
         $user->delete();
-        return redirect()->route('admin.user.index')->with('success', 'User deleted successfully');
+        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully');
     }
 }

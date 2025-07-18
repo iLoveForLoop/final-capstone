@@ -12,11 +12,30 @@ class ServiceController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        $services = auth()->user()->vendor->services()->get();
+        {
+            $vendor = auth()->user()->vendor;
 
-        return inertia('Vendor/Index', compact('services'));
-    }
+            $services = $vendor->services()->paginate(10);
+
+            $services->getCollection()->transform(function ($service) {
+                return [
+                    'id' => $service->id,
+                    'vendor_id' => $service->vendor_id,
+                    'service_category_id' => $service->service_category_id,
+                    'name' => $service->name,
+                    'description' => $service->description,
+                    'price' => $service->price,
+                    'is_available' => $service->is_available,
+                    'image_url' =>$service->getFirstMediaUrl('images')
+                ];
+            });
+
+            if ($vendor->serviceCategories()->where('name', 'catering')->exists()) {
+                return inertia('Vendor/Services/Catering/Index', compact('services'));
+            }
+
+            return inertia('Vendor/Services/Index', compact('services'));
+        }
 
     /**
      * Show the form for creating a new resource.
@@ -31,7 +50,7 @@ class ServiceController extends Controller
      */
     public function store(Request $request)
 {
-    $validated = $request->validate([
+    $request->validate([
         'name' => 'required|string|max:255',
         'description' => 'nullable|string',
         'price' => 'required|numeric|min:0',
@@ -93,6 +112,7 @@ class ServiceController extends Controller
      */
     public function destroy(Service $service)
     {
-        //
+        $service->delete();
+        return redirect()->back()->with('success', 'Service Deleted Successfully');
     }
 }

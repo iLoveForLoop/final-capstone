@@ -59,7 +59,7 @@ class RegisteredUserController extends Controller
                 'is_approved' => false,
                 'contact_number' => $request->contact_number
             ]);
-            $user->vendor->serviceCategories()->attach(1);
+            $user->vendor->serviceCategories()->attach(2);
 
             return redirect()->route('login')->with('info', 'Registered Successfully. Please wait for admin approval.');
 
