@@ -94,13 +94,13 @@ defineExpose({
                     <div
                         class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                         <!-- Modal header -->
-                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="bg-indigo-600 px-4 sm:p-6 sm:pb-4">
                             <div class="flex justify-between items-start">
-                                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                <h3 class="text-lg leading-6 font-medium text-gray-100">
                                     Add New Dish
                                 </h3>
                                 <button @click="show = false"
-                                    class="text-gray-400 hover:text-gray-500 transition-colors duration-150">
+                                    class="text-gray-100 hover:text-gray-300 transition-colors duration-150">
                                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M6 18L18 6M6 6l12 12" />
@@ -110,7 +110,7 @@ defineExpose({
                         </div>
 
                         <!-- Modal body -->
-                        <div class="px-4 sm:px-6">
+                        <div class="px-4 py-3 sm:px-6">
                             <div class="space-y-4">
                                 <!-- Dish Name -->
                                 <div>

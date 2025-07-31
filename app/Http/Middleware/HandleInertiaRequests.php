@@ -46,13 +46,7 @@ class HandleInertiaRequests extends Middleware
                     fn($category) => strtolower($category->name) == 'catering'
                 )
                 : false;
-
-            // dd( $hasCatering);
         }
-
-
-
-
 
 
 

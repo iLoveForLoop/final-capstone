@@ -9,6 +9,14 @@ class CateringService extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'service_area' => 'array',
+        'specifications' => 'array',
+        'dishes' => 'array',
+    ];
+
+
+
     public function service() {
         return $this->belongsTo(Service::class);
     }
@@ -16,4 +24,6 @@ class CateringService extends Model
 public function packages() {
         return $this->hasMany(CateringPackage::class);
     }
+
+
 }

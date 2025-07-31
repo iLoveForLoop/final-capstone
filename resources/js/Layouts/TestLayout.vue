@@ -10,6 +10,7 @@ import { Link } from '@inertiajs/vue3';
 
 
 import TestSidebar from '@/Components/Admin/TestSidebar.vue';
+import MyDropdown from '@/Components/MyDropdown.vue';
 
 
 const showingNavigationDropdown = ref(false);
@@ -55,7 +56,7 @@ onBeforeUnmount(() => {
                 <nav class="border-b border-gray-100 blue-grey-darken-4 bg-slate-700">
                     <!-- Primary Navigation Menu -->
                     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                        <div class="flex h-16 justify-between">
+                        <div class="flex h-16 justify-between items-center">
                             <div class="flex">
                                 <!-- Logo -->
                                 <!-- <div class="flex shrink-0 items-center">
@@ -71,8 +72,10 @@ onBeforeUnmount(() => {
                                 </div>
                             </div>
 
-                            <div class="hidden sm:ms-6 sm:flex sm:items-center">
-                                <!-- Settings Dropdown -->
+                            <MyDropdown />
+
+                            <!-- <div class="hidden sm:ms-6 sm:flex sm:items-center">
+
                                 <div class="relative ms-3">
                                     <Dropdown align="right" width="48">
                                         <template #trigger>
@@ -91,7 +94,7 @@ onBeforeUnmount(() => {
                                             </span>
                                         </template>
 
-                                        <template #content>
+<template #content>
                                             <DropdownLink :href="route('profile.edit')">
                                                 Profile
                                             </DropdownLink>
@@ -99,9 +102,9 @@ onBeforeUnmount(() => {
                                                 Log Out
                                             </DropdownLink>
                                         </template>
-                                    </Dropdown>
-                                </div>
-                            </div>
+</Dropdown>
+</div>
+</div> -->
 
                             <!-- Hamburger -->
                             <div class="-me-2 flex items-center sm:hidden">

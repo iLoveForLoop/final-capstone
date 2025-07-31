@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CateringServiceController;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DishController;
+use App\Http\Controllers\PhotographyServiceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceCategoryController;
 use App\Http\Controllers\ServiceController;
@@ -15,11 +18,25 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
+
+    $services = Service::paginate(5);
+
+    $services->getCollection()->transform(function ($service) {
+        return [
+            'id' => $service->id,
+            'name' => $service->name,
+            'description' => $service->description,
+            'price' => $service->price,
+            'image_url' => $service->getFirstMediaUrl('images')
+        ];
+    });
+
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
+        'services' => $services
     ]);
 });
 
@@ -77,6 +94,12 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'role:vendor'])->gro
     Route::patch('dishes/{dish}/toggle-availability', [DishController::class, 'toggleAvailability'])
         ->name('dishes.toggle-availability');
 
+    //catering service page
+    Route::resource('catering-services', CateringServiceController::class);
+
+    //Photography
+    Route::resource('photography-services', PhotographyServiceController::class);
+
 });
 
 
@@ -85,10 +108,9 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'role:vendor'])->gro
 
 
 
-Route::middleware(['auth', 'role:client'])->group(function () {
-    Route::get('/client', function () {
-        return inertia('Client/Index');
-    })->name('client.index');
+Route::prefix('client')->as('client.')->middleware(['auth', 'role:client'])->group(function () {
+
+    Route::get('/', [ClientController::class, 'index'])->name('index');
 
 });
 

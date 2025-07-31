@@ -98,6 +98,7 @@ class AdminController extends Controller
             ->where('is_approved', true)
             ->get();
 
+
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }

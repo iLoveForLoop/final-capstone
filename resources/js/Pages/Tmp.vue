@@ -1,16 +1,8 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
-import { ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import LoginModal from '@/Components/LoginModal.vue';
-import Dropdown from '@/Components/Dropdown.vue';
-import DropdownLink from '@/Components/DropdownLink.vue';
-
-
 
 const page = usePage()
-
-const loginModal = ref(null)
 
 defineProps({
     canLogin: {
@@ -32,21 +24,17 @@ defineProps({
     },
 });
 
-
+console.log('page: ', usePage())
 
 </script>
 
 <template>
 
-    <Head title="Welcome Client" />
+    <Head title="Eventory - Streamlined Event Vendor Management" />
 
     <div class="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
-        <LoginModal ref="loginModal" />
-
-
         <!-- Sticky Navigation -->
-        <nav class="sticky top-0 z-20 bg-white shadow-sm">
-
+        <nav class="sticky top-0 z-50 bg-white shadow-sm">
             <div class="container mx-auto px-6 py-4">
                 <div class="flex items-center justify-between">
                     <!-- Logo -->
@@ -56,30 +44,30 @@ defineProps({
                     <div class="hidden md:flex items-center space-x-8">
                         <!-- Common Links -->
                         <Link href="/" class="text-gray-700 hover:text-purple-600 transition"
-                            :class="{ 'font-semibold text-purple-600': page.url === '/' }">Home</Link>
+                            :class="{ 'font-semibold text-purple-600': page.value?.url === '/' }">Home</Link>
                         <Link href="/services" class="text-gray-700 hover:text-purple-600 transition"
-                            :class="{ 'font-semibold text-purple-600': page.url.startsWith('/services') }">Browse
+                            :class="{ 'font-semibold text-purple-600': page.value?.url.startsWith('/services') }">Browse
                         Services</Link>
 
                         <!-- Conditional Links -->
-                        <template v-if="page.props.auth.user">
+                        <template v-if="page.value?.props.auth.user">
                             <Link href="/bookings" class="text-gray-700 hover:text-purple-600 transition"
-                                :class="{ 'font-semibold text-purple-600': page.url.startsWith('/bookings') }">My
+                                :class="{ 'font-semibold text-purple-600': page.value?.url.startsWith('/bookings') }">My
                             Bookings</Link>
                             <Link href="/favorites" class="text-gray-700 hover:text-purple-600 transition"
-                                :class="{ 'font-semibold text-purple-600': page.url.startsWith('/favorites') }">
+                                :class="{ 'font-semibold text-purple-600': page.value?.url.startsWith('/favorites') }">
                             Favorites</Link>
                         </template>
 
                         <Link href="/categories" class="text-gray-700 hover:text-purple-600 transition"
-                            :class="{ 'font-semibold text-purple-600': page.url.startsWith('/categories') }">
+                            :class="{ 'font-semibold text-purple-600': page.value?.url.startsWith('/categories') }">
                         Categories
                         </Link>
                         <Link href="#how-it-works" class="text-gray-700 hover:text-purple-600 transition">How It Works
                         </Link>
 
                         <!-- Search Bar -->
-                        <!-- <div class="relative ml-4">
+                        <div class="relative ml-4">
                             <input type="text" placeholder="Search services..."
                                 class="pl-4 pr-10 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent w-48">
                             <svg xmlns="http://www.w3.org/2000/svg"
@@ -88,17 +76,17 @@ defineProps({
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
-                        </div> -->
+                        </div>
 
                         <!-- Auth Links -->
                         <template v-if="canLogin">
-                            <template v-if="page.props.auth.user">
+                            <template v-if="page.value?.props.auth.user">
                                 <!-- Profile Dropdown -->
                                 <div class="relative ml-4">
                                     <button class="flex items-center space-x-2 focus:outline-none">
                                         <div
                                             class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-semibold">
-                                            {{ page.props.auth.user.name.charAt(0) }}
+                                            {{ page.value?.props.auth.user.name.charAt(0) }}
                                         </div>
                                     </button>
                                     <div
@@ -110,44 +98,10 @@ defineProps({
                                         Logout</Link>
                                     </div>
                                 </div>
-
-                                <div class="hidden sm:ms-6 sm:flex sm:items-center">
-                                    <!-- Settings Dropdown -->
-                                    <div class="relative ms-3">
-                                        <Dropdown align="right" width="48">
-                                            <template #trigger>
-                                                <span class="inline-flex rounded-md">
-                                                    <button type="button"
-                                                        class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none dark:bg-gray-800 dark:text-gray-400 dark:hover:text-gray-300">
-                                                        {{ $page.props.auth.user.name }}
-
-                                                        <svg class="-me-0.5 ms-2 h-4 w-4"
-                                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                                                            fill="currentColor">
-                                                            <path fill-rule="evenodd"
-                                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                                clip-rule="evenodd" />
-                                                        </svg>
-                                                    </button>
-                                                </span>
-                                            </template>
-
-                                            <template #content>
-                                                <DropdownLink :href="route('profile.edit')">
-                                                    Profile
-                                                </DropdownLink>
-                                                <DropdownLink :href="route('logout')" method="post" as="button">
-                                                    Log Out
-                                                </DropdownLink>
-                                            </template>
-                                        </Dropdown>
-                                    </div>
-                                </div>
                             </template>
                             <template v-else>
-                                <button @click="loginModal.show()"
-                                    class="text-gray-700 hover:text-purple-600 transition">
-                                    Login</button>
+                                <Link :href="route('login')" class="text-gray-700 hover:text-purple-600 transition">
+                                Login</Link>
                                 <Link v-if="canRegister" :href="route('register')"
                                     class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
                                 Register</Link>
@@ -179,11 +133,6 @@ defineProps({
                     Book trusted caterers, photographers, and more with our streamlined platform
                 </p>
 
-
-
-
-
-
                 <!-- Search Bar -->
                 <div class="bg-white p-2 rounded-lg shadow-md max-w-2xl mx-auto">
                     <div class="flex flex-col md:flex-row gap-2">
@@ -205,22 +154,20 @@ defineProps({
                             class="w-full md:w-auto px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium">
                             Search
                         </button>
-
-
                     </div>
                 </div>
 
                 <div class="mt-8">
-                    <button
+                    <Link v-if="canRegister" :href="route('register')"
                         class="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium">
-                        Start Planning Now
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20"
-                            fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
-                                clip-rule="evenodd" />
-                        </svg>
-                    </button>
+                    Start Planning Now
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    </Link>
                 </div>
             </div>
         </section>

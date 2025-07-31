@@ -2,10 +2,12 @@
 import VendorLayout from '@/Layouts/VendorLayout.vue';
 import { router } from '@inertiajs/vue3';
 import { useToast } from 'vue-toastification';
-// import ServiceCreateModal from '@/Components/Vendor/ServiceCreateModal.vue';
+import ServiceCreateModal from '@/Components/Vendor/Catering/ServiceCreateModal.vue';
 // import ServiceEditModal from '@/Components/Vendor/ServiceEditModal.vue';
 // import Pagination from '@/Components/Pagination.vue';
 import { ref } from 'vue';
+import CateringServiceCard from '@/Components/Vendor/Catering/CateringServiceCard.vue';
+import PhotographyServiceCard from '@/Components/Vendor/Photograpy/PhotographyServiceCard.vue';
 
 const toast = useToast();
 
@@ -24,10 +26,12 @@ const props = defineProps({
             availability: 'all'
         })
     },
-    // categories: {
-    //     type: Array,
-    //     default: () => []
-    // }
+    dishes: {
+        type: Object,
+    },
+    service_categories: {
+        type: Array
+    }
 });
 
 const availabilityOptions = [
@@ -58,30 +62,7 @@ const resetFilters = () => {
     applyFilters();
 };
 
-const toggleAvailability = (service) => {
-    router.patch(route('vendor.services.toggle-availability', service.id), {}, {
-        preserveScroll: true,
-        onSuccess: () => {
-            toast.success(`Service ${service.is_available ? 'deactivated' : 'activated'} successfully`);
-        },
-        onError: () => {
-            toast.error('Failed to update service availability');
-        }
-    });
-};
 
-const deleteService = (serviceId) => {
-    if (confirm('Are you sure you want to delete this service? This action cannot be undone.')) {
-        router.delete(route('vendor.services.destroy', serviceId), {
-            onSuccess: () => {
-                toast.success('Service deleted successfully');
-            },
-            onError: () => {
-                toast.error('Failed to delete service');
-            }
-        });
-    }
-};
 
 const editService = (service) => {
     serviceEditModal.value.show(service);
@@ -96,12 +77,6 @@ const formatPrice = (price) => {
     }).format(price);
 };
 
-const showPriceRange = (service) => {
-    if (service.max_price) {
-        return `${formatPrice(service.price)} - ${formatPrice(service.max_price)}`;
-    }
-    return formatPrice(service.price);
-};
 </script>
 
 <template>
@@ -127,7 +102,7 @@ const showPriceRange = (service) => {
             <!-- Filters -->
             <div class="bg-white p-4 rounded-lg shadow-sm">
                 <div class="flex flex-col md:flex-row gap-4">
-                    <!-- <div class="flex-1">
+                    <div class="flex-1">
                         <label class="block text-xs font-medium text-gray-500 mb-1">Category</label>
                         <select v-model="categoryFilter" @change="applyFilters"
                             class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
@@ -136,7 +111,7 @@ const showPriceRange = (service) => {
                                 {{ category.name }}
                             </option>
                         </select>
-                    </div> -->
+                    </div>
                     <div class="flex-1">
                         <label class="block text-xs font-medium text-gray-500 mb-1">Availability</label>
                         <select v-model="availabilityFilter" @change="applyFilters"
@@ -174,67 +149,11 @@ const showPriceRange = (service) => {
             <div v-if="services.data?.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div v-for="service in services.data" :key="service.id"
                     class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition">
-                    <!-- Service Image -->
-                    <div class="relative h-48 w-full overflow-hidden">
-                        <img :src="service.image_url" :alt="service.name" class="w-full h-full object-cover">
-                        <!-- Availability Badge -->
-                        <div class="absolute top-2 right-2">
-                            <span :class="{
-                                'bg-green-100 text-green-800': service.is_available,
-                                'bg-red-100 text-red-800': !service.is_available
-                            }" class="px-2 py-1 text-xs font-medium rounded-full">
-                                {{ service.is_available ? 'Available' : 'Unavailable' }}
-                            </span>
-                        </div>
-                    </div>
 
-                    <!-- Service Details -->
-                    <div class="p-4">
-                        <!-- <div class="flex justify-between items-start">
-                            <h3 class="text-lg font-semibold text-gray-800">{{ service.name }}</h3>
-                            <span class="text-sm font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">
-                                {{ service.service_category.name }}
-                            </span>
-                        </div> -->
-                        <p class="text-sm text-gray-500 mt-1 line-clamp-2">{{ service.description }}</p>
 
-                        <!-- Price Range -->
-                        <div class="mt-3">
-                            <span class="text-lg font-bold text-gray-900">
-                                {{ formatPrice(service.price) }}
-                            </span>
-                        </div>
+                    <CateringServiceCard :service="service" v-if="service.category.name === 'Catering'" />
 
-                        <!-- Actions -->
-                        <div class="mt-4 flex justify-between items-center border-t pt-3">
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" :checked="service.is_available"
-                                    @change="toggleAvailability(service)" class="sr-only peer">
-                                <div
-                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600">
-                                </div>
-                            </label>
-                            <div class="flex gap-2">
-                                <button @click="editService(service)"
-                                    class="text-gray-500 hover:text-indigo-600 p-1 rounded-full hover:bg-gray-100">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
-                                        fill="currentColor">
-                                        <path
-                                            d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                    </svg>
-                                </button>
-                                <button @click="deleteService(service.id)"
-                                    class="text-gray-500 hover:text-red-600 p-1 rounded-full hover:bg-gray-100">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
-                                        fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <PhotographyServiceCard :service="service" v-if="service.category.name === 'Photography'" />
                 </div>
             </div>
 
@@ -271,7 +190,7 @@ const showPriceRange = (service) => {
             <!-- <Pagination v-if="services.data.length > 0" :links="services.links" class="mt-6" /> -->
 
             <!-- Create Modal -->
-            <!-- <ServiceCreateModal ref="serviceCreateModal" :categories="categories" /> -->
+            <ServiceCreateModal ref="serviceCreateModal" :dishes="dishes" :categories="service_categories" />
             <!-- Edit Modal -->
             <!-- <ServiceEditModal ref="serviceEditModal" :categories="categories" /> -->
         </div>

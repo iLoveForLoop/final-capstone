@@ -67,7 +67,7 @@ const ui = ref(useUIStore())
                             My Services</span>
                     </NewNavLink>
 
-                    <NewNavLink v-if="$page.props.auth?.hasCatering" :href="route('vendor.dishes.index')"
+                    <!-- <NewNavLink v-if="$page.props.auth?.hasCatering" :href="route('vendor.dishes.index')"
                         :active="route().current('vendor.dishes.index')" :isCollapsed="ui.sidebarCollapsed">
 
                         <template #icon>
@@ -77,7 +77,7 @@ const ui = ref(useUIStore())
 
                         <span class="text-gray-400 truncate" v-if="!ui.sidebarCollapsed">
                             Dishes</span>
-                    </NewNavLink>
+                    </NewNavLink> -->
 
                     <NewNavLink :href="route('admin.vendor-application.index')"
                         :active="route().current('admin.vendor-application.index')" :isCollapsed="ui.sidebarCollapsed">

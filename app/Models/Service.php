@@ -36,5 +36,9 @@ class Service extends Model implements HasMedia
         return $this->hasOne(CateringService::class);
     }
 
+    public function photographyService() {
+        return $this->hasOne(PhotographyService::class);
+    }
+
     protected $guarded = [];
 }

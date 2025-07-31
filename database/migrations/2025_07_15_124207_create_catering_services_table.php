@@ -46,6 +46,7 @@ return new class extends Migration
 
             // Specifications
             $table->json('specifications')->nullable();
+            $table->json('dishes')->nullable();
             $table->text('notes')->nullable();
 
             $table->timestamps();

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Models\Service;
 use Illuminate\Http\Request;
 
 class ClientController extends Controller
@@ -12,7 +13,21 @@ class ClientController extends Controller
      */
     public function index()
     {
-        //
+        $services = Service::paginate(5);
+        // dd('here');
+
+    $services->getCollection()->transform(function ($service) {
+        return [
+            'id' => $service->id,
+            'name' => $service->name,
+            'description' => $service->description,
+            'price' => $service->price,
+            'image_url' => $service->getFirstMediaUrl('images')
+        ];
+    });
+
+    return inertia('Client/Index', compact('services'));
+
     }
 
     /**

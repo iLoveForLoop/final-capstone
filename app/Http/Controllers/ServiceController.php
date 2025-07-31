@@ -17,24 +17,41 @@ class ServiceController extends Controller
 
             $services = $vendor->services()->paginate(10);
 
+
+            $categories = $vendor->serviceCategories;
+
+            // dd($categories);
+
+
+            $service_categories = $vendor->serviceCategories()->select('id', 'name')->get();
+
             $services->getCollection()->transform(function ($service) {
-                return [
-                    'id' => $service->id,
-                    'vendor_id' => $service->vendor_id,
-                    'service_category_id' => $service->service_category_id,
-                    'name' => $service->name,
-                    'description' => $service->description,
-                    'price' => $service->price,
-                    'is_available' => $service->is_available,
-                    'image_url' =>$service->getFirstMediaUrl('images')
-                ];
-            });
+                    return [
+                        'id' => $service->id,
+                        'vendor_id' => $service->vendor_id,
+                        'service_category_id' => $service->service_category_id,
+                        'name' => $service->name,
+                        'description' => $service->description,
+                        'price' => $service->price,
+                        'is_available' => $service->is_available,
+                        'image_url' =>$service->getFirstMediaUrl('images'),
+                        'category' => $service->category,
+                        'catering_service' => $service->cateringService ?? null,
+                        'photography_service' => $service->photographyService ?? null
+                    ];
+                });
 
-            if ($vendor->serviceCategories()->where('name', 'catering')->exists()) {
-                return inertia('Vendor/Services/Catering/Index', compact('services'));
-            }
+            // if ($vendor->serviceCategories()->where('name', 'catering')->exists()) {
 
-            return inertia('Vendor/Services/Index', compact('services'));
+
+            //     $dishes = $vendor->dishes()->paginate(10);
+
+            //     return inertia('Vendor/Services/Catering/Index', compact('services', 'dishes', 'service_categories'));
+            // }
+
+
+
+            return inertia('Vendor/Services/Index', compact('services', 'categories', 'service_categories'));
         }
 
     /**

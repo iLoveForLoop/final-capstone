@@ -11,6 +11,10 @@ import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import Toast, { POSITION } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 
+//Prime vue
+import 'primeicons/primeicons.css';
+// import 'primevue/resources/primevue.min.css';
+
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);

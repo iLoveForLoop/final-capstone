@@ -56,7 +56,7 @@ const ui = ref(useUIStore())
                             Dashboard</span>
                     </NewNavLink>
 
-                    <NewNavLink :href="route('admin.users.index')" :active="route().current('admin.user.index')"
+                    <NewNavLink :href="route('admin.users.index')" :active="route().current('admin.users.index')"
                         :isCollapsed="ui.sidebarCollapsed">
                         <template #icon>
                             <Users class="h-5 w-5" />
