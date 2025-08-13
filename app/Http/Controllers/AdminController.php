@@ -146,8 +146,31 @@ class AdminController extends Controller
     }
 
 
-    public function bookingsPage(){
-        return inertia('Admin/Bookings/Index');
+    public function bookingsPage(Request $request)
+    {
+        $query = Booking::with(['user', 'service.vendor', 'event'])
+            ->latest();
+
+        if ($request->filled('search')) {
+            $query->whereHas('user', function($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->search.'%')
+                ->orWhere('email', 'like', '%'.$request->search.'%');
+            })
+            ->orWhereHas('service', function($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->search.'%');
+            });
+        }
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        $bookings = $query->paginate(5)->withQueryString();
+
+        return inertia('Admin/Bookings/Index', [
+            'bookings' => $bookings,
+            'filters' => $request->only(['search', 'status'])
+        ]);
     }
 
     public function reviewsPage(){

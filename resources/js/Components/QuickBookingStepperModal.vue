@@ -1,12 +1,34 @@
 <script setup>
 import { ref } from 'vue';
+import { useForm, usePage } from '@inertiajs/vue3';
+import EventForm from './EventForm.vue';
+import CategorySelection from './CategorySelection.vue';
+import VendorServiceSelection from './VendorServiceSelection.vue';
+import ReviewEvent from './ReviewEvent.vue';
 
-// Define expose to open modal from parent
+const props = defineProps({
+    categories: Array
+})
+
+const page = usePage()
+
+
+
 const showModal = ref(false);
+
 const open = () => {
     showModal.value = true;
     resetForm();
+    // Disable body scroll
+    document.body.style.overflow = 'hidden';
 };
+
+const closeModal = () => {
+    showModal.value = false;
+    // Re-enable body scroll
+    document.body.style.overflow = 'unset';
+};
+
 defineExpose({ open });
 
 // Stepper setup
@@ -18,38 +40,24 @@ const steps = [
 ];
 
 const currentStep = ref(0);
-const eventForm = ref({
+
+
+
+const eventForm = useForm({
+    user_id: page.props.auth.user.id,
     name: '',
     location: '',
     event_date: '',
     event_time: '',
-    description: ''
-});
+    description: '',
+    final_notes: '',
+    vendors: []
+})
+
+
 const selectedCategories = ref([]);
-const selectedVendors = ref([]);
+const selectedServices = ref([]);
 
-// Sample data
-const categories = [
-    { id: 1, name: 'Catering', icon: '🍽️' },
-    { id: 2, name: 'Photography', icon: '📸' },
-    { id: 3, name: 'Sound Systems', icon: '🔊' },
-    { id: 4, name: 'Entertainers', icon: '🎤' },
-    { id: 5, name: 'Makeup Artists', icon: '💄' },
-    { id: 6, name: 'Attire Rentals', icon: '👔' }
-];
-
-const vendors = {
-    1: [
-        { id: 101, name: 'Gourmet Delights', price: '₱15,000+', rating: 4.8, reviews: 124 },
-        { id: 102, name: 'Wedding Feast Co.', price: '₱12,000+', rating: 4.6, reviews: 89 },
-        { id: 103, name: 'Organic Catering', price: '₱18,000+', rating: 4.9, reviews: 156 }
-    ],
-    2: [
-        { id: 201, name: 'Perfect Shots', price: '₱20,000+', rating: 4.7, reviews: 112 },
-        { id: 202, name: 'Memory Makers', price: '₱25,000+', rating: 4.9, reviews: 203 },
-        { id: 203, name: 'Candid Moments', price: '₱18,000+', rating: 4.5, reviews: 76 }
-    ]
-};
 
 // Form methods
 const resetForm = () => {
@@ -57,36 +65,18 @@ const resetForm = () => {
     steps.forEach((step, index) => {
         step.status = index === 0 ? 'current' : 'upcoming';
     });
-    eventForm.value = {
-        name: '',
-        location: '',
-        event_date: '',
-        event_time: '',
-        description: ''
-    };
+    //reset the form here
+    eventForm.reset()
     selectedCategories.value = [];
-    selectedVendors.value = [];
-};
-
-const toggleCategory = (category) => {
-    const index = selectedCategories.value.findIndex(c => c.id === category.id);
-    if (index === -1) {
-        selectedCategories.value.push(category);
-    } else {
-        selectedCategories.value.splice(index, 1);
-    }
-};
-
-const toggleVendor = (vendor) => {
-    const index = selectedVendors.value.findIndex(v => v.id === vendor.id);
-    if (index === -1) {
-        selectedVendors.value.push(vendor);
-    } else {
-        selectedVendors.value.splice(index, 1);
-    }
+    selectedServices.value = [];
 };
 
 const nextStep = () => {
+
+    if (selectedCategories.value) {
+        console.log('selected cats', selectedCategories.value)
+    }
+
     if (validateStep()) {
         if (currentStep.value < steps.length - 1) {
             steps[currentStep.value].status = 'complete';
@@ -94,9 +84,11 @@ const nextStep = () => {
             currentStep.value++;
         }
     }
+
 };
 
 const prevStep = () => {
+
     if (currentStep.value > 0) {
         steps[currentStep.value].status = 'upcoming';
         steps[currentStep.value - 1].status = 'current';
@@ -106,14 +98,14 @@ const prevStep = () => {
 
 const validateStep = () => {
     if (currentStep.value === 0) {
-        if (!eventForm.value.name || !eventForm.value.location || !eventForm.value.event_date) {
+        if (!eventForm.name || !eventForm.location || !eventForm.event_date) {
             alert('Please fill in all required event details');
             return false;
         }
     } else if (currentStep.value === 1 && selectedCategories.value.length === 0) {
         alert('Please select at least one category');
         return false;
-    } else if (currentStep.value === 2 && selectedVendors.value.length === 0) {
+    } else if (currentStep.value === 2 && selectedServices.value.length === 0) {
         alert('Please select at least one vendor');
         return false;
     }
@@ -121,295 +113,233 @@ const validateStep = () => {
 };
 
 const submitSelection = () => {
-    const eventData = {
-        ...eventForm.value,
-        categories: selectedCategories.value,
-        vendors: selectedVendors.value
-    };
-    console.log('Form submission:', eventData);
+
+    eventForm.vendors = selectedServices.value
+
+    eventForm.post(route('client.bookings.store'), {
+        preserveScroll: true,
+        onSuccess: () => {
+            // toast.success('Service created successfully');
+            resetForm()
+        },
+        onError: () => {
+            alert('Error');
+        }
+    })
+
+
     // Submit to backend here
-    showModal.value = false;
-    alert('Event created successfully!');
+
+    closeModal();
+
 };
+
+// Helper functions for the new UI
+const canProceed = () => {
+    if (currentStep.value === 0) {
+        return eventForm.name && eventForm.location && eventForm.event_date;
+    } else if (currentStep.value === 1) {
+        return selectedCategories.value.length > 0;
+    } else if (currentStep.value === 2) {
+        return selectedServices.value.length === selectedCategories.value.length;
+    }
+    return true;
+};
+
+const getNextButtonText = () => {
+    switch (currentStep.value) {
+        case 0: return 'Choose Categories';
+        case 1: return 'Select Vendors';
+        case 2: return 'Review Event';
+        default: return 'Next';
+    }
+};
+
+const finalNotes = ref('');
 </script>
 
 <template>
     <!-- Modal Overlay -->
-    <transition name="fade">
-        <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <transition name="modal-backdrop">
+        <div v-if="showModal" @click.self="closeModal"
+            class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <!-- Modal Container -->
-            <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <!-- Modal Header -->
-                <div class="sticky top-0 bg-white p-6 border-b border-gray-200 flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-gray-900">Create New Event</h2>
-                    <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-
-                <!-- Modal Content -->
-                <div class="p-6">
-                    <!-- Stepper Navigation -->
-                    <nav class="flex items-center justify-center mb-8">
-                        <ol class="flex items-center space-x-5 w-full">
-                            <li v-for="(step, index) in steps" :key="step.name" class="flex-1">
-                                <div class="flex flex-col items-center">
-                                    <span :class="{
-                                        'bg-purple-600 border-purple-600 text-white': step.status === 'current' || step.status === 'complete',
-                                        'border-gray-300 text-gray-500': step.status === 'upcoming'
-                                    }"
-                                        class="flex items-center justify-center w-8 h-8 border-2 rounded-full font-medium text-sm">
-                                        <span v-if="step.status === 'complete'">✓</span>
-                                        <span v-else>{{ step.id }}</span>
-                                    </span>
-                                    <span :class="{
-                                        'text-purple-600': step.status === 'current' || step.status === 'complete',
-                                        'text-gray-500': step.status === 'upcoming'
-                                    }" class="mt-2 text-xs sm:text-sm font-medium">
-                                        {{ step.name }}
-                                    </span>
-                                </div>
-                                <div v-if="index < steps.length - 1" :class="{
-                                    'bg-purple-600': steps[index + 1].status === 'complete' || steps[index + 1].status === 'current',
-                                    'bg-gray-300': steps[index + 1].status === 'upcoming'
-                                }" class="absolute top-4 left-1/2 w-full h-0.5 -z-10"></div>
-                            </li>
-                        </ol>
-                    </nav>
-
-                    <!-- Step 1: Event Information -->
-                    <div v-if="currentStep === 0" class="step-content">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Event Details</h3>
-
-                        <div class="space-y-4">
+            <transition name="modal-content" appear>
+                <div class="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[95vh] overflow-hidden flex flex-col">
+                    <!-- Modal Header -->
+                    <div class="sticky top-0 bg-white border-b border-gray-100 px-6 py-5 flex-shrink-0">
+                        <div class="flex items-center justify-between">
                             <div>
-                                <label for="event-name" class="block text-sm font-medium text-gray-700 mb-1">Event Name
-                                    *</label>
-                                <input id="event-name" type="text" v-model="eventForm.name"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-                                    placeholder="Wedding, Birthday, Conference..." required>
+                                <h2 class="text-xl font-semibold text-gray-900">Create Event</h2>
+                                <p class="text-gray-500 text-xs mt-1">Complete all steps to organize your event</p>
                             </div>
-
-                            <div>
-                                <label for="event-location"
-                                    class="block text-sm font-medium text-gray-700 mb-1">Location *</label>
-                                <input id="event-location" type="text" v-model="eventForm.location"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-                                    placeholder="Venue or address" required>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label for="event-date" class="block text-sm font-medium text-gray-700 mb-1">Date
-                                        *</label>
-                                    <input id="event-date" type="date" v-model="eventForm.event_date"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-                                        required>
-                                </div>
-                                <div>
-                                    <label for="event-time"
-                                        class="block text-sm font-medium text-gray-700 mb-1">Time</label>
-                                    <input id="event-time" type="time" v-model="eventForm.event_time"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
-                                </div>
-                            </div>
-
-                            <div>
-                                <label for="event-description"
-                                    class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                                <textarea id="event-description" rows="3" v-model="eventForm.description"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-                                    placeholder="Tell us about your event..."></textarea>
-                            </div>
-                        </div>
-
-                        <div class="mt-8 flex justify-end">
-                            <button @click="nextStep"
-                                class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition">
-                                Next: Choose Categories
+                            <button @click="closeModal"
+                                class="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Step 2: Category Selection -->
-                    <div v-if="currentStep === 1" class="step-content">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Select Vendor Categories</h3>
-                        <p class="text-gray-600 mb-6">Choose the types of vendors you need for your event</p>
+                    <!-- Modal Content -->
+                    <div class="flex-1 overflow-y-auto">
+                        <div class="px-6 py-6">
+                            <!-- Progress Stepper -->
+                            <div class="mb-8">
+                                <div class="flex items-center justify-between relative">
+                                    <!-- Progress Line Background -->
+                                    <div class="absolute top-4 left-0 right-0 h-[2px] bg-gray-100 -z-10"></div>
+                                    <!-- Active Progress Line -->
+                                    <div class="absolute top-4 left-0 h-[2px] bg-[#239BA7] -z-10 transition-all duration-500"
+                                        :style="{ width: `${(currentStep / (steps.length - 1)) * 100}%` }"></div>
 
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            <button v-for="category in categories" :key="category.id" @click="toggleCategory(category)"
-                                :class="{
-                                    'ring-2 ring-purple-600 bg-purple-50': selectedCategories.some(c => c.id === category.id),
-                                    'border border-gray-200 hover:border-purple-300': !selectedCategories.some(c => c.id === category.id)
-                                }" class="p-3 rounded-lg transition-all flex flex-col items-center">
-                                <span class="text-2xl mb-1">{{ category.icon }}</span>
-                                <span class="font-medium text-gray-900 text-sm">{{ category.name }}</span>
-                            </button>
-                        </div>
-
-                        <div class="mt-8 flex justify-between">
-                            <button @click="prevStep"
-                                class="px-6 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition">
-                                Back
-                            </button>
-                            <button @click="nextStep" :disabled="selectedCategories.length === 0" :class="{
-                                'bg-purple-600 hover:bg-purple-700': selectedCategories.length > 0,
-                                'bg-gray-300 cursor-not-allowed': selectedCategories.length === 0
-                            }" class="px-6 py-2 rounded-lg text-white font-medium transition">
-                                Next: Select Vendors
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Step 3: Vendor Selection -->
-                    <div v-if="currentStep === 2" class="step-content">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Select Your Vendors</h3>
-                        <p class="text-gray-600 mb-6">Choose from our verified vendors in your selected categories</p>
-
-                        <div v-for="category in selectedCategories" :key="category.id" class="mb-6">
-                            <h4 class="text-md font-medium text-gray-900 mb-3 flex items-center">
-                                <span class="text-xl mr-2">{{ category.icon }}</span>
-                                {{ category.name }}
-                            </h4>
-
-                            <div class="grid grid-cols-1 gap-3">
-                                <div v-for="vendor in vendors[category.id] || []" :key="vendor.id"
-                                    @click="toggleVendor(vendor)" :class="{
-                                        'ring-2 ring-purple-600 bg-purple-50': selectedVendors.some(v => v.id === vendor.id),
-                                        'border border-gray-200 hover:border-purple-300': !selectedVendors.some(v => v.id === vendor.id)
-                                    }" class="p-4 rounded-lg transition-all cursor-pointer">
-                                    <div class="flex justify-between items-start">
-                                        <div>
-                                            <h5 class="font-medium text-gray-900">{{ vendor.name }}</h5>
-                                            <p class="text-purple-600 font-medium mt-1">{{ vendor.price }}</p>
+                                    <div v-for="(step) in steps" :key="step.name"
+                                        class="flex flex-col items-center relative z-10">
+                                        <!-- Step Circle -->
+                                        <div :class="{
+                                            'bg-[#239BA7] text-white': step.status === 'current',
+                                            'bg-[#E6F4F6] border border-[#239BA7] text-[#239BA7]': step.status === 'complete',
+                                            'bg-white border border-gray-200 text-gray-400': step.status === 'upcoming'
+                                        }"
+                                            class="flex items-center justify-center w-8 h-8 rounded-full text-xs font-medium transition-all mb-2">
+                                            <span v-if="step.status === 'complete'">
+                                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                        clip-rule="evenodd" />
+                                                </svg>
+                                            </span>
+                                            <span v-else>{{ step.id }}</span>
                                         </div>
-                                        <div class="flex items-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400"
-                                                viewBox="0 0 20 20" fill="currentColor">
-                                                <path
-                                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                            </svg>
-                                            <span class="ml-1 text-sm text-gray-600">{{ vendor.rating }} ({{
-                                                vendor.reviews }})</span>
-                                        </div>
-                                    </div>
-                                    <div v-if="selectedVendors.some(v => v.id === vendor.id)"
-                                        class="mt-2 flex items-center text-sm text-purple-600">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20"
-                                            fill="currentColor">
-                                            <path fill-rule="evenodd"
-                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                clip-rule="evenodd" />
-                                        </svg>
-                                        Selected
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-6 flex justify-between">
-                            <button @click="prevStep"
-                                class="px-6 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition">
-                                Back
-                            </button>
-                            <button @click="nextStep" :disabled="selectedVendors.length === 0" :class="{
-                                'bg-purple-600 hover:bg-purple-700': selectedVendors.length > 0,
-                                'bg-gray-300 cursor-not-allowed': selectedVendors.length === 0
-                            }" class="px-6 py-2 rounded-lg text-white font-medium transition">
-                                Next: Review
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Step 4: Confirmation -->
-                    <div v-if="currentStep === 3" class="step-content">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Review Your Event</h3>
-
-                        <div class="space-y-6">
-                            <div class="bg-gray-50 rounded-lg p-4">
-                                <h4 class="font-medium text-gray-900 mb-2">Event Details</h4>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <p class="text-sm text-gray-600">Event Name</p>
-                                        <p class="font-medium">{{ eventForm.name }}</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600">Location</p>
-                                        <p class="font-medium">{{ eventForm.location }}</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600">Date</p>
-                                        <p class="font-medium">{{ eventForm.event_date }}</p>
-                                    </div>
-                                    <div v-if="eventForm.event_time">
-                                        <p class="text-sm text-gray-600">Time</p>
-                                        <p class="font-medium">{{ eventForm.event_time }}</p>
-                                    </div>
-                                </div>
-                                <div v-if="eventForm.description" class="mt-3">
-                                    <p class="text-sm text-gray-600">Description</p>
-                                    <p class="font-medium">{{ eventForm.description }}</p>
-                                </div>
-                            </div>
-
-                            <div class="bg-gray-50 rounded-lg p-4">
-                                <h4 class="font-medium text-gray-900 mb-2">Selected Vendors</h4>
-                                <div v-for="vendor in selectedVendors" :key="vendor.id"
-                                    class="mb-3 pb-3 border-b border-gray-200 last:border-0">
-                                    <p class="font-medium">{{ vendor.name }}</p>
-                                    <div class="flex justify-between mt-1">
-                                        <span class="text-purple-600 text-sm">{{ vendor.price }}</span>
-                                        <span class="text-gray-600 text-sm flex items-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-yellow-400 mr-1"
-                                                viewBox="0 0 20 20" fill="currentColor">
-                                                <path
-                                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                            </svg>
-                                            {{ vendor.rating }} ({{ vendor.reviews }})
+                                        <!-- Step Label -->
+                                        <span :class="{
+                                            'text-[#239BA7] font-medium': step.status === 'current',
+                                            'text-gray-900 font-medium': step.status === 'complete',
+                                            'text-gray-400': step.status === 'upcoming'
+                                        }" class="text-xs text-center max-w-16 leading-tight">
+                                            {{ step.name }}
                                         </span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div>
-                                <label for="final-notes" class="block text-sm font-medium text-gray-700 mb-1">Additional
-                                    Notes</label>
-                                <textarea id="final-notes" rows="3"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-                                    placeholder="Any special instructions for the vendors..."></textarea>
+                            <!-- Step Content Container -->
+                            <div class="min-h-[400px]">
+                                <!-- Step 1: Event Information -->
+                                <div v-if="currentStep === 0" class="step-content">
+                                    <EventForm :eventForm="eventForm" />
+                                </div>
+
+                                <!-- Step 2: Category Selection -->
+                                <div v-if="currentStep === 1" class="step-content">
+                                    <CategorySelection :categories="categories"
+                                        v-model:selectedCategories="selectedCategories" />
+                                </div>
+
+                                <!-- Step 3: Vendor Selection -->
+                                <div v-if="currentStep === 2" class="step-content">
+                                    <div class="mb-6">
+                                        <h3 class="text-lg font-medium text-gray-900 mb-1">Select Vendors</h3>
+                                        <p class="text-gray-500 text-sm">Choose vendors for each category</p>
+                                    </div>
+
+                                    <VendorServiceSelection :selectedCategories="selectedCategories"
+                                        v-model:selectedServices="selectedServices" />
+                                </div>
+
+                                <!-- Step 4: Review & Confirmation -->
+                                <div v-if="currentStep === 3" class="step-content">
+                                    <ReviewEvent :selectedServices="selectedServices" v-model:eventForm="eventForm" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4 flex-shrink-0">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                            <!-- Back Button -->
+                            <button v-if="currentStep > 0" @click="prevStep"
+                                class="order-2 sm:order-1 px-5 py-2.5 rounded-lg border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors flex items-center justify-center">
+                                <svg class="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                </svg>
+                                Previous
+                            </button>
+
+                            <!-- Progress Text (Mobile) -->
+                            <div class="order-3 sm:order-2 text-center text-xs text-gray-500 sm:hidden">
+                                Step {{ currentStep + 1 }} of {{ steps.length }}
+                            </div>
+
+                            <!-- Next/Submit Button -->
+                            <div class="order-1 sm:order-3">
+                                <button v-if="currentStep < 3" @click="nextStep" :disabled="!canProceed()" :class="{
+                                    'bg-[#239BA7] hover:bg-[#1D8A95] text-white': canProceed(),
+                                    'bg-gray-100 text-gray-400 cursor-not-allowed': !canProceed()
+                                }"
+                                    class="w-full sm:w-auto px-6 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center">
+                                    {{ getNextButtonText() }}
+                                    <svg class="w-3.5 h-3.5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                    </svg>
+                                </button>
+
+                                <button v-else @click="submitSelection"
+                                    class="w-full sm:w-auto px-6 py-2.5 bg-[#239BA7] hover:bg-[#1D8A95] text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Confirm Booking
+                                </button>
                             </div>
                         </div>
 
-                        <div class="mt-6 flex justify-between">
-                            <button @click="prevStep"
-                                class="px-6 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition">
-                                Back
-                            </button>
-                            <button @click="submitSelection"
-                                class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition">
-                                Confirm & Create Event
-                            </button>
+                        <!-- Progress Text (Desktop) -->
+                        <div class="hidden sm:block text-center text-xs text-gray-500 mt-3">
+                            Step {{ currentStep + 1 }} of {{ steps.length }}
                         </div>
                     </div>
                 </div>
-            </div>
+            </transition>
         </div>
     </transition>
 </template>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-    transition: opacity 0.3s ease;
+/* Backdrop transition */
+.modal-backdrop-enter-active,
+.modal-backdrop-leave-active {
+    transition: opacity 0.2s ease;
 }
 
-.fade-enter-from,
-.fade-leave-to {
+.modal-backdrop-enter-from,
+.modal-backdrop-leave-to {
     opacity: 0;
+}
+
+/* Modal content transition */
+.modal-content-enter-active {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-content-leave-active {
+    transition: all 0.2s cubic-bezier(0.4, 0, 1, 1);
+}
+
+.modal-content-enter-from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+}
+
+.modal-content-leave-to {
+    opacity: 0;
+    transform: scale(0.98) translateY(5px);
 }
 
 .step-content {
@@ -419,7 +349,7 @@ const submitSelection = () => {
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(8px);
     }
 
     to {
@@ -428,11 +358,21 @@ const submitSelection = () => {
     }
 }
 
-ol {
-    position: relative;
+/* Custom scrollbar */
+.overflow-y-auto::-webkit-scrollbar {
+    width: 4px;
 }
 
-ol li {
-    position: relative;
+.overflow-y-auto::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 2px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #cbd5e1;
 }
 </style>

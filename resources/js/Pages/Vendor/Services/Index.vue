@@ -2,7 +2,7 @@
 import VendorLayout from '@/Layouts/VendorLayout.vue';
 import { router } from '@inertiajs/vue3';
 import { useToast } from 'vue-toastification';
-import ServiceCreateModal from '@/Components/Vendor/Catering/ServiceCreateModal.vue';
+import ServiceCreateModal from '@/Components/Vendor/ServiceCreateModal.vue';
 // import ServiceEditModal from '@/Components/Vendor/ServiceEditModal.vue';
 // import Pagination from '@/Components/Pagination.vue';
 import { ref } from 'vue';
@@ -79,6 +79,8 @@ const formatPrice = (price) => {
         maximumFractionDigits: 0
     }).format(price);
 };
+
+
 
 </script>
 

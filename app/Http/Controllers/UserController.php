@@ -39,7 +39,7 @@ class UserController extends Controller
         });
     }
 
-    $users = $query->paginate(10);
+    $users = $query->paginate(5);
 
     $users->getCollection()->transform(function ($user) {
     return [

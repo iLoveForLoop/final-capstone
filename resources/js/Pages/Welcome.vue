@@ -211,7 +211,7 @@ defineProps({
                 </div>
 
                 <div class="mt-8">
-                    <button
+                    <button @click="loginModal.show()"
                         class="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium">
                         Start Planning Now
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20"

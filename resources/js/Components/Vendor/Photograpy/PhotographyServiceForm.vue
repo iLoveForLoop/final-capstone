@@ -6,7 +6,7 @@ import { useToast } from 'vue-toastification';
 const props = defineProps({
     category_id: {
         type: [String, Number], // or whatever type you expect
-        default: null
+
     },
 });
 
@@ -17,7 +17,7 @@ const selectedImage = ref(null);
 const newSpecification = ref('');
 const newDeliverable = ref('');
 
-
+console.log('cat id: ', props.category_id)
 
 const form = useForm({
     service_category_id: props.category_id,
@@ -26,10 +26,7 @@ const form = useForm({
     price: '',
     max_price: '',
     cover_image: null,
-    min_pax: 1,
-    max_pax: 1,
     delivery_fee: '',
-    lead_time_days: 3,
     service_area: [],
     notes: '',
 
@@ -44,28 +41,7 @@ const form = useForm({
     _method: 'POST'
 });
 
-const coverageTypes = [
-    { value: 'wedding', label: 'Wedding' },
-    { value: 'corporate', label: 'Corporate' },
-    { value: 'portrait', label: 'Portrait' },
-    { value: 'event', label: 'Event' },
-    { value: 'product', label: 'Product' },
-    { value: 'fashion', label: 'Fashion' },
-    { value: 'sports', label: 'Sports' },
-    { value: 'real_estate', label: 'Real Estate' }
-];
 
-const commonDeliverables = [
-    'Digital Files (USB)',
-    'Online Gallery',
-    'Photo Album',
-    'Prints (8x10)',
-    'Prints (5x7)',
-    'Canvas Print',
-    'Edited JPEGs',
-    'RAW Files',
-    'Slideshow'
-];
 
 const commonSpecifications = [
     'Engagement Session Included',
@@ -177,22 +153,6 @@ const submit = () => {
                         <p v-if="form.errors.name" class="mt-1 text-sm text-red-600">
                             {{ form.errors.name }}</p>
                     </div>
-
-                    <!-- Coverage Type -->
-                    <div>
-                        <label for="coverage_type" class="block text-sm font-medium text-gray-700 mb-1">
-                            Coverage Type *
-                        </label>
-                        <select id="coverage_type" v-model="form.coverage_type" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                            <option v-for="type in coverageTypes" :key="type.value" :value="type.value">
-                                {{ type.label }}
-                            </option>
-                        </select>
-                        <p v-if="form.errors.coverage_type" class="mt-1 text-sm text-red-600">
-                            {{ form.errors.coverage_type }}</p>
-                    </div>
-
                     <!-- Description -->
                     <div class="md:col-span-2">
                         <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
@@ -244,38 +204,59 @@ const submit = () => {
             <div class="border-b border-gray-200 pb-6">
                 <h4 class="text-lg font-medium text-gray-900 mb-4">Photography Details</h4>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Hours of Coverage -->
-                    <div>
-                        <label for="hours_of_coverage" class="block text-sm font-medium text-gray-700 mb-1">
-                            Hours of Coverage
-                        </label>
-                        <input type="number" id="hours_of_coverage" v-model="form.hours_of_coverage" min="1"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <p v-if="form.errors.hours_of_coverage" class="mt-1 text-sm text-red-600">
-                            {{ form.errors.hours_of_coverage }}</p>
-                    </div>
+                <div class="border-b border-gray-200 pb-6">
+                    <h4 class="text-lg font-medium text-gray-900 mb-4">Specifications</h4>
 
-                    <!-- Number of Photographers -->
-                    <div>
-                        <label for="number_of_photographers" class="block text-sm font-medium text-gray-700 mb-1">
-                            Number of Photographers
-                        </label>
-                        <input type="number" id="number_of_photographers" v-model="form.number_of_photographers" min="1"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <p v-if="form.errors.number_of_photographers" class="mt-1 text-sm text-red-600">
-                            {{ form.errors.number_of_photographers }}</p>
-                    </div>
 
-                    <!-- Delivery Time -->
+                    <!-- Specifications -->
                     <div>
-                        <label for="delivery_time_days" class="block text-sm font-medium text-gray-700 mb-1">
-                            Delivery Time (Days)
-                        </label>
-                        <input type="number" id="delivery_time_days" v-model="form.delivery_time_days" min="1"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <p v-if="form.errors.delivery_time_days" class="mt-1 text-sm text-red-600">
-                            {{ form.errors.delivery_time_days }}</p>
+
+
+                        <!-- Custom specification input -->
+                        <div class="flex gap-2 mb-3">
+                            <input v-model="newSpecification" type="text" placeholder="Enter custom specification"
+                                class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                @keyup.enter="addCustomSpecification">
+                            <button @click="addCustomSpecification"
+                                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Add
+                            </button>
+                        </div>
+
+                        <!-- Common specifications quick add -->
+                        <div class="mb-3">
+                            <p class="text-xs text-gray-500 mb-2">Quick add common specifications:</p>
+                            <div class="flex flex-wrap gap-2">
+                                <button v-for="spec in commonSpecifications" :key="spec" @click="addSpecification(spec)"
+                                    class="px-3 py-1 rounded-full text-sm font-medium transition-colors" :class="{
+                                        'bg-indigo-100 text-indigo-800 border border-indigo-200': form.specifications.includes(spec),
+                                        'bg-gray-100 text-gray-800 border border-gray-200 hover:bg-gray-200': !form.specifications.includes(spec)
+                                    }">
+                                    {{ spec }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Selected specifications -->
+                        <div v-if="form.specifications.length > 0" class="mt-3">
+                            <p class="text-xs text-gray-500 mb-2">Selected specifications:</p>
+                            <div class="flex flex-wrap gap-2">
+                                <span v-for="(spec, index) in form.specifications" :key="index"
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                                    {{ spec }}
+                                    <button @click.stop="removeSpecification(index)"
+                                        class="ml-1.5 inline-flex text-indigo-600 focus:outline-none">
+                                        <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                        <p v-if="form.errors.specifications" class="mt-1 text-sm text-red-600">
+                            {{ form.errors.specifications }}</p>
                     </div>
                 </div>
 
@@ -293,69 +274,6 @@ const submit = () => {
                 </div>
             </div>
 
-            <!-- Deliverables Section -->
-            <div class="border-b border-gray-200 pb-6">
-                <h4 class="text-lg font-medium text-gray-900 mb-4">Deliverables</h4>
-
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Selected Deliverables
-                    </label>
-                    <div v-if="form.deliverables.length > 0" class="flex flex-wrap gap-2 mb-4">
-                        <span v-for="(item, index) in form.deliverables" :key="index"
-                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                            {{ item }}
-                            <button @click.stop="removeDeliverable(index)"
-                                class="ml-1.5 inline-flex text-green-600 focus:outline-none">
-                                <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                            </button>
-                        </span>
-                    </div>
-                    <div v-else class="text-sm text-gray-500 mb-4">
-                        No deliverables selected yet. Add deliverables below.
-                    </div>
-                </div>
-
-                <div class="space-y-6">
-                    <!-- Common Deliverables -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Common Deliverables
-                        </label>
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-                            <button v-for="item in commonDeliverables" :key="item" @click="addDeliverable(item)" :class="{
-                                'bg-indigo-100 text-indigo-800 border-indigo-300': form.deliverables.includes(item),
-                                'bg-white text-gray-700 border-gray-300': !form.deliverables.includes(item)
-                            }"
-                                class="px-3 py-2 border rounded-md text-sm font-medium text-left focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                {{ item }}
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Custom Deliverable Input -->
-                    <div>
-                        <label for="newDeliverable" class="block text-sm font-medium text-gray-700 mb-1">
-                            Add Custom Deliverable
-                        </label>
-                        <div class="flex gap-2">
-                            <input id="newDeliverable" v-model="newDeliverable" type="text"
-                                placeholder="Enter custom deliverable"
-                                class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                                @keyup.enter="addCustomDeliverable">
-                            <button @click="addCustomDeliverable"
-                                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                Add
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Pricing Section -->
             <div class="border-b border-gray-200 pb-6">
                 <h4 class="text-lg font-medium text-gray-900 mb-4">Pricing</h4>
@@ -363,76 +281,15 @@ const submit = () => {
                     <!-- Base Price -->
                     <div>
                         <label for="price" class="block text-sm font-medium text-gray-700 mb-1">
-                            Base Price (₱) *
+                            Price
                         </label>
                         <input type="number" id="price" v-model="form.price" required min="0"
                             class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                         <p v-if="form.errors.price" class="mt-1 text-sm text-red-600">
                             {{ form.errors.price }}</p>
                     </div>
-
-                    <!-- Max Price -->
-                    <div>
-                        <label for="max_price" class="block text-sm font-medium text-gray-700 mb-1">
-                            Max Price (₱)
-                        </label>
-                        <input type="number" id="max_price" v-model="form.max_price" min="0"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <p v-if="form.errors.max_price" class="mt-1 text-sm text-red-600">
-                            {{ form.errors.max_price }}</p>
-                    </div>
-
-                    <!-- Delivery Fee -->
-                    <div>
-                        <label for="delivery_fee" class="block text-sm font-medium text-gray-700 mb-1">
-                            Delivery Fee (₱)
-                        </label>
-                        <input type="number" id="delivery_fee" v-model="form.delivery_fee" min="0"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <p v-if="form.errors.delivery_fee" class="mt-1 text-sm text-red-600">
-                            {{ form.errors.delivery_fee }}</p>
-                    </div>
                 </div>
             </div>
-
-            <!-- Capacity Section -->
-            <!-- <div class="border-b border-gray-200 pb-6">
-                <h4 class="text-lg font-medium text-gray-900 mb-4">Capacity</h4>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-                    <div>
-                        <label for="min_pax" class="block text-sm font-medium text-gray-700 mb-1">
-                            Minimum Pax *
-                        </label>
-                        <input type="number" id="min_pax" v-model="form.min_pax" required min="1"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <p v-if="form.errors.min_pax" class="mt-1 text-sm text-red-600">
-                            {{ form.errors.min_pax }}</p>
-                    </div>
-
-
-                    <div>
-                        <label for="max_pax" class="block text-sm font-medium text-gray-700 mb-1">
-                            Maximum Pax *
-                        </label>
-                        <input type="number" id="max_pax" v-model="form.max_pax" required min="1"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <p v-if="form.errors.max_pax" class="mt-1 text-sm text-red-600">
-                            {{ form.errors.max_pax }}</p>
-                    </div>
-
-
-                    <div>
-                        <label for="lead_time_days" class="block text-sm font-medium text-gray-700 mb-1">
-                            Lead Time (Days)
-                        </label>
-                        <input type="number" id="lead_time_days" v-model="form.lead_time_days" min="1"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <p v-if="form.errors.lead_time_days" class="mt-1 text-sm text-red-600">
-                            {{ form.errors.lead_time_days }}</p>
-                    </div>
-                </div>
-            </div> -->
 
             <!-- Service Options Section -->
             <div class="border-b border-gray-200 pb-6">
@@ -454,59 +311,6 @@ const submit = () => {
                     </div>
                     <p v-if="form.errors.service_area" class="mt-1 text-sm text-red-600">
                         {{ form.errors.service_area }}</p>
-                </div>
-
-                <!-- Specifications -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Specifications
-                    </label>
-
-                    <!-- Custom specification input -->
-                    <div class="flex gap-2 mb-3">
-                        <input v-model="newSpecification" type="text" placeholder="Enter custom specification"
-                            class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                            @keyup.enter="addCustomSpecification">
-                        <button @click="addCustomSpecification"
-                            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            Add
-                        </button>
-                    </div>
-
-                    <!-- Common specifications quick add -->
-                    <div class="mb-3">
-                        <p class="text-xs text-gray-500 mb-2">Quick add common specifications:</p>
-                        <div class="flex flex-wrap gap-2">
-                            <button v-for="spec in commonSpecifications" :key="spec" @click="addSpecification(spec)"
-                                class="px-3 py-1 rounded-full text-sm font-medium transition-colors" :class="{
-                                    'bg-indigo-100 text-indigo-800 border border-indigo-200': form.specifications.includes(spec),
-                                    'bg-gray-100 text-gray-800 border border-gray-200 hover:bg-gray-200': !form.specifications.includes(spec)
-                                }">
-                                {{ spec }}
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Selected specifications -->
-                    <div v-if="form.specifications.length > 0" class="mt-3">
-                        <p class="text-xs text-gray-500 mb-2">Selected specifications:</p>
-                        <div class="flex flex-wrap gap-2">
-                            <span v-for="(spec, index) in form.specifications" :key="index"
-                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
-                                {{ spec }}
-                                <button @click.stop="removeSpecification(index)"
-                                    class="ml-1.5 inline-flex text-indigo-600 focus:outline-none">
-                                    <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd"
-                                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                </button>
-                            </span>
-                        </div>
-                    </div>
-                    <p v-if="form.errors.specifications" class="mt-1 text-sm text-red-600">
-                        {{ form.errors.specifications }}</p>
                 </div>
             </div>
 

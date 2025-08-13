@@ -54,8 +54,7 @@ onUnmounted(() => {
     <!-- Profile Dropdown -->
     <!-- Profile Dropdown -->
     <div class="relative ">
-        <button
-            class="flex items-center space-x-2 p-1.5 rounded-lg transition-colors duration-150 hover:bg-gray-50 focus:outline-none "
+        <button class="flex items-center space-x-2 p-1.5 rounded-lg transition-colors duration-150  focus:outline-none "
             @click="toggleDropdown" @blur="handleBlur" ref="dropdownButton">
             <!-- Avatar -->
             <div

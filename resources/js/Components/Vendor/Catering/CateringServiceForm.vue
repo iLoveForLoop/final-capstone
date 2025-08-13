@@ -8,7 +8,7 @@ const emit = defineEmits(['close', 'created']);
 const show = ref(false);
 const selectedImage = ref(null);
 const newSpecification = ref('');
-const newDish = ref('');
+// const newDish = ref('');
 const dishCategory = ref('main');
 const dishSearch = ref('');
 
@@ -40,7 +40,7 @@ const form = useForm({
     delivery_fee: '',
     buffet_type: '',
     specifications: [],
-    dishes: [],
+    dishes: {},
     notes: '',
     _method: 'POST'
 });
@@ -124,22 +124,22 @@ const addCustomSpecification = () => {
     }
 };
 
-const addDish = (dish) => {
-    if (!form.dishes.includes(dish)) {
-        form.dishes = [...form.dishes, dish];
-    }
-};
+// const addDish = (dish) => {
+//     if (!form.dishes.includes(dish)) {
+//         form.dishes = [...form.dishes, dish];
+//     }
+// };
 
-const addCustomDish = () => {
-    if (newDish.value.trim() && !form.dishes.includes(newDish.value.trim())) {
-        form.dishes = [...form.dishes, newDish.value.trim()];
-        newDish.value = '';
-    }
-};
+// const addCustomDish = () => {
+//     if (newDish.value.trim() && !form.dishes.includes(newDish.value.trim())) {
+//         form.dishes = [...form.dishes, newDish.value.trim()];
+//         newDish.value = '';
+//     }
+// };
 
-const removeDish = (index) => {
-    form.dishes = form.dishes.filter((_, i) => i !== index);
-};
+// const removeDish = (index) => {
+//     form.dishes = form.dishes.filter((_, i) => i !== index);
+// };
 
 const filteredDishes = (category) => {
     return commonDishes[category].filter(dish =>
@@ -168,7 +168,48 @@ const submit = () => {
     });
 };
 
+// Reactive variables
+const newCategory = ref('')
+const newDish = ref('')
+const selectedCategory = ref('')
 
+// Functions
+const addCategory = () => {
+    if (newCategory.value.trim() && !form.dishes.hasOwnProperty(newCategory.value.trim())) {
+        const categoryName = newCategory.value.trim()
+        form.dishes[categoryName] = []
+        selectedCategory.value = categoryName
+        newCategory.value = ''
+    }
+}
+
+const addDish = () => {
+    if (newDish.value.trim() && selectedCategory.value) {
+        const dishName = newDish.value.trim()
+        if (!form.dishes[selectedCategory.value].includes(dishName)) {
+            form.dishes[selectedCategory.value].push(dishName)
+            newDish.value = ''
+        }
+    }
+}
+
+const removeDish = (category, index) => {
+    form.dishes[category].splice(index, 1)
+    // Remove category if it becomes empty
+    if (form.dishes[category].length === 0) {
+        delete form.dishes[category]
+        if (selectedCategory.value === category) {
+            selectedCategory.value = ''
+        }
+    }
+}
+
+const removeCategory = (category) => {
+    delete form.dishes[category]
+    if (selectedCategory.value === category) {
+        selectedCategory.value = ''
+    }
+}
 
 </script>
 
@@ -245,85 +286,90 @@ const submit = () => {
             <div class="border-b border-gray-200 pb-6">
                 <h4 class="text-lg font-medium text-gray-900 mb-4">Menu Selection</h4>
 
+                <!-- Display Selected Categories and Dishes -->
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Selected Dishes
+                        Selected Menu
                     </label>
-                    <div v-if="form.dishes.length > 0" class="flex flex-wrap gap-2 mb-4">
-                        <span v-for="(dish, index) in form.dishes" :key="index"
-                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                            {{ dish }}
-                            <button @click.stop="removeDish(index)"
-                                class="ml-1.5 inline-flex text-green-600 focus:outline-none">
-                                <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                            </button>
-                        </span>
+                    <div v-if="Object.keys(form.dishes).length > 0" class="space-y-4">
+                        <div v-for="(dishes, category) in form.dishes" :key="category"
+                            class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h5 class="text-md font-medium text-gray-800">{{ category }}</h5>
+                                <button @click="removeCategory(category)"
+                                    class="text-red-600 hover:text-red-800 focus:outline-none">
+                                    <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <span v-for="(dish, index) in dishes" :key="index"
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                    {{ dish }}
+                                    <button @click.stop="removeDish(category, index)"
+                                        class="ml-1.5 inline-flex text-green-600 focus:outline-none">
+                                        <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
                     </div>
                     <div v-else class="text-sm text-gray-500 mb-4">
-                        No dishes selected yet. Add dishes below.
+                        No categories or dishes added yet.
                     </div>
                 </div>
 
                 <div class="space-y-6">
-                    <!-- Dish Category Selection -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Dish Category
-                        </label>
-                        <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
-                            <button v-for="(label, key) in dishCategories" :key="key" @click="dishCategory = key"
-                                :class="{
-                                    'bg-indigo-100 text-indigo-800 border-indigo-300': dishCategory === key,
-                                    'bg-white text-gray-700 border-gray-300': dishCategory !== key
-                                }"
-                                class="px-3 py-2 border rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                {{ label }}
+                    <!-- Add New Category -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h5 class="text-md font-medium text-gray-800 mb-3">Add New Category</h5>
+                        <div class="flex gap-2">
+                            <input v-model="newCategory" type="text"
+                                placeholder="Enter category name (e.g., Appetizers, Main Course)"
+                                class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                @keyup.enter="addCategory">
+                            <button @click="addCategory"
+                                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Add Category
                             </button>
                         </div>
                     </div>
 
-                    <!-- Dish Search -->
-                    <div>
-                        <label for="dishSearch" class="block text-sm font-medium text-gray-700 mb-1">
-                            Search Dishes
-                        </label>
-                        <input id="dishSearch" v-model="dishSearch" type="text" placeholder="Search dishes..."
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-
-                    <!-- Common Dishes -->
-                    <div>
+                    <!-- Select Category to Add Dishes -->
+                    <div v-if="Object.keys(form.dishes).length > 0">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            {{ dishCategories[dishCategory] }}
+                            Select Category to Add Dishes
                         </label>
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-                            <button v-for="dish in filteredDishes(dishCategory)" :key="dish" @click="addDish(dish)"
-                                :class="{
-                                    'bg-indigo-100 text-indigo-800 border-indigo-300': form.dishes.includes(dish),
-                                    'bg-white text-gray-700 border-gray-300': !form.dishes.includes(dish)
-                                }"
-                                class="px-3 py-2 border rounded-md text-sm font-medium text-left focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                {{ dish }}
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
+                            <button v-for="category in Object.keys(form.dishes)" :key="category"
+                                @click="selectedCategory = category" :class="{
+                                    'bg-indigo-100 text-indigo-800 border-indigo-300': selectedCategory === category,
+                                    'bg-white text-gray-700 border-gray-300': selectedCategory !== category
+                                }" class="px-3 py-2 border rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                {{ category }}
                             </button>
                         </div>
                     </div>
 
-                    <!-- Custom Dish Input -->
-                    <div>
-                        <label for="newDish" class="block text-sm font-medium text-gray-700 mb-1">
-                            Add Custom Dish
+                    <!-- Add Dish to Selected Category -->
+                    <div v-if="selectedCategory">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Add Dish to "{{ selectedCategory }}"
                         </label>
                         <div class="flex gap-2">
-                            <input id="newDish" v-model="newDish" type="text" placeholder="Enter custom dish name"
+                            <input v-model="newDish" type="text" placeholder="Enter dish name"
                                 class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                                @keyup.enter="addCustomDish">
-                            <button @click="addCustomDish"
-                                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                Add
+                                @keyup.enter="addDish">
+                            <button @click="addDish"
+                                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                Add Dish
                             </button>
                         </div>
                     </div>

@@ -1,8 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useToast } from 'vue-toastification';
-import CateringServiceForm from './CateringServiceForm.vue';
-import PhotographyServiceForm from '../Photograpy/PhotographyServiceForm.vue';
+// import CateringServiceForm from './Catering/CateringServiceForm.vue';
+// import PhotographyServiceForm from './Photograpy/PhotographyServiceForm.vue';
+
+import CateringServiceForm from './Catering/CateringServiceForm.vue';
+import PhotographyServiceForm from './Photograpy/PhotographyServiceForm.vue';
 
 
 
@@ -14,7 +17,7 @@ const props = defineProps({
 });
 
 const selectedCategory = ref()
-const selectedCategoryId = ref()
+const selectedCategoryId = ref(props.categories[0].id)
 
 const toast = useToast();
 const emit = defineEmits(['close', 'created']);
@@ -81,7 +84,7 @@ defineExpose({
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Select Category
                                 </label>
-                                {{ console.log(selectedCategory) }}
+
                                 <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
                                     <button v-for="category in categories" :key="category.id"
                                         @click="handleCategoryChange(category)" :class="{
@@ -96,9 +99,11 @@ defineExpose({
                             </div>
                         </div>
 
-                        {{ console.log(selectedCategory) }}
                         <CateringServiceForm @close="show = false" v-if="selectedCategory === 'Catering'"
                             :category_id="selectedCategoryId" />
+
+                        {{ console.log('service cat id: ', selectedCategoryId) }}
+
                         <PhotographyServiceForm @close="show = false" v-if="selectedCategory === 'Photography'"
                             :category_id="selectedCategoryId" />
 

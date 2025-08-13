@@ -45,5 +45,22 @@ class Vendor extends Model
     }
 
 
+    //NOTIFICATIONS
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function unreadNotifications()
+    {
+        return $this->notifications()->whereNull('read_at');
+    }
+
+    public function getUnreadNotificationCountAttribute()
+    {
+        return $this->unreadNotifications()->count();
+    }
+
+
     protected $guarded = [];
 }

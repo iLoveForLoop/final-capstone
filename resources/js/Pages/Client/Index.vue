@@ -11,6 +11,9 @@ const eventModal = ref(null)
 defineProps({
     services: {
         type: Object,
+    },
+    categories: {
+        type: Array
     }
 });
 </script>
@@ -20,7 +23,7 @@ defineProps({
     <Head title="Welcome Client" />
 
     <div class="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
-        <QuickBookingStepperModal ref="eventModal" />
+        <QuickBookingStepperModal ref="eventModal" :categories="categories" />
         <!-- Sticky Navigation -->
         <ClientNavbar />
 

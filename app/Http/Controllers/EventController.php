@@ -28,7 +28,18 @@ class EventController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'user_id'     => 'required|exists:users,id',
+            'name'        => 'required|string|max:255',
+            'location'    => 'required|string|max:255',
+            'event_date'  => 'required|date',
+            'event_time'  => 'nullable|date_format:H:i',
+            'description' => 'nullable|string',
+        ]);
+
+        $event = Event::create($validated);
+
+        return redirect()->back()->with('success', 'Success!!');
     }
 
     /**

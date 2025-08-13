@@ -1,44 +1,27 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CateringServiceController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DishController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PhotographyServiceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceCategoryController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VendorCalendarController;
 use App\Http\Controllers\VendorApplicationController;
 use App\Http\Controllers\VendorController;
+use App\Http\Controllers\WelcomeController;
 use App\Models\Service;
 use App\Models\Vendor;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-
-    $services = Service::paginate(5);
-
-    $services->getCollection()->transform(function ($service) {
-        return [
-            'id' => $service->id,
-            'name' => $service->name,
-            'description' => $service->description,
-            'price' => $service->price,
-            'image_url' => $service->getFirstMediaUrl('images')
-        ];
-    });
-
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-        'services' => $services
-    ]);
-});
+Route::get('/', [WelcomeController::class, 'index']);
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
@@ -94,11 +77,48 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'role:vendor'])->gro
     Route::patch('dishes/{dish}/toggle-availability', [DishController::class, 'toggleAvailability'])
         ->name('dishes.toggle-availability');
 
+    //calendar
+    Route::get('/calendar', [VendorCalendarController::class, 'index'])->name('calendar.index');
+    Route::get('/calendar/bookings/month', [VendorCalendarController::class, 'getBookingsForMonth'])->name('calendar.bookings.month');
+    Route::get('/calendar/bookings/day', [VendorCalendarController::class, 'getBookingsForDay'])->name('calendar.bookings.day');
+
     //catering service page
     Route::resource('catering-services', CateringServiceController::class);
 
     //Photography
     Route::resource('photography-services', PhotographyServiceController::class);
+
+    //notifications
+    Route::post('/notifications/{notification}/read', [VendorController::class, 'markNotificationAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [VendorController::class, 'markAllNotificationsAsRead'])->name('notifications.readAll');
+    Route::get('/notifications', [VendorController::class, 'getNotificationsList'])->name('notifications.list');
+
+    //bookings
+    // Route::resource('bookings', BookingController::class);
+
+    // Booking Management Routes
+    Route::controller(BookingController::class)->prefix('bookings')->name('bookings.')->group(function () {
+
+        // Main booking index page with filtering
+        Route::get('/', 'index')->name('index');
+
+        // View specific booking details
+        Route::get('/{id}', 'show')->name('show');
+
+        // Booking status actions
+        Route::patch('/{id}/accept', 'accept')->name('accept');
+        Route::patch('/{id}/decline', 'decline')->name('decline'); // This cancels the booking
+        Route::patch('/{id}/complete', 'complete')->name('complete');
+
+        // Bulk actions
+        Route::patch('/bulk/update', 'bulkUpdate')->name('bulk.update');
+
+        // Export functionality
+        Route::get('/export/csv', 'export')->name('export');
+
+    });
+
+
 
 });
 
@@ -112,8 +132,15 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client'])->gro
 
     Route::get('/', [ClientController::class, 'index'])->name('index');
 
+    //Adding Booking
+    Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+
 });
 
+
+
+//API CALLS
+Route::middleware('auth')->get('/api/vendor-bookings-notifications', [NotificationController::class, 'getVendorUnreadBookingNotifications']);
 
 
 require __DIR__.'/auth.php';

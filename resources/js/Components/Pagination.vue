@@ -2,7 +2,7 @@
 import { router } from '@inertiajs/vue3';
 
 defineProps({
-    users: {
+    data: {
         type: Object,
         default: () => ({ data: [] })
     }
@@ -10,13 +10,13 @@ defineProps({
 </script>
 
 <template>
-    <div v-if="users.links?.length > 3" class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+    <div v-if="data.links?.length > 3" class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
         <div class="text-sm text-gray-700">
-            Showing <span class="font-medium">{{ users.from }}</span> to <span class="font-medium">{{
-                users.to }}</span> of <span class="font-medium">{{ users.total }}</span> users
+            Showing <span class="font-medium">{{ data.from }}</span> to <span class="font-medium">{{
+                data.to }}</span> of <span class="font-medium">{{ data.total }}</span> data
         </div>
         <div class="flex space-x-1">
-            <template v-for="(link, index) in users.links">
+            <template v-for="(link, index) in data.links">
                 <button v-if="index === 0" :key="'prev'" @click="router.get(link.url)" :disabled="!link.url"
                     class="px-3 py-1 border rounded text-sm font-medium" :class="{
                         'border-gray-300 text-gray-500 hover:bg-gray-50': link.url,
@@ -24,7 +24,7 @@ defineProps({
                     }">
                     &laquo; Previous
                 </button>
-                <button v-else-if="index === users.links.length - 1" :key="'next'" @click="router.get(link.url)"
+                <button v-else-if="index === data.links.length - 1" :key="'next'" @click="router.get(link.url)"
                     :disabled="!link.url" class="px-3 py-1 border rounded text-sm font-medium" :class="{
                         'border-gray-300 text-gray-500 hover:bg-gray-50': link.url,
                         'border-gray-200 text-gray-300 cursor-not-allowed': !link.url

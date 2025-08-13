@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('service_id')->constrained()->onDelete('cascade');
 
-            $table->string('coverage_type'); // e.g., Wedding, Corporate
+            $table->string('coverage_type')->nullable(); // e.g., Wedding, Corporate
             $table->integer('hours_of_coverage')->nullable();
             $table->integer('delivery_time_days')->nullable();
             $table->json('deliverables')->nullable(); // e.g., ["Photo Album", "USB"]

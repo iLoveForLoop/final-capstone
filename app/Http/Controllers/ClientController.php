@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use App\Models\Service;
+use App\Models\ServiceCategory;
 use Illuminate\Http\Request;
 
 class ClientController extends Controller
@@ -13,7 +14,8 @@ class ClientController extends Controller
      */
     public function index()
     {
-        $services = Service::paginate(5);
+        $services = Service::paginate(8);
+        $categories = ServiceCategory::all();
         // dd('here');
 
     $services->getCollection()->transform(function ($service) {
@@ -26,7 +28,7 @@ class ClientController extends Controller
         ];
     });
 
-    return inertia('Client/Index', compact('services'));
+    return inertia('Client/Index', compact('services', 'categories'));
 
     }
 

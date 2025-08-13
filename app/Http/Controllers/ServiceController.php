@@ -132,4 +132,56 @@ class ServiceController extends Controller
         $service->delete();
         return redirect()->back()->with('success', 'Service Deleted Successfully');
     }
+
+    public function getByCategory($categoryIdentifier)
+    {
+        try {
+            $services = Service::with(['vendor', 'category'])
+                ->whereHas('category', function($query) use ($categoryIdentifier) {
+                    // Match by ID if numeric, otherwise by slug/name
+                    if (is_numeric($categoryIdentifier)) {
+                        $query->where('id', $categoryIdentifier);
+                    } else {
+                        $query->where('slug', $categoryIdentifier)
+                            ->orWhere('name', $categoryIdentifier);
+                    }
+                })
+                ->get()
+                ->map(function($service) {
+                    return [
+                        'id' => $service->id,
+                        'name' => $service->name,
+                        'price' => $service->price,
+                        'image_url' =>$service->getFirstMediaUrl('images'),
+                        'vendor' => $service->vendor ? [
+                            'id' => $service->vendor->id,
+                            'name' => $service->vendor->full_name
+                        ] : null,
+                        'category' => $service->category ? [
+                            'id' => $service->category->id,
+                            'name' => $service->category->name
+                        ] : null,
+                        'is_available' => $service->is_available,
+                        'catering_service' => $service->cateringService ?? null,
+                        'photography_service' => $service->photographyService ?? null
+                    ];
+                });
+
+
+
+            return response()->json([
+                'success' => true,
+                'data' => $services
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error("Service fetch failed: {$e->getMessage()}");
+            return response()->json([
+                'success' => false,
+                'message' => 'Could not load services',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+    }
+
 }

@@ -254,7 +254,7 @@ const formatDate = (dateString) => {
                 </div>
 
                 <!-- Pagination -->
-                <Pagination :users="users" />
+                <Pagination :data="users" />
             </div>
             <!-- Create Modal -->
             <UserCreateModal ref="userCreateModal" :categories="service_categories" />

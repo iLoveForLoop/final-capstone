@@ -31,6 +31,7 @@ class PhotographyServiceController extends Controller
     {
         $vendor = auth()->user()->vendor;
 
+        // dd($request->service_category_id);
 
 
         $validated = $request->validate([
@@ -43,15 +44,15 @@ class PhotographyServiceController extends Controller
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
 
             // Photography specific fields
-            'coverage_type' => 'required|string|in:wedding,corporate,portrait,event,product,fashion,sports,real_estate',
-            'hours_of_coverage' => 'nullable|integer|min:1',
-            'delivery_time_days' => 'nullable|integer|min:1',
-            'number_of_photographers' => 'nullable|integer|min:1',
+            // 'coverage_type' => 'nullable',
+            // 'hours_of_coverage' => 'nullable|integer',
+            // 'delivery_time_days' => 'nullable|integer',
+            // 'number_of_photographers' => 'nullable|integer',
             'studio_shoot_available' => 'boolean',
 
             // Deliverables and specifications
-            'deliverables' => 'required|array|min:1',
-            'deliverables.*' => 'string|max:255',
+            // 'deliverables' => 'nullable|array|',
+            // 'deliverables.*' => 'string|max:255',
             'specifications' => 'nullable|array',
             'specifications.*' => 'string|max:255',
 
@@ -73,11 +74,11 @@ class PhotographyServiceController extends Controller
 
             // Create the photography service record
             $service->photographyService()->create([
-                'coverage_type' => $validated['coverage_type'],
-                'hours_of_coverage' => $validated['hours_of_coverage'] ?? null,
-                'delivery_time_days' => $validated['delivery_time_days'] ?? 30,
-                'number_of_photographers' => $validated['number_of_photographers'] ?? 1,
-                'deliverables' => $validated['deliverables'],
+                // 'coverage_type' => $validated['coverage_type'],
+                // 'hours_of_coverage' => $validated['hours_of_coverage'] ?? null,
+                // 'delivery_time_days' => $validated['delivery_time_days'] ?? 30,
+                // 'number_of_photographers' => $validated['number_of_photographers'] ?? 1,
+                // 'deliverables' => $validated['deliverables'],
                 'specifications' => $validated['specifications'] ?? [],
                 'notes' => $validated['notes'] ?? null,
                 'studio_shoot_available' => $validated['studio_shoot_available'] ?? false,
