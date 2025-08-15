@@ -15,38 +15,38 @@ const isDropdownShowing = ref(false)
         <div class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <!-- Logo -->
-                <Link href="/" class="text-2xl font-bold text-purple-800">Eventory</Link>
+                <Link href="/" class="text-2xl font-bold text-[#239BA7]">Eventory</Link>
 
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center space-x-8">
                     <!-- Common Links -->
-                    <Link href="/" class="text-gray-700 hover:text-purple-600 transition"
-                        :class="{ 'font-semibold text-purple-600': page.url === '/client' }">Home</Link>
-                    <Link href="/services" class="text-gray-700 hover:text-purple-600 transition"
-                        :class="{ 'font-semibold text-purple-600': page.url.startsWith('/services') }">Browse
+                    <Link href="/" class="text-gray-700 hover:text-[#239BA7] transition"
+                        :class="{ 'font-semibold text-[#239BA7]': page.url === '/client' }">Home</Link>
+                    <Link href="/services" class="text-gray-700 hover:text-[#239BA7] transition"
+                        :class="{ 'font-semibold text-[#239BA7]': page.url.startsWith('/services') }">Browse
                     Services</Link>
 
                     <!-- Conditional Links -->
                     <template v-if="page.props.auth.user">
-                        <Link href="/bookings" class="text-gray-700 hover:text-purple-600 transition"
-                            :class="{ 'font-semibold text-purple-600': page.url.startsWith('/bookings') }">My
+                        <Link href="/bookings" class="text-gray-700 hover:text-[#239BA7] transition"
+                            :class="{ 'font-semibold text-[#239BA7]': page.url.startsWith('/bookings') }">My
                         Bookings</Link>
-                        <Link href="/favorites" class="text-gray-700 hover:text-purple-600 transition"
-                            :class="{ 'font-semibold text-purple-600': page.url.startsWith('/favorites') }">
+                        <Link href="/favorites" class="text-gray-700 hover:text-[#239BA7] transition"
+                            :class="{ 'font-semibold text-[#239BA7]': page.url.startsWith('/favorites') }">
                         Favorites</Link>
                     </template>
 
-                    <Link href="/categories" class="text-gray-700 hover:text-purple-600 transition"
-                        :class="{ 'font-semibold text-purple-600': page.url.startsWith('/categories') }">
+                    <Link href="/categories" class="text-gray-700 hover:text-[#239BA7] transition"
+                        :class="{ 'font-semibold text-[#239BA7]': page.url.startsWith('/categories') }">
                     Categories
                     </Link>
-                    <!-- <Link href="#how-it-works" class="text-gray-700 hover:text-purple-600 transition">How It Works
+                    <!-- <Link href="#how-it-works" class="text-gray-700 hover:text-[#239BA7] transition">How It Works
                         </Link> -->
 
                     <!-- Search Bar -->
                     <!-- <div class="relative ml-4">
                             <input type="text" placeholder="Search services..."
-                                class="pl-4 pr-10 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent w-48">
+                                class="pl-4 pr-10 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#239BA7] focus:border-transparent w-48">
                             <svg xmlns="http://www.w3.org/2000/svg"
                                 class="h-5 w-5 text-gray-400 absolute right-3 top-2.5" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
@@ -64,17 +64,17 @@ const isDropdownShowing = ref(false)
                             <button class="flex items-center space-x-2 focus:outline-none"
                                 @click="isDropdownShowing = !isDropdownShowing">
                                 <div
-                                    class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-semibold">
+                                    class="w-8 h-8 rounded-full bg-[#239BA7] flex items-center justify-center text-[#239BA7] font-semibold">
                                     {{ page.props.auth.user.name.charAt(0) }}
                                 </div>
                             </button>
                             <div v-if="isDropdownShowing"
                                 class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 group-hover:block">
                                 <Link :href="route('profile.edit')"
-                                    class="block px-4 py-2 text-gray-700 hover:bg-purple-50">
+                                    class="block px-4 py-2 text-gray-700 hover:bg-[#239BA7]>
                                 My Profile</Link>
                                 <Link :href="route('logout')" method="post" as="button"
-                                    class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-purple-50">
+                                    class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-[#239BA7]>
                                 Logout</Link>
                             </div>
                         </div>

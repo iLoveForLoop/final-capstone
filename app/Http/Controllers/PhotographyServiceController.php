@@ -69,7 +69,7 @@ class PhotographyServiceController extends Controller
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? null,
                 'price' => $validated['price'],
-                'max_price' => $validated['max_price'] ?? null,
+                // 'max_price' => $validated['max_price'] ?? null,
             ]);
 
             // Create the photography service record

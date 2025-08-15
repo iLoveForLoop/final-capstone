@@ -98,10 +98,10 @@ const prevStep = () => {
 
 const validateStep = () => {
     if (currentStep.value === 0) {
-        if (!eventForm.name || !eventForm.location || !eventForm.event_date) {
-            alert('Please fill in all required event details');
-            return false;
-        }
+        // if (!eventForm.name || !eventForm.location || !eventForm.event_date) {
+        //     alert('Please fill in all required event details');
+        //     return false;
+        // }
     } else if (currentStep.value === 1 && selectedCategories.value.length === 0) {
         alert('Please select at least one category');
         return false;
@@ -137,9 +137,9 @@ const submitSelection = () => {
 // Helper functions for the new UI
 const canProceed = () => {
     if (currentStep.value === 0) {
-        return eventForm.name && eventForm.location && eventForm.event_date;
-    } else if (currentStep.value === 1) {
         return selectedCategories.value.length > 0;
+    } else if (currentStep.value === 1) {
+        return eventForm.name && eventForm.location && eventForm.event_date;
     } else if (currentStep.value === 2) {
         return selectedServices.value.length === selectedCategories.value.length;
     }
@@ -148,7 +148,7 @@ const canProceed = () => {
 
 const getNextButtonText = () => {
     switch (currentStep.value) {
-        case 0: return 'Choose Categories';
+        case 0: return 'Event Details';
         case 1: return 'Select Vendors';
         case 2: return 'Review Event';
         default: return 'Next';
@@ -227,15 +227,16 @@ const finalNotes = ref('');
 
                             <!-- Step Content Container -->
                             <div class="min-h-[400px]">
-                                <!-- Step 1: Event Information -->
+                                <!-- Step 1: Category Selection-->
                                 <div v-if="currentStep === 0" class="step-content">
-                                    <EventForm :eventForm="eventForm" />
-                                </div>
 
-                                <!-- Step 2: Category Selection -->
-                                <div v-if="currentStep === 1" class="step-content">
                                     <CategorySelection :categories="categories"
                                         v-model:selectedCategories="selectedCategories" />
+                                </div>
+
+                                <!-- Step 2:Event Information  -->
+                                <div v-if="currentStep === 1" class="step-content">
+                                    <EventForm :eventForm="eventForm" />
                                 </div>
 
                                 <!-- Step 3: Vendor Selection -->

@@ -35,19 +35,38 @@ class CateringServiceController extends Controller
 
         $vendor->load('serviceCategories');
 
+        if(!$request->price){
+            $request->validate([
+                'package_price' => 'required|numeric'
+            ]);
+        }
+
+        if(!$request->package_price){
+            $request->validate([
+                'price' => 'required|numeric'
+            ]);
+        }
+
+         if(!$request->package_price && !$request->price){
+            $request->validate([
+                'price' => 'required|numeric',
+                'package_price' => 'required|numeric'
+            ]);
+        }
+
 
 
         $validated = $request->validate([
             'service_category_id' => 'required|integer|exists:service_categories,id',
             'name' => 'required|string',
             'description' => 'nullable|string',
-            'price' => 'required|numeric',
+            // 'price' => 'required|numeric',
             'max_price' => 'nullable|numeric',
 
             // Catering specific
             'min_pax' => 'required|integer',
             'max_pax' => 'required|integer',
-            'catering_price' => 'required|numeric',
+            // 'package_price' => 'nullable|numeric',
             'lead_time_days' => 'nullable|integer',
             'service_area' => 'nullable|array',
             'is_customizable' => 'nullable|boolean',
@@ -71,7 +90,7 @@ class CateringServiceController extends Controller
                 'service_category_id' => $validated['service_category_id'],
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? null,
-                'price' => $validated['price'],
+                'price' => $request->price ?? $request->package_price,
                 'max_price' => $validated['max_price'] ?? null,
             ]);
 
@@ -80,7 +99,8 @@ class CateringServiceController extends Controller
                 'name' => $validated['name'], // or a separate catering name
                 'min_pax' => $validated['min_pax'],
                 'max_pax' => $validated['max_pax'],
-                'price' => $validated['catering_price'],
+                'price' => $request->price ?? $request->package_price,
+                'package_price' => $request->package_price ?? null,
                 'lead_time_days' => $validated['lead_time_days'] ?? 3,
                 'service_area' => $validated['service_area'] ?? [],
                 'is_customizable' => $validated['is_customizable'] ?? false,

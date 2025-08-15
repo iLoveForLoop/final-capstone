@@ -18,7 +18,7 @@ const props = defineProps({
         default: () => []
     },
     category_id: {
-        type: [String, Number], // or whatever type you expect
+        type: [String, Number],
         default: null
     },
 });
@@ -33,7 +33,7 @@ const form = useForm({
     cover_image: null,
     min_pax: 50,
     max_pax: 100,
-    catering_price: '',
+    package_price: '',
     lead_time_days: 3,
     service_area: [],
     is_customizable: false,
@@ -352,7 +352,8 @@ const removeCategory = (category) => {
                                 @click="selectedCategory = category" :class="{
                                     'bg-indigo-100 text-indigo-800 border-indigo-300': selectedCategory === category,
                                     'bg-white text-gray-700 border-gray-300': selectedCategory !== category
-                                }" class="px-3 py-2 border rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                }"
+                                class="px-3 py-2 border rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 {{ category }}
                             </button>
                         </div>
@@ -383,16 +384,17 @@ const removeCategory = (category) => {
                     <!-- Base Price -->
                     <div>
                         <label for="price" class="block text-sm font-medium text-gray-700 mb-1">
-                            Base Price (₱) *
+                            Per Pax Price
                         </label>
                         <input type="number" id="price" v-model="form.price" required min="0"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="₱">
                         <p v-if="form.errors.price" class="mt-1 text-sm text-red-600">
                             {{ form.errors.price }}</p>
                     </div>
 
                     <!-- Max Price -->
-                    <div>
+                    <!-- <div>
                         <label for="max_price" class="block text-sm font-medium text-gray-700 mb-1">
                             Max Price (₱)
                         </label>
@@ -400,21 +402,22 @@ const removeCategory = (category) => {
                             class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                         <p v-if="form.errors.max_price" class="mt-1 text-sm text-red-600">
                             {{ form.errors.max_price }}</p>
-                    </div>
+                    </div> -->
 
                     <!-- Catering Price -->
                     <div>
-                        <label for="catering_price" class="block text-sm font-medium text-gray-700 mb-1">
-                            Per Pax Price (₱) *
+                        <label for="package_price" class="block text-sm font-medium text-gray-700 mb-1">
+                            Package Price (if package)
                         </label>
-                        <input type="number" id="catering_price" v-model="form.catering_price" required min="0"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <p v-if="form.errors.catering_price" class="mt-1 text-sm text-red-600">
-                            {{ form.errors.catering_price }}</p>
+                        <input type="number" id="package_price" v-model="form.package_price" required min="0"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="₱">
+                        <p v-if="form.errors.package_price" class="mt-1 text-sm text-red-600">
+                            {{ form.errors.package_price }}</p>
                     </div>
 
                     <!-- Delivery Fee -->
-                    <div>
+                    <!-- <div>
                         <label for="delivery_fee" class="block text-sm font-medium text-gray-700 mb-1">
                             Delivery Fee (₱)
                         </label>
@@ -422,7 +425,7 @@ const removeCategory = (category) => {
                             class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                         <p v-if="form.errors.delivery_fee" class="mt-1 text-sm text-red-600">
                             {{ form.errors.delivery_fee }}</p>
-                    </div>
+                    </div> -->
                 </div>
             </div>
 
@@ -470,7 +473,7 @@ const removeCategory = (category) => {
                 <h4 class="text-lg font-medium text-gray-900 mb-4">Service Options</h4>
 
                 <!-- Customizable -->
-                <div class="mb-6">
+                <!-- <div class="mb-6">
                     <div class="flex items-center">
                         <input id="is_customizable" v-model="form.is_customizable" type="checkbox"
                             class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
@@ -480,7 +483,7 @@ const removeCategory = (category) => {
                     </div>
                     <p v-if="form.errors.is_customizable" class="mt-1 text-sm text-red-600">
                         {{ form.errors.is_customizable }}</p>
-                </div>
+                </div> -->
 
                 <!-- Service Area -->
                 <div class="mb-6">

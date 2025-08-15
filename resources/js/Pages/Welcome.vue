@@ -50,32 +50,32 @@ defineProps({
             <div class="container mx-auto px-6 py-4">
                 <div class="flex items-center justify-between">
                     <!-- Logo -->
-                    <Link href="/" class="text-2xl font-bold text-purple-800">Eventory</Link>
+                    <Link href="/" class="text-2xl font-bold text-[#239BA7]">Eventory</Link>
 
                     <!-- Desktop Navigation -->
                     <div class="hidden md:flex items-center space-x-8">
                         <!-- Common Links -->
-                        <Link href="/" class="text-gray-700 hover:text-purple-600 transition"
-                            :class="{ 'font-semibold text-purple-600': page.url === '/' }">Home</Link>
-                        <Link href="/services" class="text-gray-700 hover:text-purple-600 transition"
-                            :class="{ 'font-semibold text-purple-600': page.url.startsWith('/services') }">Browse
+                        <Link href="/" class="text-gray-700 hover:text-[#239BA7] transition"
+                            :class="{ 'font-semibold text-[#239BA7]': page.url === '/' }">Home</Link>
+                        <Link href="/services" class="text-gray-700 hover:text-[#239BA7] transition"
+                            :class="{ 'font-semibold text-[#239BA7]': page.url.startsWith('/services') }">Browse
                         Services</Link>
 
                         <!-- Conditional Links -->
                         <template v-if="page.props.auth.user">
-                            <Link href="/bookings" class="text-gray-700 hover:text-purple-600 transition"
-                                :class="{ 'font-semibold text-purple-600': page.url.startsWith('/bookings') }">My
+                            <Link href="/bookings" class="text-gray-700 hover:text-[#239BA7] transition"
+                                :class="{ 'font-semibold text-[#239BA7]': page.url.startsWith('/bookings') }">My
                             Bookings</Link>
-                            <Link href="/favorites" class="text-gray-700 hover:text-purple-600 transition"
-                                :class="{ 'font-semibold text-purple-600': page.url.startsWith('/favorites') }">
+                            <Link href="/favorites" class="text-gray-700 hover:text-[#239BA7] transition"
+                                :class="{ 'font-semibold text-[#239BA7]': page.url.startsWith('/favorites') }">
                             Favorites</Link>
                         </template>
 
-                        <Link href="/categories" class="text-gray-700 hover:text-purple-600 transition"
-                            :class="{ 'font-semibold text-purple-600': page.url.startsWith('/categories') }">
+                        <Link href="/categories" class="text-gray-700 hover:text-[#239BA7] transition"
+                            :class="{ 'font-semibold text-[#239BA7]': page.url.startsWith('/categories') }">
                         Categories
                         </Link>
-                        <Link href="#how-it-works" class="text-gray-700 hover:text-purple-600 transition">How It Works
+                        <Link href="#how-it-works" class="text-gray-700 hover:text-[#239BA7] transition">How It Works
                         </Link>
 
                         <!-- Search Bar -->
@@ -97,7 +97,7 @@ defineProps({
                                 <div class="relative ml-4">
                                     <button class="flex items-center space-x-2 focus:outline-none">
                                         <div
-                                            class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-semibold">
+                                            class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-[#239BA7] font-semibold">
                                             {{ page.props.auth.user.name.charAt(0) }}
                                         </div>
                                     </button>
@@ -146,10 +146,10 @@ defineProps({
                             </template>
                             <template v-else>
                                 <button @click="loginModal.show()"
-                                    class="text-gray-700 hover:text-purple-600 transition">
+                                    class="text-gray-700 hover:text-[#239BA7] transition">
                                     Login</button>
                                 <Link v-if="canRegister" :href="route('register')"
-                                    class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                                    class="px-4 py-2 bg-[#239BA7] text-white rounded-lg hover:bg-purple-700 transition">
                                 Register</Link>
                             </template>
                         </template>
@@ -202,7 +202,7 @@ defineProps({
                             </select>
                         </div>
                         <button
-                            class="w-full md:w-auto px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium">
+                            class="w-full md:w-auto px-6 py-3 bg-[#239BA7] text-white rounded-lg hover:bg-purple-700 transition font-medium">
                             Search
                         </button>
 
@@ -212,7 +212,7 @@ defineProps({
 
                 <div class="mt-8">
                     <button @click="loginModal.show()"
-                        class="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium">
+                        class="inline-flex items-center px-6 py-3 bg-[#239BA7] text-white rounded-lg hover:bg-purple-700 transition font-medium">
                         Start Planning Now
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20"
                             fill="currentColor">
@@ -230,7 +230,7 @@ defineProps({
             <div class="container mx-auto px-6">
                 <div class="flex justify-between items-center mb-12">
                     <h2 class="text-3xl font-bold text-gray-900">Featured Services</h2>
-                    <Link href="/services" class="text-purple-600 hover:text-purple-800 font-medium">
+                    <Link href="/services" class="text-[#239BA7] hover:text-[#239BA7] font-medium">
                     View all services →
                     </Link>
                 </div>
@@ -248,7 +248,7 @@ defineProps({
                             <div class="flex justify-between items-center">
                                 <span class="font-bold">{{ service.price }}</span>
                                 <Link :href="`/services/${service.id}`"
-                                    class="text-purple-600 hover:text-purple-800 font-medium">
+                                    class="text-[#239BA7] hover:text-[#239BA7] font-medium">
                                 View
                                 </Link>
                             </div>
@@ -265,7 +265,7 @@ defineProps({
                 <div class="grid md:grid-cols-4 gap-8">
                     <div class="text-center">
                         <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span class="text-purple-600 font-bold text-xl">1</span>
+                            <span class="text-[#239BA7] font-bold text-xl">1</span>
                         </div>
                         <h3 class="font-semibold mb-2">Search Vendors</h3>
                         <p class="text-gray-600 text-sm">
@@ -274,7 +274,7 @@ defineProps({
                     </div>
                     <div class="text-center">
                         <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span class="text-purple-600 font-bold text-xl">2</span>
+                            <span class="text-[#239BA7] font-bold text-xl">2</span>
                         </div>
                         <h3 class="font-semibold mb-2">Compare Options</h3>
                         <p class="text-gray-600 text-sm">
@@ -283,7 +283,7 @@ defineProps({
                     </div>
                     <div class="text-center">
                         <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span class="text-purple-600 font-bold text-xl">3</span>
+                            <span class="text-[#239BA7] font-bold text-xl">3</span>
                         </div>
                         <h3 class="font-semibold mb-2">Book Services</h3>
                         <p class="text-gray-600 text-sm">
@@ -292,7 +292,7 @@ defineProps({
                     </div>
                     <div class="text-center">
                         <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span class="text-purple-600 font-bold text-xl">4</span>
+                            <span class="text-[#239BA7] font-bold text-xl">4</span>
                         </div>
                         <h3 class="font-semibold mb-2">Enjoy Your Event</h3>
                         <p class="text-gray-600 text-sm">
@@ -367,7 +367,7 @@ defineProps({
                     Start Planning Now
                     </Link>
                     <Link href="#how-it-works"
-                        class="px-8 py-3 rounded-lg border-2 border-white text-white hover:bg-purple-600 transition font-semibold text-lg">
+                        class="px-8 py-3 rounded-lg border-2 border-white text-white hover:bg-[#239BA7] transition font-semibold text-lg">
                     How It Works
                     </Link>
                 </div>

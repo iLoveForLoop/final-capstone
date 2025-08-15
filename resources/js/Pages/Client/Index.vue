@@ -55,7 +55,7 @@ defineProps({
                             </select>
                         </div>
                         <button
-                            class="w-full md:w-auto px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium">
+                            class="w-full md:w-auto px-6 py-3 bg-[#239BA7] text-white rounded-lg hover:bg-[#239BA7] transition font-medium">
                             Search
                         </button>
                     </div>
@@ -63,7 +63,7 @@ defineProps({
 
                 <div class="mt-8">
                     <button @click="eventModal.open()"
-                        class="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium">
+                        class="inline-flex items-center px-6 py-3 bg-[#239BA7] text-white rounded-lg hover:bg-[#239BA7] transition font-medium">
                         Start Planning Now
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20"
                             fill="currentColor">
@@ -81,7 +81,7 @@ defineProps({
             <div class="container mx-auto px-6">
                 <div class="flex justify-between items-center mb-12">
                     <h2 class="text-3xl font-bold text-gray-900">Featured Services</h2>
-                    <Link href="/services" class="text-purple-600 hover:text-purple-800 font-medium">
+                    <Link href="/services" class="text-[#239BA7] hover:text-purple-800 font-medium">
                     View all services →
                     </Link>
                 </div>
@@ -99,7 +99,7 @@ defineProps({
                             <div class="flex justify-between items-center">
                                 <span class="font-bold">{{ service.price }}</span>
                                 <Link :href="`/services/${service.id}`"
-                                    class="text-purple-600 hover:text-purple-800 font-medium">
+                                    class="text-[#239BA7] hover:text-purple-800 font-medium">
                                 View
                                 </Link>
                             </div>
@@ -117,42 +117,42 @@ defineProps({
                 <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
                     <Link href="/categories/catering"
                         class="p-6 border border-gray-200 rounded-lg hover:shadow-md transition hover:border-purple-300">
-                    <h3 class="text-xl font-semibold mb-3 text-purple-700">Catering Services</h3>
+                    <h3 class="text-xl font-semibold mb-3 text-[#239BA7]">Catering Services</h3>
                     <p class="text-gray-600">
                         Find the perfect food and beverage providers for your event
                     </p>
                     </Link>
                     <Link href="/categories/photography"
                         class="p-6 border border-gray-200 rounded-lg hover:shadow-md transition hover:border-purple-300">
-                    <h3 class="text-xl font-semibold mb-3 text-purple-700">Photography</h3>
+                    <h3 class="text-xl font-semibold mb-3 text-[#239BA7]">Photography</h3>
                     <p class="text-gray-600">
                         Professional photographers and photo booth services
                     </p>
                     </Link>
                     <Link href="/categories/sound-systems"
                         class="p-6 border border-gray-200 rounded-lg hover:shadow-md transition hover:border-purple-300">
-                    <h3 class="text-xl font-semibold mb-3 text-purple-700">Sound Systems</h3>
+                    <h3 class="text-xl font-semibold mb-3 text-[#239BA7]">Sound Systems</h3>
                     <p class="text-gray-600">
                         Audio equipment and technical support for events
                     </p>
                     </Link>
                     <Link href="/categories/entertainers"
                         class="p-6 border border-gray-200 rounded-lg hover:shadow-md transition hover:border-purple-300">
-                    <h3 class="text-xl font-semibold mb-3 text-purple-700">Entertainers</h3>
+                    <h3 class="text-xl font-semibold mb-3 text-[#239BA7]">Entertainers</h3>
                     <p class="text-gray-600">
                         Bands, DJs, performers, and other entertainment
                     </p>
                     </Link>
                     <Link href="/categories/makeup"
                         class="p-6 border border-gray-200 rounded-lg hover:shadow-md transition hover:border-purple-300">
-                    <h3 class="text-xl font-semibold mb-3 text-purple-700">Makeup Artists</h3>
+                    <h3 class="text-xl font-semibold mb-3 text-[#239BA7]">Makeup Artists</h3>
                     <p class="text-gray-600">
                         Professional beauty services for special occasions
                     </p>
                     </Link>
                     <Link href="/categories/attire"
                         class="p-6 border border-gray-200 rounded-lg hover:shadow-md transition hover:border-purple-300">
-                    <h3 class="text-xl font-semibold mb-3 text-purple-700">Attire Rentals</h3>
+                    <h3 class="text-xl font-semibold mb-3 text-[#239BA7]">Attire Rentals</h3>
                     <p class="text-gray-600">
                         Formal wear and costume rentals for your event
                     </p>

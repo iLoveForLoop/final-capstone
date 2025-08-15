@@ -36,6 +36,7 @@ return new class extends Migration
             $table->integer('min_pax');
             $table->integer('max_pax');
             $table->decimal('price', 10, 2);
+            $table->decimal('package_price', 10, 2)->nullable();
             $table->integer('lead_time_days')->default(3);
             $table->json('service_area')->nullable();
             $table->boolean('is_customizable')->default(false);

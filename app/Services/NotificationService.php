@@ -176,6 +176,13 @@ class NotificationService
         return $query->get();
     }
 
+    public function getUnreadBookingCountForVendor($vendorId){
+        return Notification::forVendor($vendorId)
+        ->unread()
+        ->ofType(Notification::TYPE_BOOKING_RECEIVED)
+        ->count();
+    }
+
     public function getUnreadCountForVendor($vendorId)
     {
         return Notification::forVendor($vendorId)->unread()->count();

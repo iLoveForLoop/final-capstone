@@ -17,7 +17,7 @@ class NotificationController extends Controller
     public function getVendorUnreadBookingNotifications(){
         $vendor = auth()->user()->vendor;
 
-        $unreadNotifications = $this->notificationService->getUnreadCountForVendor($vendor->id);
+        $unreadNotifications = $this->notificationService->getUnreadBookingCountForVendor($vendor->id);
 
         return response()->json([
                 'success' => true,
