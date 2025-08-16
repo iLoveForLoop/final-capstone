@@ -54,7 +54,7 @@ onBeforeUnmount(() => {
             <div class="flex-1 transition-all duration-300 ease-out overflow-scroll"
                 style="scrollbar-width: none; -ms-overflow-style: none;"
                 :class="{ '': showingSidebar, 'ml-0': !showingSidebar }">
-                <nav class="border-b border-gray-100 blue-grey-darken-4 bg-slate-700">
+                <nav class="border-b border-gray-100 blue-grey-darken-4 bg-gray-900">
                     <!-- Primary Navigation Menu -->
                     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div class="flex h-16 justify-between items-center">

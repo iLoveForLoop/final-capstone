@@ -17,12 +17,12 @@ export default defineConfig({
             },
         }),
     ],
-    server: {
-        host: '0.0.0.0',
-        port: 5173,
-        cors: true,
-        hmr: {
-            host: '192.168.100.5', // replace with your PC’s IP
-        },
-    },
+    // server: {
+    //     host: '0.0.0.0',
+    //     port: 5173,
+    //     cors: true,
+    //     hmr: {
+    //         host: '192.168.100.5', // replace with your PC’s IP
+    //     },
+    // },
 });
