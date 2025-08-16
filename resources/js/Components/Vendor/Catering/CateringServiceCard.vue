@@ -2,7 +2,7 @@
 import { useToast } from 'vue-toastification'
 import { router } from '@inertiajs/vue3';
 
-defineProps({
+const props = defineProps({
     service: {
         type: Object
     }
@@ -53,6 +53,10 @@ const getTotalDishCount = (dishes) => {
     if (!dishes || typeof dishes !== 'object') return 0;
     return Object.values(dishes).reduce((total, categoryDishes) => total + (categoryDishes?.length || 0), 0);
 };
+
+
+
+
 </script>
 
 <template>
@@ -96,8 +100,10 @@ const getTotalDishCount = (dishes) => {
                 <h3 class="text-xl font-bold text-gray-900 line-clamp-1 flex-1 mr-3">{{ service.name }}</h3>
                 <div class="text-right">
                     <div class="text-lg font-bold text-indigo-600">{{ formatPrice(service.catering_service?.price ||
-                        service?.price) }} <span class="text-black" v-if="!service.catering_service.package_price">/
+                        service?.price) }} <span class="text-black"
+                            v-if="service.catering_service.price !== service.catering_service.package_price">/
                             Pax</span>
+
                     </div>
                     <div v-if="service.catering_service?.delivery_fee" class="text-xs text-gray-500">
                         + {{ formatPrice(service.catering_service.delivery_fee) }} delivery

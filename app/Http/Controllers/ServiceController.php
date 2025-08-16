@@ -152,11 +152,10 @@ class ServiceController extends Controller
                         'id' => $service->id,
                         'name' => $service->name,
                         'price' => $service->price,
+                        'description' => $service->description,
+
                         'image_url' =>$service->getFirstMediaUrl('images'),
-                        'vendor' => $service->vendor ? [
-                            'id' => $service->vendor->id,
-                            'name' => $service->vendor->full_name
-                        ] : null,
+                        'vendor' => $service->vendor ?? null,
                         'category' => $service->category ? [
                             'id' => $service->category->id,
                             'name' => $service->category->name

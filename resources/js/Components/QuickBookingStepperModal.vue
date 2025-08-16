@@ -33,8 +33,8 @@ defineExpose({ open });
 
 // Stepper setup
 const steps = [
-    { id: '1', name: 'Event Info', status: 'current' },
-    { id: '2', name: 'Categories', status: 'upcoming' },
+    { id: '1', name: 'Categories', status: 'current' },
+    { id: '2', name: 'Event Info', status: 'upcoming' },
     { id: '3', name: 'Vendors', status: 'upcoming' },
     { id: '4', name: 'Confirm', status: 'upcoming' }
 ];
@@ -51,6 +51,7 @@ const eventForm = useForm({
     event_time: '',
     description: '',
     final_notes: '',
+    pax: null,
     vendors: []
 })
 
@@ -156,6 +157,7 @@ const getNextButtonText = () => {
 };
 
 const finalNotes = ref('');
+
 </script>
 
 <template>
@@ -170,7 +172,7 @@ const finalNotes = ref('');
                     <div class="sticky top-0 bg-white border-b border-gray-100 px-6 py-5 flex-shrink-0">
                         <div class="flex items-center justify-between">
                             <div>
-                                <h2 class="text-xl font-semibold text-gray-900">Create Event</h2>
+                                <h2 class="text-xl font-semibold text-gray-900">Plan Event</h2>
                                 <p class="text-gray-500 text-xs mt-1">Complete all steps to organize your event</p>
                             </div>
                             <button @click="closeModal"
@@ -236,7 +238,7 @@ const finalNotes = ref('');
 
                                 <!-- Step 2:Event Information  -->
                                 <div v-if="currentStep === 1" class="step-content">
-                                    <EventForm :eventForm="eventForm" />
+                                    <EventForm :eventForm="eventForm" :selectedCategories="selectedCategories" />
                                 </div>
 
                                 <!-- Step 3: Vendor Selection -->

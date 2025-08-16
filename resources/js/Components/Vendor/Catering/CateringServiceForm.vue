@@ -284,6 +284,18 @@ const removeCategory = (category) => {
 
             <!-- Dishes Section -->
             <div class="border-b border-gray-200 pb-6">
+                <!-- Customizable -->
+                <div class="mb-6">
+                    <div class="flex items-center">
+                        <input id="is_customizable" v-model="form.is_customizable" type="checkbox"
+                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                        <label for="is_customizable" class="ml-2 block text-sm text-gray-700">
+                            Customizable Menu Options
+                        </label>
+                    </div>
+                    <p v-if="form.errors.is_customizable" class="mt-1 text-sm text-red-600">
+                        {{ form.errors.is_customizable }}</p>
+                </div>
                 <h4 class="text-lg font-medium text-gray-900 mb-4">Menu Selection</h4>
 
                 <!-- Display Selected Categories and Dishes -->
@@ -291,6 +303,7 @@ const removeCategory = (category) => {
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Selected Menu
                     </label>
+
                     <div v-if="Object.keys(form.dishes).length > 0" class="space-y-4">
                         <div v-for="(dishes, category) in form.dishes" :key="category"
                             class="border border-gray-200 rounded-lg p-4">
@@ -384,7 +397,7 @@ const removeCategory = (category) => {
                     <!-- Base Price -->
                     <div>
                         <label for="price" class="block text-sm font-medium text-gray-700 mb-1">
-                            Per Pax Price
+                            Per Pax Price (if per pax)
                         </label>
                         <input type="number" id="price" v-model="form.price" required min="0"
                             class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
@@ -456,7 +469,7 @@ const removeCategory = (category) => {
                     </div>
 
                     <!-- Lead Time -->
-                    <div>
+                    <!-- <div>
                         <label for="lead_time_days" class="block text-sm font-medium text-gray-700 mb-1">
                             Lead Time (Days)
                         </label>
@@ -464,7 +477,7 @@ const removeCategory = (category) => {
                             class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                         <p v-if="form.errors.lead_time_days" class="mt-1 text-sm text-red-600">
                             {{ form.errors.lead_time_days }}</p>
-                    </div>
+                    </div> -->
                 </div>
             </div>
 
