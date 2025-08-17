@@ -52,12 +52,15 @@ const eventForm = useForm({
     description: '',
     final_notes: '',
     pax: null,
-    vendors: []
+    vendors: [],
+    dishes: []
+
 })
 
 
 const selectedCategories = ref([]);
 const selectedServices = ref([]);
+const selectedDishes = ref([]);
 
 
 // Form methods
@@ -70,6 +73,7 @@ const resetForm = () => {
     eventForm.reset()
     selectedCategories.value = [];
     selectedServices.value = [];
+    selectedDishes.value = [];
 };
 
 const nextStep = () => {
@@ -116,6 +120,9 @@ const validateStep = () => {
 const submitSelection = () => {
 
     eventForm.vendors = selectedServices.value
+    eventForm.dishes = selectedDishes.value
+
+    console.log(eventForm.dishes);
 
     eventForm.post(route('client.bookings.store'), {
         preserveScroll: true,
@@ -249,7 +256,8 @@ const finalNotes = ref('');
                                     </div>
 
                                     <VendorServiceSelection :selectedCategories="selectedCategories"
-                                        v-model:selectedServices="selectedServices" />
+                                        v-model:selectedServices="selectedServices"
+                                        v-model:selectedDishes="selectedDishes" />
                                 </div>
 
                                 <!-- Step 4: Review & Confirmation -->

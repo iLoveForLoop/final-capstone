@@ -14,6 +14,8 @@ const props = defineProps({
 
 // Single array model for all selected services
 const selectedServices = defineModel('selectedServices')
+const selectedDishes = defineModel('selectedDishes')
+
 const currentStep = ref(0)
 const services = ref([])
 const loading = ref(false)
@@ -212,7 +214,8 @@ const nextStep = () => {
                                 <div v-if="service.catering_service || service.photography_service" class="mt-4">
                                     <div v-if="service.catering_service">
                                         <CateringSelectionCard :service="service"
-                                            :isSelected="isServiceSelected(service)" />
+                                            :isSelected="isServiceSelected(service)" @select="selectService"
+                                            v-model:selectedDishes="selectedDishes" />
                                     </div>
                                     <div v-if="service.photography_service">
                                         <PhotographySelectionCard :service="service"
@@ -221,7 +224,7 @@ const nextStep = () => {
                                 </div>
 
                                 <!-- Action Buttons -->
-                                <div class="flex gap-3 mt-6 pt-4 border-t border-gray-100">
+                                <!-- <div class="flex gap-3 mt-6 pt-4 border-t border-gray-100">
                                     <button
                                         class="flex-1 px-4 py-2.5 bg-gray-50 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors text-sm">
                                         View
@@ -242,7 +245,7 @@ const nextStep = () => {
                                         </span>
                                         <span v-else>Select</span>
                                     </button>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                     </div>

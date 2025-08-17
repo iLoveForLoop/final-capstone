@@ -39,6 +39,7 @@ const formatDate = (dateString) => {
 </script>
 
 <template>
+
     <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
         <!-- Header -->
         <div class="text-center pb-6 border-b border-gray-100">
