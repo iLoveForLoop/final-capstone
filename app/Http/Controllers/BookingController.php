@@ -450,6 +450,8 @@ class BookingController extends Controller
             'event_date'  => 'required|date',
             'event_time'  => 'nullable|date_format:H:i',
             'description' => 'nullable|string',
+            'pax' => 'nullable',
+            'dishes' => 'nullable|array',
             'vendors' => 'required|array',
             'vendors.*.id' => 'required|exists:services,id',
 
@@ -473,6 +475,8 @@ class BookingController extends Controller
                 'event_id'     => $event->id,
                 'service_id'   => $serviceModel->id,
                 'booking_date' => $request->event_date,
+                'catering_dishes' => $request->dishes ?? null,
+                'pax' => $request->pax ?? null
             ]);
         }
 

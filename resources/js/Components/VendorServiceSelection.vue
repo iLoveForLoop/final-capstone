@@ -102,13 +102,32 @@ const nextStep = () => {
                 </div>
             </div>
 
-            <!-- Header -->
-            <div class="text-center mb-8">
-                <h1 v-if="currentCategory" class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-                    {{ currentCategory.name }}
-                </h1>
-                <p class="text-gray-600 text-sm sm:text-base max-w-2xl mx-auto">Choose your preferred service from the
-                    options below</p>
+            <!-- Sticky Header Container -->
+            <div class="sticky top-0 bg-gray-50 pt-2 pb-4 -mx-4 px-4 sm:-mx-0 sm:px-0 z-20">
+                <!-- Header and Continue Button (Desktop) -->
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                    <div class="text-center sm:text-left">
+                        <h1 v-if="currentCategory" class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                            {{ currentCategory.name }}
+                        </h1>
+                        <p class="text-gray-600 text-sm sm:text-base max-w-2xl mx-auto sm:mx-0">Choose your preferred
+                            service from the
+                            options below</p>
+                    </div>
+
+                    <!-- Sticky Continue Button - Desktop -->
+                    <div class="hidden sm:block sticky top-4">
+                        <button @click="nextStep" v-if="currentStep !== props.selectedCategories.length - 1"
+                            :disabled="!selectedServices.some(s => s.category?.id === currentCategory.id || s.category_id === currentCategory.id)"
+                            class="bg-[#239BA7] text-white text-sm sm:text-base font-medium py-2.5 px-6 rounded-lg hover:bg-[#1D8E99] focus:outline-none focus:ring-2 focus:ring-[#239BA7] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center shadow-md">
+                            Continue
+                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Search Bar -->
@@ -157,9 +176,9 @@ const nextStep = () => {
             <!-- Services List -->
             <div v-else-if="services.length" class="space-y-4 mb-8">
                 <div v-for="service in services" :key="service.id"
-                    class="relative bg-white rounded-xl border transition-all duration-200 overflow-hidden hover:shadow-sm"
+                    class="relative bg-white rounded-xl border transition-all duration-200 overflow-hidden hover:shadow-sm "
                     :class="{
-                        'border-[#239BA7] ring-1 ring-[#239BA7]': isServiceSelected(service),
+                        'border-[#239BA7] border-2 ring-[#239BA7]': isServiceSelected(service),
                         'border-gray-200 hover:border-gray-300': !isServiceSelected(service)
                     }">
 
@@ -219,33 +238,9 @@ const nextStep = () => {
                                     </div>
                                     <div v-if="service.photography_service">
                                         <PhotographySelectionCard :service="service"
-                                            :isSelected="isServiceSelected(service)" />
+                                            :isSelected="isServiceSelected(service)" @select="selectService" />
                                     </div>
                                 </div>
-
-                                <!-- Action Buttons -->
-                                <!-- <div class="flex gap-3 mt-6 pt-4 border-t border-gray-100">
-                                    <button
-                                        class="flex-1 px-4 py-2.5 bg-gray-50 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors text-sm">
-                                        View
-                                    </button>
-
-                                    <button @click="selectService(service.id)" :class="{
-                                        'bg-[#239BA7] text-white hover:bg-[#1D8E99]': !isServiceSelected(service),
-                                        'bg-green-600 text-white hover:bg-green-700': isServiceSelected(service)
-                                    }"
-                                        class="flex-1 px-4 py-2.5 font-medium rounded-lg transition-colors flex items-center justify-center text-sm">
-                                        <span v-if="isServiceSelected(service)" class="flex items-center">
-                                            <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd"
-                                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                    clip-rule="evenodd"></path>
-                                            </svg>
-                                            Selected
-                                        </span>
-                                        <span v-else>Select</span>
-                                    </button>
-                                </div> -->
                             </div>
                         </div>
                     </div>
@@ -265,12 +260,11 @@ const nextStep = () => {
                     moment.</p>
             </div>
 
-            <!-- Navigation -->
-            <div
-                class="sticky bottom-0 bg-white/95 backdrop-blur-lg border-t border-gray-200 p-4 -mx-4 sm:static sm:bg-transparent sm:border-0 sm:p-0 sm:mx-0 sm:backdrop-blur-none">
+            <!-- Navigation - Mobile Continue Button -->
+            <div class="sticky bottom-0 bg-white/95 backdrop-blur-lg border-t border-gray-200 p-4 -mx-4 sm:hidden">
                 <button @click="nextStep" v-if="currentStep !== props.selectedCategories.length - 1"
                     :disabled="!selectedServices.some(s => s.category?.id === currentCategory.id || s.category_id === currentCategory.id)"
-                    class="w-full bg-[#239BA7] text-white text-sm sm:text-base font-medium py-3 px-6 rounded-lg hover:bg-[#1D8E99] focus:outline-none focus:ring-2 focus:ring-[#239BA7] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center">
+                    class="w-full bg-[#239BA7] text-white text-sm font-medium py-3 px-6 rounded-lg hover:bg-[#1D8E99] focus:outline-none focus:ring-2 focus:ring-[#239BA7] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center">
                     Continue
                     <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>

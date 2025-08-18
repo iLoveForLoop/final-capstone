@@ -123,6 +123,7 @@ const submitSelection = () => {
     eventForm.dishes = selectedDishes.value
 
     console.log(eventForm.dishes);
+    console.log(eventForm.pax);
 
     eventForm.post(route('client.bookings.store'), {
         preserveScroll: true,
