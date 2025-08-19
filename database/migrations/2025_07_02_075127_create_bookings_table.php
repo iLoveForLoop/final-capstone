@@ -17,7 +17,7 @@ class CreateBookingsTable extends Migration
             $table->date('booking_date');
             $table->enum('status', ['pending', 'confirmed', 'cancelled', 'completed'])->default('pending');
 
-            //for catering specifics
+            //for catering specifics only
             $table->json('catering_dishes')->nullable();
             $table->integer('pax')->nullable();
 

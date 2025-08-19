@@ -20,7 +20,7 @@ class BookingController extends Controller
 
         // Get base query with proper relationships
         $query = $vendor->bookings()
-            ->with(['user', 'service', 'event']) // Load relationships
+            ->with(['user', 'service', 'event', 'user.client']) // Load relationships
             ->select([
                 'id',
                 'user_id',
@@ -121,7 +121,7 @@ class BookingController extends Controller
                 'id' => 'BK' . str_pad($booking->id, 3, '0', STR_PAD_LEFT),
                 'client' => $booking->user->name ?? 'N/A',
                 'client_email' => $booking->user->email ?? 'N/A',
-                'service' => $booking->service->name ?? 'N/A',
+                // 'service' => $booking->service->name ?? 'N/A',
                 'event_name' => $booking->event->name ?? 'N/A',
                 'event_location' => $booking->event->location ?? 'N/A',
                 'date' => $booking->booking_date,
@@ -136,13 +136,16 @@ class BookingController extends Controller
                 'created_at' => $booking->created_at,
                 'updated_at' => $booking->updated_at,
                 'raw_id' => $booking->id,
+                'user' => $booking->user,
+                'event' => $booking->event,
+                'service' => $booking->service
             ];
         });
 
         // Get booking statistics
         $stats = $this->getBookingStats($vendor);
 
-        return Inertia::render('Vendor/Bookings/Index', [
+        return inertia('Vendor/Bookings/Index', [
             'bookings' => $transformedBookings,
             'stats' => $stats,
             'filters' => [

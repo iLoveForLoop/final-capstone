@@ -4,6 +4,7 @@ import { ref, computed, watch, onMounted, onBeforeMount, onBeforeUnmount } from 
 import { router } from '@inertiajs/vue3'
 import { ChevronDown, Search, Filter, Calendar, Eye, Check, X, CircleCheck, Download } from 'lucide-vue-next'
 import axios from 'axios'
+import BookingDetailsModal from '@/Components/BookingDetailsModal.vue'
 
 const props = defineProps({
     bookings: {
@@ -173,10 +174,14 @@ onBeforeUnmount(async () => {
     }
 
 })
+
+const bookingDetailsModal = ref(null)
+
 </script>
 
 <template>
     <VendorLayout>
+        <BookingDetailsModal ref="bookingDetailsModal" />
         <div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
             <div class="max-w-7xl mx-auto">
                 <!-- Header -->
@@ -338,7 +343,7 @@ onBeforeUnmount(async () => {
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="text-sm font-medium text-gray-900">{{ booking.client }}</div>
-                                        <div class="text-sm text-gray-500">{{ booking.service }}</div>
+                                        <div class="text-sm text-gray-500">{{ booking.service.name }}</div>
                                         <div class="text-xs text-gray-400 mt-1">{{ booking.event_name }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -356,7 +361,7 @@ onBeforeUnmount(async () => {
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div class="flex items-center justify-end space-x-2">
-                                            <button @click="viewBookingDetails(booking)"
+                                            <button @click="bookingDetailsModal.open(booking)"
                                                 class="text-indigo-600 hover:text-indigo-900 p-1 rounded-md hover:bg-indigo-50"
                                                 title="View Details">
                                                 <Eye class="h-5 w-5" />

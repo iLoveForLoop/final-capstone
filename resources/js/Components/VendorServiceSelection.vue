@@ -132,7 +132,7 @@ const nextStep = () => {
 
             <!-- Search Bar -->
             <div class="mb-6">
-                <div class="relative max-w-md mx-auto">
+                <div class="relative max-w-md mx-auto mt-1">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
