@@ -1,5 +1,9 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
+import {
+    X, FileText, User, Calendar, Clock, MapPin, Mail, Phone, Utensils,
+    CheckCircle, MessageCircle, Users, Package, ChefHat, Sparkles, CreditCard
+} from 'lucide-vue-next'
 
 const isOpen = ref(false)
 const booking = ref(null)
@@ -8,17 +12,16 @@ const isVisible = ref(false)
 const open = (bookingData = {}) => {
     booking.value = bookingData
     isOpen.value = true
-    // Small delay to trigger animation after modal is rendered
     setTimeout(() => {
         isVisible.value = true
-    }, 10)
+    }, 20)
 }
 
 const close = () => {
     isVisible.value = false
     setTimeout(() => {
         isOpen.value = false
-    }, 300) // Match this with CSS transition duration
+    }, 300)
 }
 
 defineExpose({
@@ -54,16 +57,31 @@ const formatTime = (time) => {
     })
 }
 
-const formatDateTime = (datetime) => {
-    if (!datetime) return 'N/A'
-    return new Date(datetime).toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-    })
+const formatCurrency = (amount) => {
+    if (!amount) return '₱0'
+    return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        minimumFractionDigits: 0
+    }).format(amount)
+}
+
+const getCateringService = () => {
+    return booking.value?.service?.catering_service
+}
+
+const calculateTotalDishPrice = () => {
+    if (!booking.value?.catering_dishes) return 0
+    return booking.value.catering_dishes.reduce((total, dish) => {
+        return total + (parseFloat(dish.price) || 0)
+    }, 0)
+}
+
+const calculateTotalPrice = () => {
+    const basePrice = parseFloat(booking.value?.service?.price) || 0
+    const dishTotal = calculateTotalDishPrice()
+    const pax = booking.value?.pax || 1
+    return (basePrice * pax) + dishTotal
 }
 </script>
 
@@ -71,7 +89,8 @@ const formatDateTime = (datetime) => {
     <Transition name="modal">
         <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog"
             aria-modal="true">
-            <!-- Background overlay with fade animation -->
+
+            <!-- Background overlay -->
             <Transition name="fade">
                 <div v-if="isVisible" class="fixed inset-0 bg-gray-900/70 backdrop-blur-sm" aria-hidden="true"
                     @click="close">
@@ -79,137 +98,117 @@ const formatDateTime = (datetime) => {
             </Transition>
 
             <!-- Modal container -->
-            <div class="flex items-center justify-center min-h-screen p-4">
-                <!-- Modal panel with scale animation -->
+            <div class="flex items-center justify-center min-h-screen p-2 sm:p-4">
+                <!-- Modal panel -->
                 <Transition name="scale">
                     <div v-if="isVisible"
-                        class="relative bg-white rounded-2xl shadow-2xl transform transition-all w-full max-w-6xl mx-4 max-h-[90vh] overflow-hidden">
+                        class="relative bg-white rounded-xl shadow-2xl transform transition-all w-full max-w-6xl mx-auto max-h-[90vh] overflow-hidden flex flex-col border border-gray-200">
 
-                        <!-- Gradient header -->
-                        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white">
+                        <!-- Gradient Header -->
+                        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-4 sm:p-6 text-white flex-shrink-0">
                             <div class="flex items-center justify-between mb-4">
                                 <div class="flex items-center space-x-3">
                                     <div class="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
+                                        <FileText :size="20" class="text-white" />
                                     </div>
-                                    <h3 class="text-2xl font-bold" id="modal-title">
+                                    <h3 class="text-xl sm:text-2xl font-bold" id="modal-title">
                                         Booking Details
                                     </h3>
                                 </div>
                                 <button @click="close"
-                                    class="p-2 hover:bg-white/20 rounded-lg transition-all duration-200 transform hover:scale-110">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
+                                    class="p-2 hover:bg-white/20 rounded-lg transition-all duration-200">
+                                    <X :size="20" class="text-white" />
                                 </button>
                             </div>
 
-                            <!-- Status Badge -->
-                            <div class="flex items-center space-x-4">
+                            <!-- Status and Booking ID -->
+                            <div class="flex flex-wrap items-center gap-3">
                                 <span :class="getStatusBadgeClass(booking?.status)"
-                                    class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium border-2 backdrop-blur-sm">
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border backdrop-blur-sm">
                                     {{ booking?.status?.charAt(0).toUpperCase() + booking?.status?.slice(1) }}
                                 </span>
                                 <span class="text-sm opacity-90">Booking ID: #{{ booking?.id }}</span>
+                                <span v-if="getCateringService()"
+                                    class="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium border border-orange-200">
+                                    <ChefHat :size="14" class="mr-1" />
+                                    Catering Service
+                                </span>
                             </div>
                         </div>
 
-                        <!-- Main Content -->
-                        <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-                            <!-- Grid Layout -->
+                        <!-- Main Scrollable Content -->
+                        <div class="p-4 sm:p-6 overflow-y-auto">
                             <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
                                 <!-- Left Column -->
                                 <div class="space-y-6">
-                                    <!-- Client Information Card -->
-                                    <div
-                                        class="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 shadow-sm border border-gray-100">
-                                        <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                            <div
-                                                class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                                </svg>
-                                            </div>
-                                            Client Information
-                                        </h4>
+                                    <!-- Client Information -->
+                                    <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
+                                        <div class="flex items-center space-x-2 mb-4">
+                                            <User :size="20" class="text-blue-600" />
+                                            <h4 class="text-lg font-semibold text-gray-900">Client Information</h4>
+                                        </div>
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div class="space-y-1">
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Full
                                                     Name</label>
-                                                <p class="text-gray-900 font-medium text-sm">{{
-                                                    booking?.user?.client?.full_name || 'N/A' }}</p>
+                                                <p class="text-gray-900 font-medium">{{ booking?.user?.client?.full_name
+                                                    || 'N/A' }}</p>
                                             </div>
                                             <div class="space-y-1">
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Contact
                                                     Number</label>
-                                                <p class="text-gray-900 text-sm">{{
-                                                    booking?.user?.client?.contact_number || 'N/A' }}</p>
+                                                <p class="text-gray-900">{{ booking?.user?.client?.contact_number ||
+                                                    'N/A' }}</p>
                                             </div>
                                             <div class="space-y-1">
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Email</label>
-                                                <p class="text-gray-900 text-sm">{{ booking?.user?.email || 'N/A' }}</p>
+                                                <p class="text-gray-900">{{ booking?.user?.email || 'N/A' }}</p>
                                             </div>
                                             <div class="space-y-1">
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Location</label>
-                                                <p class="text-gray-900 text-sm">{{ booking?.user?.client?.location ||
-                                                    'N/A' }}</p>
+                                                <p class="text-gray-900">{{ booking?.user?.client?.location || 'N/A' }}
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- Event Details Card -->
-                                    <div
-                                        class="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 shadow-sm border border-gray-100">
-                                        <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                            <div
-                                                class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                </svg>
-                                            </div>
-                                            Event Details
-                                        </h4>
+                                    <!-- Event Details -->
+                                    <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
+                                        <div class="flex items-center space-x-2 mb-4">
+                                            <Calendar :size="20" class="text-green-600" />
+                                            <h4 class="text-lg font-semibold text-gray-900">Event Details</h4>
+                                        </div>
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div class="space-y-1">
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Event
                                                     Name</label>
-                                                <p class="text-gray-900 font-medium text-sm">{{ booking?.event?.name ||
-                                                    'N/A' }}</p>
+                                                <p class="text-gray-900 font-medium">{{ booking?.event?.name || 'N/A' }}
+                                                </p>
                                             </div>
                                             <div class="space-y-1">
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Event
                                                     Date</label>
-                                                <p class="text-gray-900 text-sm">{{
-                                                    formatDate(booking?.event?.event_date) }}</p>
+                                                <p class="text-gray-900">{{ formatDate(booking?.event?.event_date) }}
+                                                </p>
                                             </div>
                                             <div class="space-y-1">
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Event
                                                     Time</label>
-                                                <p class="text-gray-900 text-sm">{{
-                                                    formatTime(booking?.event?.event_time) }}</p>
+                                                <p class="text-gray-900">{{ formatTime(booking?.event?.event_time) }}
+                                                </p>
                                             </div>
                                             <div class="space-y-1">
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Location</label>
-                                                <p class="text-gray-900 text-sm">{{ booking?.event?.location || 'N/A' }}
-                                                </p>
+                                                <p class="text-gray-900">{{ booking?.event?.location || 'N/A' }}</p>
                                             </div>
                                             <div v-if="booking?.event?.description" class="md:col-span-2 space-y-1">
                                                 <label
@@ -223,96 +222,163 @@ const formatDateTime = (datetime) => {
 
                                 <!-- Right Column -->
                                 <div class="space-y-6">
-                                    <!-- Booking Information Card -->
-                                    <div
-                                        class="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 shadow-sm border border-gray-100">
-                                        <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                            <div
-                                                class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-                                                <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                            </div>
-                                            Booking Information
-                                        </h4>
+                                    <!-- Booking & Catering Information -->
+                                    <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
+                                        <div class="flex items-center space-x-2 mb-4">
+                                            <Package :size="20" class="text-purple-600" />
+                                            <h4 class="text-lg font-semibold text-gray-900">Booking Information</h4>
+                                        </div>
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div class="space-y-1">
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Service</label>
-                                                <p class="text-gray-900 font-medium text-sm">{{ booking?.service?.name
-                                                    || 'N/A' }}</p>
+                                                <p class="text-gray-900 font-medium">{{ booking?.service?.name || 'N/A'
+                                                    }}</p>
                                             </div>
                                             <div class="space-y-1">
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Booking
                                                     Date</label>
-                                                <p class="text-gray-900 text-sm">{{ formatDate(booking?.booking_date) }}
-                                                </p>
+                                                <p class="text-gray-900">{{ formatDate(booking?.booking_date) }}</p>
                                             </div>
                                             <div class="space-y-1">
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Created
                                                     At</label>
-                                                <p class="text-gray-900 text-sm">{{ formatDateTime(booking?.created_at)
-                                                    }}</p>
+                                                <p class="text-gray-900">{{ formatDate(booking?.created_at) }}</p>
                                             </div>
-                                            <div v-if="booking?.pax" class="space-y-1">
-                                                <label
-                                                    class="text-xs font-medium text-gray-500 uppercase tracking-wide">Number
-                                                    of Guests</label>
-                                                <p class="text-gray-900 font-medium text-sm">{{ booking.pax }} people
+
+                                            <!-- Catering Specific Information -->
+                                            <template v-if="getCateringService()">
+                                                <div v-if="booking?.pax" class="space-y-1">
+                                                    <label
+                                                        class="text-xs font-medium text-gray-500 uppercase tracking-wide">Number
+                                                        of Guests</label>
+                                                    <p class="text-gray-900 font-medium">{{ booking.pax }} people</p>
+                                                </div>
+                                                <div v-if="getCateringService()?.buffet_type" class="space-y-1">
+                                                    <label
+                                                        class="text-xs font-medium text-gray-500 uppercase tracking-wide">Buffet
+                                                        Type</label>
+                                                    <p class="text-gray-900 capitalize">{{
+                                                        getCateringService().buffet_type }}</p>
+                                                </div>
+                                                <div v-if="getCateringService()?.min_pax && getCateringService()?.max_pax"
+                                                    class="space-y-1">
+                                                    <label
+                                                        class="text-xs font-medium text-gray-500 uppercase tracking-wide">Capacity
+                                                        Range</label>
+                                                    <p class="text-gray-900">{{ getCateringService().min_pax }}-{{
+                                                        getCateringService().max_pax }} pax</p>
+                                                </div>
+                                                <div v-if="getCateringService()?.lead_time_days" class="space-y-1">
+                                                    <label
+                                                        class="text-xs font-medium text-gray-500 uppercase tracking-wide">Lead
+                                                        Time</label>
+                                                    <p class="text-gray-900">{{ getCateringService().lead_time_days }}
+                                                        days</p>
+                                                </div>
+                                                <div v-if="getCateringService()?.is_customizable" class="space-y-1">
+                                                    <label
+                                                        class="text-xs font-medium text-gray-500 uppercase tracking-wide">Customization</label>
+                                                    <p class="text-green-600 font-medium">Available</p>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <!-- Catering Dishes -->
+                                    <div v-if="booking?.catering_dishes && booking.catering_dishes.length > 0"
+                                        class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <div class="flex items-center space-x-2">
+                                                <Utensils :size="20" class="text-orange-600" />
+                                                <h4 class="text-lg font-semibold text-gray-900">Selected Dishes</h4>
+                                            </div>
+                                            <span class="text-sm text-gray-500">{{ booking.catering_dishes.length }}
+                                                items</span>
+                                        </div>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <div v-for="(dish, index) in booking.catering_dishes" :key="index"
+                                                class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                                <p class="text-sm font-medium text-gray-900 mb-1">{{ dish.name || dish
+                                                    }}</p>
+                                                <p v-if="dish.description" class="text-xs text-gray-600 mb-1">{{
+                                                    dish.description }}</p>
+                                                <p v-if="dish.price" class="text-sm font-medium text-orange-600">
+                                                    {{ formatCurrency(dish.price) }}
                                                 </p>
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <!-- Catering Dishes Card -->
-                                    <div v-if="booking?.catering_dishes && booking.catering_dishes.length > 0"
-                                        class="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 shadow-sm border border-gray-100">
-                                        <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                            <div
-                                                class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
-                                                <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                                </svg>
-                                            </div>
-                                            Selected Dishes
-                                        </h4>
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div v-for="(dish, index) in booking.catering_dishes" :key="index"
-                                                class="bg-white rounded-lg p-3 shadow-xs border border-gray-100 hover:shadow-md transition-shadow">
-                                                <p class="text-gray-900 font-medium text-sm mb-1">{{ dish.name || dish
-                                                    }}</p>
-                                                <p v-if="dish.description" class="text-gray-600 text-xs">{{
-                                                    dish.description }}</p>
-                                                <p v-if="dish.price" class="text-orange-600 text-sm font-medium mt-1">
-                                                    ₱{{ dish.price }}</p>
+                                        <div v-if="booking.catering_dishes.length > 0"
+                                            class="mt-4 pt-3 border-t border-gray-200">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-sm font-medium text-gray-700">Dishes Subtotal</span>
+                                                <span class="text-sm font-semibold text-gray-900">
+                                                    {{ formatCurrency(calculateTotalDishPrice()) }}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- Quick Actions Card -->
-                                    <div
-                                        class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 shadow-sm border border-blue-100">
+                                    <!-- Pricing Summary -->
+                                    <div v-if="getCateringService()"
+                                        class="bg-blue-50 rounded-lg p-5 border border-blue-200">
+                                        <div class="flex items-center space-x-2 mb-4">
+                                            <CreditCard :size="20" class="text-blue-600" />
+                                            <h4 class="text-lg font-semibold text-blue-900">Pricing Summary</h4>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-sm text-gray-700">Service Price</span>
+                                                <span class="text-sm font-medium text-gray-900">
+                                                    {{ formatCurrency(booking?.service?.price) }} × {{ booking?.pax || 1
+                                                    }}
+                                                </span>
+                                            </div>
+                                            <div v-if="calculateTotalDishPrice() > 0"
+                                                class="flex justify-between items-center">
+                                                <span class="text-sm text-gray-700">Additional Dishes</span>
+                                                <span class="text-sm font-medium text-gray-900">
+                                                    {{ formatCurrency(calculateTotalDishPrice()) }}
+                                                </span>
+                                            </div>
+                                            <div v-if="getCateringService()?.delivery_fee"
+                                                class="flex justify-between items-center">
+                                                <span class="text-sm text-gray-700">Delivery Fee</span>
+                                                <span class="text-sm font-medium text-gray-900">
+                                                    {{ formatCurrency(getCateringService().delivery_fee) }}
+                                                </span>
+                                            </div>
+                                            <div
+                                                class="flex justify-between items-center pt-3 border-t border-blue-200">
+                                                <span class="text-base font-semibold text-blue-900">Estimated
+                                                    Total</span>
+                                                <span class="text-lg font-bold text-blue-900">
+                                                    {{ formatCurrency(calculateTotalPrice()) }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Quick Actions -->
+                                    <div class="bg-gray-50 rounded-lg p-5 border border-gray-200">
                                         <h4 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h4>
-                                        <div class="flex flex-wrap gap-3">
+                                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                             <button v-if="booking?.status === 'pending'"
-                                                class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all duration-200 transform hover:scale-105 text-sm font-medium shadow-sm">
-                                                Confirm Booking
+                                                class="flex items-center justify-center space-x-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                                                <CheckCircle :size="16" />
+                                                <span>Confirm</span>
                                             </button>
                                             <button v-if="booking?.status === 'confirmed'"
-                                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 transform hover:scale-105 text-sm font-medium shadow-sm">
-                                                Mark Complete
+                                                class="flex items-center justify-center space-x-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
+                                                <CheckCircle :size="16" />
+                                                <span>Complete</span>
                                             </button>
                                             <button
-                                                class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all duration-200 transform hover:scale-105 text-sm font-medium shadow-sm">
-                                                Contact Client
+                                                class="flex items-center justify-center space-x-2 px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium">
+                                                <MessageCircle :size="16" />
+                                                <span>Contact</span>
                                             </button>
                                         </div>
                                     </div>
@@ -321,10 +387,10 @@ const formatDateTime = (datetime) => {
                         </div>
 
                         <!-- Footer -->
-                        <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                        <div class="bg-gray-50 px-4 sm:px-6 py-4 border-t border-gray-200 flex-shrink-0">
                             <div class="flex justify-end">
                                 <button @click="close"
-                                    class="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 transform hover:scale-105 font-medium shadow-sm">
+                                    class="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
                                     Close
                                 </button>
                             </div>
@@ -360,24 +426,13 @@ const formatDateTime = (datetime) => {
     transform: scale(0.95) translateY(-20px);
 }
 
-/* Modal container transition */
-.modal-enter-active,
-.modal-leave-active {
-    transition: opacity 0.3s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-    opacity: 0;
-}
-
-/* Custom scrollbar for modal content */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
     width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f5f9;
+    background: #f8fafc;
     border-radius: 3px;
 }
 
@@ -390,10 +445,8 @@ const formatDateTime = (datetime) => {
     background: #94a3b8;
 }
 
-/* Smooth transitions for all interactive elements */
+/* Smooth transitions */
 * {
-    transition-property: color, background-color, border-color, transform, box-shadow;
-    transition-duration: 0.2s;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s ease-in-out;
 }
 </style>
