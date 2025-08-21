@@ -18,20 +18,11 @@ class BookingController extends Controller
     {
         $vendor = auth()->user()->vendor;
 
+
+
         // Get base query with proper relationships
         $query = $vendor->bookings()
-            ->with(['user', 'service', 'event', 'user.client']) // Load relationships
-            ->select([
-                'id',
-                'user_id',
-                'service_id',
-                'event_id',
-                'booking_date',
-                'status',
-                'created_at',
-                'updated_at'
-            ]);
-
+        ->with(['user', 'service.category', 'service.cateringService', 'event', 'user.client']);
 
         // Apply search filter
         if ($request->filled('search')) {
@@ -113,6 +104,7 @@ class BookingController extends Controller
         // Transform the data for frontend
         $transformedBookings = $bookings->through(function ($booking) {
             $eventTime = 'Time TBD';
+            $is_per_pax = ($booking->service->cateringService->price ?? false) !== ($booking->service->cateringService->package_price ?? null);
             if ($booking->event && $booking->event->event_time) {
                 $eventTime = Carbon::parse($booking->event->event_time)->format('g:i A');
             }
@@ -138,7 +130,12 @@ class BookingController extends Controller
                 'raw_id' => $booking->id,
                 'user' => $booking->user,
                 'event' => $booking->event,
-                'service' => $booking->service
+                'pax' => $booking->pax,
+                'catering_dishes' => $booking->catering_dishes,
+                'service' => $booking->service,
+                'category' => $booking->service->category->name,
+                'is_per_pax' => $is_per_pax
+
             ];
         });
 

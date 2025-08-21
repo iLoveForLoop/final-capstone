@@ -74,6 +74,7 @@ class CateringServiceController extends Controller
             'buffet_type' => 'nullable|string',
             'specifications' => 'nullable|array',
             'dishes' => 'required|array',
+            'dish_selection_limits' => 'nullable|array',
             'notes' => 'nullable|string',
             'cover_image' => 'nullable|image'
         ]);
@@ -108,6 +109,7 @@ class CateringServiceController extends Controller
                 'buffet_type' => $validated['buffet_type'] ?? null,
                 'specifications' => $validated['specifications'] ?? [],
                 'dishes' => $validated['dishes'] ?? [],
+                'dish_selection_limits' => $validated['dish_selection_limits'] ?? [],
                 'notes' => $validated['notes'] ?? null,
             ]);
 

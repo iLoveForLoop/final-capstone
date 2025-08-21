@@ -20,7 +20,7 @@ const open = () => {
     showModal.value = true;
     resetForm();
     // Disable body scroll
-    document.body.style.overflow = 'hidden';
+    // document.body.style.overflow = 'hidden';
 };
 
 const closeModal = () => {

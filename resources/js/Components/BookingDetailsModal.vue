@@ -66,13 +66,88 @@ const formatCurrency = (amount) => {
     }).format(amount)
 }
 
-const getCateringService = () => {
-    return booking.value?.service?.catering_service
+const isCateringService = () => {
+    return booking.value?.category === 'Catering'
 }
 
+const getCateringDishes = () => {
+    if (!booking.value?.catering_dishes) return []
+
+    // Handle if catering_dishes is a JSON string
+    let dishes = booking.value.catering_dishes
+    if (typeof dishes === 'string') {
+        try {
+            dishes = JSON.parse(dishes)
+        } catch (e) {
+            console.error('Error parsing catering dishes:', e)
+            return []
+        }
+    }
+
+    // Convert object to array format, handling multiple dishes per category
+    if (typeof dishes === 'object' && !Array.isArray(dishes)) {
+        const result = []
+        Object.entries(dishes).forEach(([category, dishArray]) => {
+            // Handle if dishArray is actually an array
+            if (Array.isArray(dishArray)) {
+                dishArray.forEach(dishName => {
+                    result.push({
+                        category,
+                        name: dishName,
+                        price: 0 // Since your sample doesn't include prices in the JSON
+                    })
+                })
+            } else {
+                // Handle single dish (backward compatibility)
+                result.push({
+                    category,
+                    name: dishArray,
+                    price: 0
+                })
+            }
+        })
+        return result
+    }
+
+    // If it's already an array
+    if (Array.isArray(dishes)) {
+        return dishes
+    }
+
+    return []
+}
+
+// Alternative: Get dishes grouped by category (if you want to display them categorized)
+const getCateringDishesByCategory = () => {
+    if (!booking.value?.catering_dishes) return {}
+
+    let dishes = booking.value.catering_dishes
+    if (typeof dishes === 'string') {
+        try {
+            dishes = JSON.parse(dishes)
+        } catch (e) {
+            console.error('Error parsing catering dishes:', e)
+            return {}
+        }
+    }
+
+    // If it's already in the correct object format
+    if (typeof dishes === 'object' && !Array.isArray(dishes)) {
+        // Convert single dishes to arrays for consistency
+        const result = {}
+        Object.entries(dishes).forEach(([category, dishData]) => {
+            result[category] = Array.isArray(dishData) ? dishData : [dishData]
+        })
+        return result
+    }
+
+    return {}
+}
+
+
 const calculateTotalDishPrice = () => {
-    if (!booking.value?.catering_dishes) return 0
-    return booking.value.catering_dishes.reduce((total, dish) => {
+    const dishes = getCateringDishes()
+    return dishes.reduce((total, dish) => {
         return total + (parseFloat(dish.price) || 0)
     }, 0)
 }
@@ -83,6 +158,11 @@ const calculateTotalPrice = () => {
     const pax = booking.value?.pax || 1
     return (basePrice * pax) + dishTotal
 }
+
+// const isPerPax = () => {
+//     return booking.value.service.cateringService.price !== booking.value.service.cateringService.price
+// }
+
 </script>
 
 <template>
@@ -128,11 +208,11 @@ const calculateTotalPrice = () => {
                                     {{ booking?.status?.charAt(0).toUpperCase() + booking?.status?.slice(1) }}
                                 </span>
                                 <span class="text-sm opacity-90">Booking ID: #{{ booking?.id }}</span>
-                                <span v-if="getCateringService()"
+                                <!-- <span v-if="isCateringService()"
                                     class="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium border border-orange-200">
                                     <ChefHat :size="14" class="mr-1" />
                                     Catering Service
-                                </span>
+                                </span> -->
                             </div>
                         </div>
 
@@ -154,7 +234,7 @@ const calculateTotalPrice = () => {
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Full
                                                     Name</label>
                                                 <p class="text-gray-900 font-medium">{{ booking?.user?.client?.full_name
-                                                    || 'N/A' }}</p>
+                                                    || booking?.client || 'N/A' }}</p>
                                             </div>
                                             <div class="space-y-1">
                                                 <label
@@ -166,11 +246,12 @@ const calculateTotalPrice = () => {
                                             <div class="space-y-1">
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Email</label>
-                                                <p class="text-gray-900">{{ booking?.user?.email || 'N/A' }}</p>
+                                                <p class="text-gray-900">{{ booking?.user?.email ||
+                                                    booking?.client_email || 'N/A' }}</p>
                                             </div>
                                             <div class="space-y-1">
                                                 <label
-                                                    class="text-xs font-medium text-gray-500 uppercase tracking-wide">Location</label>
+                                                    class="text-xs font-medium text-gray-500 uppercase tracking-wide">Address</label>
                                                 <p class="text-gray-900">{{ booking?.user?.client?.location || 'N/A' }}
                                                 </p>
                                             </div>
@@ -188,33 +269,38 @@ const calculateTotalPrice = () => {
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Event
                                                     Name</label>
-                                                <p class="text-gray-900 font-medium">{{ booking?.event?.name || 'N/A' }}
+                                                <p class="text-gray-900 font-medium">{{ booking?.event?.name ||
+                                                    booking?.event_name || 'N/A' }}
                                                 </p>
                                             </div>
                                             <div class="space-y-1">
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Event
                                                     Date</label>
-                                                <p class="text-gray-900">{{ formatDate(booking?.event?.event_date) }}
+                                                <p class="text-gray-900">{{ formatDate(booking?.event?.event_date ||
+                                                    booking?.event_date) }}
                                                 </p>
                                             </div>
                                             <div class="space-y-1">
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Event
                                                     Time</label>
-                                                <p class="text-gray-900">{{ formatTime(booking?.event?.event_time) }}
+                                                <p class="text-gray-900">{{ booking?.time ||
+                                                    formatTime(booking?.event?.event_time) }}
                                                 </p>
                                             </div>
                                             <div class="space-y-1">
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Location</label>
-                                                <p class="text-gray-900">{{ booking?.event?.location || 'N/A' }}</p>
+                                                <p class="text-gray-900">{{ booking?.event?.location ||
+                                                    booking?.event_location || 'N/A' }}</p>
                                             </div>
-                                            <div v-if="booking?.event?.description" class="md:col-span-2 space-y-1">
+                                            <div v-if="booking?.event?.description || booking?.notes"
+                                                class="md:col-span-2 space-y-1">
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Description</label>
                                                 <p class="text-gray-900 text-sm leading-relaxed">{{
-                                                    booking?.event?.description }}</p>
+                                                    booking?.event?.description || booking?.notes }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -222,7 +308,7 @@ const calculateTotalPrice = () => {
 
                                 <!-- Right Column -->
                                 <div class="space-y-6">
-                                    <!-- Booking & Catering Information -->
+                                    <!-- Booking Information -->
                                     <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
                                         <div class="flex items-center space-x-2 mb-4">
                                             <Package :size="20" class="text-purple-600" />
@@ -232,14 +318,21 @@ const calculateTotalPrice = () => {
                                             <div class="space-y-1">
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Service</label>
-                                                <p class="text-gray-900 font-medium">{{ booking?.service?.name || 'N/A'
-                                                    }}</p>
+                                                <p class="text-gray-900 font-medium">{{
+                                                    booking?.service?.name || 'N/A'
+                                                }}</p>
+                                            </div>
+                                            <div class="space-y-1">
+                                                <label
+                                                    class="text-xs font-medium text-gray-500 uppercase tracking-wide">Category</label>
+                                                <p class="text-gray-900">{{ booking?.category || 'N/A' }}</p>
                                             </div>
                                             <div class="space-y-1">
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Booking
                                                     Date</label>
-                                                <p class="text-gray-900">{{ formatDate(booking?.booking_date) }}</p>
+                                                <p class="text-gray-900">{{ formatDate(booking?.date ||
+                                                    booking?.booking_date) }}</p>
                                             </div>
                                             <div class="space-y-1">
                                                 <label
@@ -249,71 +342,58 @@ const calculateTotalPrice = () => {
                                             </div>
 
                                             <!-- Catering Specific Information -->
-                                            <template v-if="getCateringService()">
+                                            <template v-if="isCateringService()">
                                                 <div v-if="booking?.pax" class="space-y-1">
                                                     <label
                                                         class="text-xs font-medium text-gray-500 uppercase tracking-wide">Number
                                                         of Guests</label>
                                                     <p class="text-gray-900 font-medium">{{ booking.pax }} people</p>
                                                 </div>
-                                                <div v-if="getCateringService()?.buffet_type" class="space-y-1">
+                                                <div class="space-y-1">
                                                     <label
-                                                        class="text-xs font-medium text-gray-500 uppercase tracking-wide">Buffet
-                                                        Type</label>
-                                                    <p class="text-gray-900 capitalize">{{
-                                                        getCateringService().buffet_type }}</p>
-                                                </div>
-                                                <div v-if="getCateringService()?.min_pax && getCateringService()?.max_pax"
-                                                    class="space-y-1">
-                                                    <label
-                                                        class="text-xs font-medium text-gray-500 uppercase tracking-wide">Capacity
-                                                        Range</label>
-                                                    <p class="text-gray-900">{{ getCateringService().min_pax }}-{{
-                                                        getCateringService().max_pax }} pax</p>
-                                                </div>
-                                                <div v-if="getCateringService()?.lead_time_days" class="space-y-1">
-                                                    <label
-                                                        class="text-xs font-medium text-gray-500 uppercase tracking-wide">Lead
-                                                        Time</label>
-                                                    <p class="text-gray-900">{{ getCateringService().lead_time_days }}
-                                                        days</p>
-                                                </div>
-                                                <div v-if="getCateringService()?.is_customizable" class="space-y-1">
-                                                    <label
-                                                        class="text-xs font-medium text-gray-500 uppercase tracking-wide">Customization</label>
-                                                    <p class="text-green-600 font-medium">Available</p>
+                                                        class="text-xs font-medium text-gray-500 uppercase tracking-wide">Service
+                                                        Price</label>
+                                                    <p class="text-gray-900 font-medium">{{
+                                                        formatCurrency(booking?.raw_amount || booking?.service?.price)
+                                                    }} <span v-if="booking.is_per_pax">per person</span></p>
                                                 </div>
                                             </template>
                                         </div>
                                     </div>
 
                                     <!-- Catering Dishes -->
-                                    <div v-if="booking?.catering_dishes && booking.catering_dishes.length > 0"
+                                    {{ console.log(booking) }}
+                                    <div v-if="isCateringService() && getCateringDishes().length > 0"
                                         class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
                                         <div class="flex items-center justify-between mb-4">
                                             <div class="flex items-center space-x-2">
                                                 <Utensils :size="20" class="text-orange-600" />
                                                 <h4 class="text-lg font-semibold text-gray-900">Selected Dishes</h4>
                                             </div>
-                                            <span class="text-sm text-gray-500">{{ booking.catering_dishes.length }}
-                                                items</span>
+                                            <span class="text-sm text-gray-500">{{ getCateringDishes().length }}
+                                                categories</span>
                                         </div>
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            <div v-for="(dish, index) in booking.catering_dishes" :key="index"
-                                                class="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                                                <p class="text-sm font-medium text-gray-900 mb-1">{{ dish.name || dish
-                                                    }}</p>
-                                                <p v-if="dish.description" class="text-xs text-gray-600 mb-1">{{
-                                                    dish.description }}</p>
-                                                <p v-if="dish.price" class="text-sm font-medium text-orange-600">
-                                                    {{ formatCurrency(dish.price) }}
-                                                </p>
+                                            <!-- Option 3: Compact categorized display -->
+                                            <div v-for="(dishes, category) in getCateringDishesByCategory()"
+                                                :key="category"
+                                                class="bg-gray-50 rounded-lg p-4 border border-gray-100 mb-3">
+                                                <h4
+                                                    class="text-xs font-medium text-orange-600 uppercase tracking-wide mb-2">
+                                                    {{ category }}
+                                                </h4>
+                                                <div class="flex flex-wrap gap-2">
+                                                    <span v-for="(dishName, index) in dishes" :key="index"
+                                                        class="inline-block bg-white px-2 py-1 rounded text-sm text-gray-700 border">
+                                                        {{ dishName }}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div v-if="booking.catering_dishes.length > 0"
+                                        <div v-if="calculateTotalDishPrice() > 0"
                                             class="mt-4 pt-3 border-t border-gray-200">
                                             <div class="flex justify-between items-center">
-                                                <span class="text-sm font-medium text-gray-700">Dishes Subtotal</span>
+                                                <span class="text-sm font-medium text-gray-700">Additional Dishes</span>
                                                 <span class="text-sm font-semibold text-gray-900">
                                                     {{ formatCurrency(calculateTotalDishPrice()) }}
                                                 </span>
@@ -322,7 +402,7 @@ const calculateTotalPrice = () => {
                                     </div>
 
                                     <!-- Pricing Summary -->
-                                    <div v-if="getCateringService()"
+                                    <div v-if="isCateringService() && booking?.is_per_pax"
                                         class="bg-blue-50 rounded-lg p-5 border border-blue-200">
                                         <div class="flex items-center space-x-2 mb-4">
                                             <CreditCard :size="20" class="text-blue-600" />
@@ -332,8 +412,15 @@ const calculateTotalPrice = () => {
                                             <div class="flex justify-between items-center">
                                                 <span class="text-sm text-gray-700">Service Price</span>
                                                 <span class="text-sm font-medium text-gray-900">
-                                                    {{ formatCurrency(booking?.service?.price) }} × {{ booking?.pax || 1
-                                                    }}
+                                                    {{ formatCurrency(booking?.raw_amount || booking?.service?.price) }}
+                                                    × {{ booking?.pax || 1 }}
+                                                </span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-sm text-gray-700">Subtotal</span>
+                                                <span class="text-sm font-medium text-gray-900">
+                                                    {{ formatCurrency((booking?.raw_amount || booking?.service?.price) *
+                                                        (booking?.pax || 1)) }}
                                                 </span>
                                             </div>
                                             <div v-if="calculateTotalDishPrice() > 0"
@@ -341,13 +428,6 @@ const calculateTotalPrice = () => {
                                                 <span class="text-sm text-gray-700">Additional Dishes</span>
                                                 <span class="text-sm font-medium text-gray-900">
                                                     {{ formatCurrency(calculateTotalDishPrice()) }}
-                                                </span>
-                                            </div>
-                                            <div v-if="getCateringService()?.delivery_fee"
-                                                class="flex justify-between items-center">
-                                                <span class="text-sm text-gray-700">Delivery Fee</span>
-                                                <span class="text-sm font-medium text-gray-900">
-                                                    {{ formatCurrency(getCateringService().delivery_fee) }}
                                                 </span>
                                             </div>
                                             <div
@@ -358,6 +438,20 @@ const calculateTotalPrice = () => {
                                                     {{ formatCurrency(calculateTotalPrice()) }}
                                                 </span>
                                             </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Non-Catering Price Display -->
+                                    <div v-else class="bg-blue-50 rounded-lg p-5 border border-blue-200">
+                                        <div class="flex items-center space-x-2 mb-4">
+                                            <CreditCard :size="20" class="text-blue-600" />
+                                            <h4 class="text-lg font-semibold text-blue-900">Service Price</h4>
+                                        </div>
+                                        <div class="text-center">
+                                            <span class="text-2xl font-bold text-blue-900">
+                                                {{ booking?.price || formatCurrency(booking?.raw_amount ||
+                                                    booking?.service?.price) }}
+                                            </span>
                                         </div>
                                     </div>
 

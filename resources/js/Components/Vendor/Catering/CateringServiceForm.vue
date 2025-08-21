@@ -8,8 +8,6 @@ const emit = defineEmits(['close', 'created']);
 const show = ref(false);
 const selectedImage = ref(null);
 const newSpecification = ref('');
-// const newDish = ref('');
-const dishCategory = ref('main');
 const dishSearch = ref('');
 
 const props = defineProps({
@@ -23,7 +21,6 @@ const props = defineProps({
     },
 });
 
-
 const form = useForm({
     service_category_id: props.category_id,
     name: '',
@@ -34,40 +31,15 @@ const form = useForm({
     min_pax: 50,
     max_pax: 100,
     package_price: '',
-    lead_time_days: 3,
     service_area: [],
     is_customizable: false,
     delivery_fee: '',
-    buffet_type: '',
     specifications: [],
     dishes: {},
+    dish_selection_limits: {}, // Separate object for selection limits
     notes: '',
     _method: 'POST'
 });
-
-const buffetTypes = [
-    'Plated',
-    'Buffet',
-    'Family Style',
-    'Food Stations',
-    'Cocktail Reception'
-];
-
-const dishCategories = {
-    main: 'Main Dishes',
-    appetizer: 'Appetizers',
-    salad: 'Salads',
-    dessert: 'Desserts',
-    drink: 'Drinks'
-};
-
-const commonDishes = {
-    main: ['Chicken Adobo', 'Beef Kaldereta', 'Pork Lechon', 'Fish Sinigang', 'Vegetable Kare-Kare'],
-    appetizer: ['Lumpia', 'Chicken Wings', 'Spring Rolls', 'Cheese Sticks', 'Shrimp Cocktail'],
-    salad: ['Green Salad', 'Macaroni Salad', 'Fruit Salad', 'Caesar Salad', 'Greek Salad'],
-    dessert: ['Leche Flan', 'Halo-Halo', 'Mango Float', 'Buko Pandan', 'Brownies'],
-    drink: ['Iced Tea', 'Lemonade', 'Fruit Juice', 'Soft Drinks', 'Bottled Water']
-};
 
 const commonSpecifications = [
     '2 Main Dishes',
@@ -124,33 +96,11 @@ const addCustomSpecification = () => {
     }
 };
 
-// const addDish = (dish) => {
-//     if (!form.dishes.includes(dish)) {
-//         form.dishes = [...form.dishes, dish];
-//     }
-// };
-
-// const addCustomDish = () => {
-//     if (newDish.value.trim() && !form.dishes.includes(newDish.value.trim())) {
-//         form.dishes = [...form.dishes, newDish.value.trim()];
-//         newDish.value = '';
-//     }
-// };
-
-// const removeDish = (index) => {
-//     form.dishes = form.dishes.filter((_, i) => i !== index);
-// };
-
-const filteredDishes = (category) => {
-    return commonDishes[category].filter(dish =>
-        dish.toLowerCase().includes(dishSearch.value.toLowerCase())
-    );
-};
-
 const submit = () => {
-    console.log('dish ', form.dishes)
-    console.log('specifications ', form.specifications)
-    console.log('service_area ', form.service_area)
+    console.log('dishes:', form.dishes);
+    console.log('dish_selection_limits:', form.dish_selection_limits);
+    console.log('specifications:', form.specifications);
+    console.log('service_area:', form.service_area);
 
     form.post(route('vendor.catering-services.store'), {
         preserveScroll: true,
@@ -158,7 +108,7 @@ const submit = () => {
             toast.success('Service created successfully');
             form.reset();
             selectedImage.value = null;
-            show.value = false
+            show.value = false;
             emit('close');
             emit('created');
         },
@@ -168,55 +118,60 @@ const submit = () => {
     });
 };
 
-// Reactive variables
-const newCategory = ref('')
-const newDish = ref('')
-const selectedCategory = ref('')
+// Reactive variables for dish management
+const newCategory = ref('');
+const newDish = ref('');
+const selectedCategory = ref('');
+const categorySelectionLimit = ref(1);
 
-// Functions
+// Functions for dish management
 const addCategory = () => {
     if (newCategory.value.trim() && !form.dishes.hasOwnProperty(newCategory.value.trim())) {
-        const categoryName = newCategory.value.trim()
-        form.dishes[categoryName] = []
-        selectedCategory.value = categoryName
-        newCategory.value = ''
+        const categoryName = newCategory.value.trim();
+        form.dishes[categoryName] = [];
+        form.dish_selection_limits[categoryName] = categorySelectionLimit.value;
+        selectedCategory.value = categoryName;
+        newCategory.value = '';
+        categorySelectionLimit.value = 1;
     }
-}
+};
 
 const addDish = () => {
     if (newDish.value.trim() && selectedCategory.value) {
-        const dishName = newDish.value.trim()
+        const dishName = newDish.value.trim();
         if (!form.dishes[selectedCategory.value].includes(dishName)) {
-            form.dishes[selectedCategory.value].push(dishName)
-            newDish.value = ''
+            form.dishes[selectedCategory.value].push(dishName);
+            newDish.value = '';
         }
     }
-}
+};
 
 const removeDish = (category, index) => {
-    form.dishes[category].splice(index, 1)
+    form.dishes[category].splice(index, 1);
     // Remove category if it becomes empty
     if (form.dishes[category].length === 0) {
-        delete form.dishes[category]
+        delete form.dishes[category];
+        delete form.dish_selection_limits[category];
         if (selectedCategory.value === category) {
-            selectedCategory.value = ''
+            selectedCategory.value = '';
         }
     }
-}
+};
 
 const removeCategory = (category) => {
-    delete form.dishes[category]
+    delete form.dishes[category];
+    delete form.dish_selection_limits[category];
     if (selectedCategory.value === category) {
-        selectedCategory.value = ''
+        selectedCategory.value = '';
     }
-}
+};
 
+const updateSelectionLimit = (category, limit) => {
+    form.dish_selection_limits[category] = Math.max(1, limit);
+};
 </script>
 
 <template>
-
-
-
     <!-- Modal body -->
     <div class="px-6 py-4">
         <div class="space-y-6">
@@ -293,9 +248,11 @@ const removeCategory = (category) => {
                             Customizable Menu Options
                         </label>
                     </div>
-                    <p v-if="form.errors.is_customizable" class="mt-1 text-sm text-red-600">
-                        {{ form.errors.is_customizable }}</p>
+                    <p class="mt-1 text-xs text-gray-500">
+                        When enabled, customers can select specific dishes from each category during booking.
+                    </p>
                 </div>
+
                 <h4 class="text-lg font-medium text-gray-900 mb-4">Menu Selection</h4>
 
                 <!-- Display Selected Categories and Dishes -->
@@ -308,7 +265,13 @@ const removeCategory = (category) => {
                         <div v-for="(dishes, category) in form.dishes" :key="category"
                             class="border border-gray-200 rounded-lg p-4">
                             <div class="flex items-center justify-between mb-3">
-                                <h5 class="text-md font-medium text-gray-800">{{ category }}</h5>
+                                <div class="flex items-center space-x-3">
+                                    <h5 class="text-md font-medium text-gray-800">{{ category }}</h5>
+                                    <span v-if="form.is_customizable"
+                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        Max {{ form.dish_selection_limits[category] || 1 }} selectable
+                                    </span>
+                                </div>
                                 <button @click="removeCategory(category)"
                                     class="text-red-600 hover:text-red-800 focus:outline-none">
                                     <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
@@ -318,6 +281,20 @@ const removeCategory = (category) => {
                                     </svg>
                                 </button>
                             </div>
+
+                            <!-- Selection Limit Input (only show if customizable) -->
+                            <div v-if="form.is_customizable" class="mb-3">
+                                <label class="block text-xs font-medium text-gray-500 mb-1">
+                                    Maximum dishes customers can select from this category:
+                                </label>
+                                <input type="number" :value="form.dish_selection_limits[category] || 1"
+                                    @input="updateSelectionLimit(category, parseInt($event.target.value))" min="1"
+                                    :max="dishes.length"
+                                    class="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                <span class="ml-2 text-xs text-gray-500">out of {{ dishes.length }} available
+                                    dishes</span>
+                            </div>
+
                             <div class="flex flex-wrap gap-2">
                                 <span v-for="(dish, index) in dishes" :key="index"
                                     class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
@@ -343,15 +320,26 @@ const removeCategory = (category) => {
                     <!-- Add New Category -->
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <h5 class="text-md font-medium text-gray-800 mb-3">Add New Category</h5>
-                        <div class="flex gap-2">
-                            <input v-model="newCategory" type="text"
-                                placeholder="Enter category name (e.g., Appetizers, Main Course)"
-                                class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                                @keyup.enter="addCategory">
-                            <button @click="addCategory"
-                                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                Add Category
-                            </button>
+                        <div class="space-y-3">
+                            <div class="flex gap-2">
+                                <input v-model="newCategory" type="text"
+                                    placeholder="Enter category name (e.g., Appetizers, Main Course)"
+                                    class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                    @keyup.enter="addCategory">
+                                <button @click="addCategory"
+                                    class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    Add Category
+                                </button>
+                            </div>
+
+                            <!-- Selection limit for new category (only show if customizable) -->
+                            <div v-if="form.is_customizable" class="flex items-center space-x-3">
+                                <label class="text-sm text-gray-600">
+                                    Max selectable dishes for this category:
+                                </label>
+                                <input v-model="categorySelectionLimit" type="number" min="1"
+                                    class="w-16 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
                         </div>
                     </div>
 
@@ -368,6 +356,9 @@ const removeCategory = (category) => {
                                 }"
                                 class="px-3 py-2 border rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 {{ category }}
+                                <span v-if="form.is_customizable" class="ml-1 text-xs opacity-75">
+                                    ({{ form.dish_selection_limits[category] || 1 }})
+                                </span>
                             </button>
                         </div>
                     </div>
@@ -399,46 +390,24 @@ const removeCategory = (category) => {
                         <label for="price" class="block text-sm font-medium text-gray-700 mb-1">
                             Per Pax Price (if per pax)
                         </label>
-                        <input type="number" id="price" v-model="form.price" required min="0"
+                        <input type="number" id="price" v-model="form.price" min="0"
                             class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                             placeholder="₱">
                         <p v-if="form.errors.price" class="mt-1 text-sm text-red-600">
                             {{ form.errors.price }}</p>
                     </div>
 
-                    <!-- Max Price -->
-                    <!-- <div>
-                        <label for="max_price" class="block text-sm font-medium text-gray-700 mb-1">
-                            Max Price (₱)
-                        </label>
-                        <input type="number" id="max_price" v-model="form.max_price" min="0"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <p v-if="form.errors.max_price" class="mt-1 text-sm text-red-600">
-                            {{ form.errors.max_price }}</p>
-                    </div> -->
-
-                    <!-- Catering Price -->
+                    <!-- Package Price -->
                     <div>
                         <label for="package_price" class="block text-sm font-medium text-gray-700 mb-1">
                             Package Price (if package)
                         </label>
-                        <input type="number" id="package_price" v-model="form.package_price" required min="0"
+                        <input type="number" id="package_price" v-model="form.package_price" min="0"
                             class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                             placeholder="₱">
                         <p v-if="form.errors.package_price" class="mt-1 text-sm text-red-600">
                             {{ form.errors.package_price }}</p>
                     </div>
-
-                    <!-- Delivery Fee -->
-                    <!-- <div>
-                        <label for="delivery_fee" class="block text-sm font-medium text-gray-700 mb-1">
-                            Delivery Fee (₱)
-                        </label>
-                        <input type="number" id="delivery_fee" v-model="form.delivery_fee" min="0"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <p v-if="form.errors.delivery_fee" class="mt-1 text-sm text-red-600">
-                            {{ form.errors.delivery_fee }}</p>
-                    </div> -->
                 </div>
             </div>
 
@@ -467,36 +436,12 @@ const removeCategory = (category) => {
                         <p v-if="form.errors.max_pax" class="mt-1 text-sm text-red-600">
                             {{ form.errors.max_pax }}</p>
                     </div>
-
-                    <!-- Lead Time -->
-                    <!-- <div>
-                        <label for="lead_time_days" class="block text-sm font-medium text-gray-700 mb-1">
-                            Lead Time (Days)
-                        </label>
-                        <input type="number" id="lead_time_days" v-model="form.lead_time_days" min="1"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <p v-if="form.errors.lead_time_days" class="mt-1 text-sm text-red-600">
-                            {{ form.errors.lead_time_days }}</p>
-                    </div> -->
                 </div>
             </div>
 
             <!-- Service Options Section -->
             <div class="border-b border-gray-200 pb-6">
                 <h4 class="text-lg font-medium text-gray-900 mb-4">Service Options</h4>
-
-                <!-- Customizable -->
-                <!-- <div class="mb-6">
-                    <div class="flex items-center">
-                        <input id="is_customizable" v-model="form.is_customizable" type="checkbox"
-                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                        <label for="is_customizable" class="ml-2 block text-sm text-gray-700">
-                            Customizable Menu Options
-                        </label>
-                    </div>
-                    <p v-if="form.errors.is_customizable" class="mt-1 text-sm text-red-600">
-                        {{ form.errors.is_customizable }}</p>
-                </div> -->
 
                 <!-- Service Area -->
                 <div class="mb-6">
@@ -591,8 +536,7 @@ const removeCategory = (category) => {
             <span v-if="form.processing" class="flex items-center justify-center">
                 <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
                     viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                    </circle>
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor"
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                     </path>
@@ -608,7 +552,4 @@ const removeCategory = (category) => {
             Cancel
         </button>
     </div>
-
 </template>
-
-<style></style>
