@@ -11,6 +11,10 @@ const props = defineProps({
         type: Boolean,
         default: false
     },
+    isDateAvailable: {
+        type: Boolean,
+        default: false
+    }
 
 })
 
@@ -289,7 +293,7 @@ watch(() => props.isSelected, (newValue) => {
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex gap-3 pt-4 border-t border-gray-100">
+        <div v-if="isDateAvailable" class="flex gap-3 pt-4 border-t border-gray-100">
             <button @click="handleView"
                 class="flex-1 px-4 py-2.5 bg-gray-50 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors text-sm">
                 View
@@ -312,6 +316,11 @@ watch(() => props.isSelected, (newValue) => {
                 <span v-else>Select</span>
             </button>
         </div>
+
+        <div v-else class="flex gap-3 pt-4 border-t border-gray-100">
+            <p>Sorry the date you selected is not available</p>
+        </div>
+
     </div>
 </template>
 

@@ -258,7 +258,7 @@ const finalNotes = ref('');
 
                                     <VendorServiceSelection :selectedCategories="selectedCategories"
                                         v-model:selectedServices="selectedServices"
-                                        v-model:selectedDishes="selectedDishes" />
+                                        v-model:selectedDishes="selectedDishes" :eventDate="eventForm.event_date" />
                                 </div>
 
                                 <!-- Step 4: Review & Confirmation -->

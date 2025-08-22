@@ -361,46 +361,51 @@ const bookingDetailsModal = ref(null)
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div class="flex items-center justify-end space-x-2">
+                                            <!-- View Details Button -->
                                             <button @click="bookingDetailsModal.open(booking)"
-                                                class="text-indigo-600 hover:text-indigo-900 p-1 rounded-md hover:bg-indigo-50"
-                                                title="View Details">
-                                                <Eye class="h-5 w-5" />
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-md hover:bg-indigo-100 hover:border-indigo-300 transition-colors duration-150"
+                                                title="View booking details">
+                                                <Eye class="h-4 w-4" />
+                                                <span>View</span>
                                             </button>
 
                                             <!-- Accept Button -->
                                             <button v-if="booking.status === 'pending'"
                                                 @click="acceptBooking(booking.raw_id)"
                                                 :disabled="isLoading(booking.raw_id, 'accepting')"
-                                                class="text-green-600 hover:text-green-900 p-1 rounded-md hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                title="Accept">
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-md hover:bg-green-100 hover:border-green-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
+                                                title="Accept booking">
                                                 <div v-if="isLoading(booking.raw_id, 'accepting')"
-                                                    class="animate-spin h-5 w-5 border-2 border-green-600 border-t-transparent rounded-full">
+                                                    class="animate-spin h-4 w-4 border-2 border-green-600 border-t-transparent rounded-full">
                                                 </div>
-                                                <Check v-else class="h-5 w-5" />
+                                                <Check v-else class="h-4 w-4" />
+                                                <span>Accept</span>
                                             </button>
 
-                                            <!-- Cancel Button -->
+                                            <!-- Decline Button -->
                                             <button v-if="booking.status === 'pending'"
                                                 @click="declineBooking(booking.raw_id)"
                                                 :disabled="isLoading(booking.raw_id, 'declining')"
-                                                class="text-red-600 hover:text-red-900 p-1 rounded-md hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                title="Cancel">
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 hover:border-red-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
+                                                title="Decline booking">
                                                 <div v-if="isLoading(booking.raw_id, 'declining')"
-                                                    class="animate-spin h-5 w-5 border-2 border-red-600 border-t-transparent rounded-full">
+                                                    class="animate-spin h-4 w-4 border-2 border-red-600 border-t-transparent rounded-full">
                                                 </div>
-                                                <X v-else class="h-5 w-5" />
+                                                <X v-else class="h-4 w-4" />
+                                                <span>Decline</span>
                                             </button>
 
                                             <!-- Complete Button -->
                                             <button v-if="booking.status === 'confirmed'"
                                                 @click="completeBooking(booking.raw_id)"
                                                 :disabled="isLoading(booking.raw_id, 'completing')"
-                                                class="text-blue-600 hover:text-blue-900 p-1 rounded-md hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                title="Mark as Completed">
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 hover:border-blue-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
+                                                title="Mark booking as completed">
                                                 <div v-if="isLoading(booking.raw_id, 'completing')"
-                                                    class="animate-spin h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full">
+                                                    class="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full">
                                                 </div>
-                                                <CircleCheck v-else class="h-5 w-5" />
+                                                <CircleCheck v-else class="h-4 w-4" />
+                                                <span>Complete</span>
                                             </button>
                                         </div>
                                     </td>

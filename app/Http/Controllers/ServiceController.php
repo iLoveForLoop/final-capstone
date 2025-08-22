@@ -133,54 +133,81 @@ class ServiceController extends Controller
         return redirect()->back()->with('success', 'Service Deleted Successfully');
     }
 
-    public function getByCategory($categoryIdentifier)
-    {
-        try {
-            $services = Service::with(['vendor', 'category'])
-                ->whereHas('category', function($query) use ($categoryIdentifier) {
-                    // Match by ID if numeric, otherwise by slug/name
-                    if (is_numeric($categoryIdentifier)) {
-                        $query->where('id', $categoryIdentifier);
-                    } else {
-                        $query->where('slug', $categoryIdentifier)
-                            ->orWhere('name', $categoryIdentifier);
-                    }
-                })
-                ->get()
-                ->map(function($service) {
-                    return [
-                        'id' => $service->id,
-                        'name' => $service->name,
-                        'price' => $service->price,
-                        'description' => $service->description,
+    public function getByCategory($categoryIdentifier, Request $request)
+{
+    try {
+        // Get the event date from request if provided
+        $eventDate = $request->query('event_date');
 
-                        'image_url' =>$service->getFirstMediaUrl('images'),
-                        'vendor' => $service->vendor ?? null,
-                        'category' => $service->category ? [
-                            'id' => $service->category->id,
-                            'name' => $service->category->name
-                        ] : null,
-                        'is_available' => $service->is_available,
-                        'catering_service' => $service->cateringService ?? null,
-                        'photography_service' => $service->photographyService ?? null
-                    ];
-                });
+        $services = Service::with(['vendor', 'category'])
+            ->whereHas('category', function($query) use ($categoryIdentifier) {
+                // Match by ID if numeric, otherwise by slug/name
+                if (is_numeric($categoryIdentifier)) {
+                    $query->where('id', $categoryIdentifier);
+                } else {
+                    $query->where('slug', $categoryIdentifier)
+                        ->orWhere('name', $categoryIdentifier);
+                }
+            })
+            ->get()
+            ->map(function($service) use ($eventDate) {
+                $isAvailableOnDate = $this->checkServiceAvailabilityOnDate($service, $eventDate);
 
+                return [
+                    'id' => $service->id,
+                    'name' => $service->name,
+                    'price' => $service->price,
+                    'description' => $service->description,
+                    'image_url' => $service->getFirstMediaUrl('images'),
+                    'vendor' => $service->vendor ?? null,
+                    'category' => $service->category ? [
+                        'id' => $service->category->id,
+                        'name' => $service->category->name
+                    ] : null,
+                    'is_available' => $service->is_available,
+                    'is_available_on_date' => $isAvailableOnDate, // New field
+                    'catering_service' => $service->cateringService ?? null,
+                    'photography_service' => $service->photographyService ?? null
+                ];
+            });
 
+        return response()->json([
+            'success' => true,
+            'data' => $services
+        ]);
 
-            return response()->json([
-                'success' => true,
-                'data' => $services
-            ]);
-
-        } catch (\Exception $e) {
-            \Log::error("Service fetch failed: {$e->getMessage()}");
-            return response()->json([
-                'success' => false,
-                'message' => 'Could not load services',
-                'error' => config('app.debug') ? $e->getMessage() : null
-            ], 500);
-        }
+    } catch (\Exception $e) {
+        \Log::error("Service fetch failed: {$e->getMessage()}");
+        return response()->json([
+            'success' => false,
+            'message' => 'Could not load services',
+            'error' => config('app.debug') ? $e->getMessage() : null
+        ], 500);
     }
+}
+
+/**
+ * Check if a service is available on a specific date
+ */
+private function checkServiceAvailabilityOnDate($service, $eventDate)
+{
+    // If no date provided, return general availability
+    if (!$eventDate) {
+        return $service->is_available;
+    }
+
+    // If service is generally not available, return false
+    if (!$service->is_available) {
+        return false;
+    }
+
+    // Check if the service is already booked on this date with confirmed status
+    $hasBooking = \App\Models\Booking::where('service_id', $service->id)
+        ->where('booking_date', $eventDate)
+        ->whereIn('status', ['confirmed', 'completed']) // Only confirmed/completed bookings block availability
+        ->exists();
+
+    return !$hasBooking;
+}
 
 }

@@ -9,6 +9,10 @@ const props = defineProps({
         type: Array,
         required: true,
         default: () => []
+    },
+    eventDate: {
+        type: String,
+        default: null
     }
 })
 
@@ -69,7 +73,9 @@ const fetchServices = async () => {
     errorMessage.value = null
 
     try {
-        const response = await axios.get(`/api/services/${currentCategory.value.id}`)
+        const response = await axios.get(`/api/services/${currentCategory.value.id}`, {
+            params: { event_date: props.eventDate }
+        })
         services.value = response.data.success ? response.data.data : []
         errorMessage.value = response.data.success ? null : (response.data.message || 'Failed to load services')
     } catch (error) {
@@ -126,6 +132,11 @@ const nextStep = () => {
     } else {
         console.log('Final selection:', selectedServices.value)
     }
+}
+
+//Check if service available
+const isServiceAvailableOnDate = (service) => {
+    return service.is_available_on_date ?? service.is_available
 }
 </script>
 
@@ -271,18 +282,19 @@ const nextStep = () => {
                             <div class="flex-1">
                                 <div class="flex justify-between items-start">
                                     <div class="flex-1">
-                                        <h3 class="text-lg font-bold text-gray-900">{{ service.name }}</h3>
+                                        <h3 class="text-lg font-bold text-gray-900">{{ service.vendor?.business_name ||
+                                            'Unknown vendor' }}</h3>
                                         <div class="flex items-center text-gray-500 text-xs mt-1">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor"
+                                            <!-- <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                                     d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
                                                 </path>
-                                            </svg>
-                                            <span>{{ service.vendor?.business_name || 'Unknown vendor' }}</span>
+                                            </svg> -->
+                                            <!-- <span>{{ service.vendor?.business_name || 'Unknown vendor' }}</span> -->
                                         </div>
                                         <!-- Price Display -->
-                                        <div v-if="service.price"
+                                        <!-- <div v-if="service.price"
                                             class="flex items-center text-[#239BA7] text-sm font-semibold mt-1">
                                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
@@ -290,30 +302,33 @@ const nextStep = () => {
                                                     d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                                             </svg>
                                             ₱{{ Number(service.price).toLocaleString() }}
-                                        </div>
+                                        </div> -->
                                     </div>
                                     <div class="flex flex-col items-end ml-4">
                                         <span :class="{
-                                            'bg-green-100 text-green-800': service.is_available,
-                                            'bg-gray-100 text-gray-800': !service.is_available
+                                            'bg-green-100 text-green-800': isServiceAvailableOnDate(service),
+                                            'bg-gray-100 text-gray-800': !isServiceAvailableOnDate(service)
                                         }" class="px-2 py-1 text-xs font-medium rounded-full">
-                                            {{ service.is_available ? 'Available' : 'Unavailable' }}
+                                            {{ isServiceAvailableOnDate(service) ? 'Available' : 'Date Unavailable' }}
                                         </span>
+                                        <!-- <span>{{ isServiceAvailableOnDate(service) ? 'Yes' : 'No' }}</span> -->
                                     </div>
                                 </div>
 
-                                <p class="text-gray-600 text-sm mt-2 line-clamp-2">{{ service.description }}</p>
+                                <!-- <p class="text-gray-600 text-sm mt-2 line-clamp-2">{{ service.description }}</p> -->
 
                                 <!-- Specialized Service Details -->
                                 <div v-if="service.catering_service || service.photography_service" class="mt-4">
                                     <div v-if="service.catering_service">
                                         <CateringSelectionCard :service="service"
                                             :isSelected="isServiceSelected(service)" @select="selectService"
-                                            v-model:selectedDishes="selectedDishes" />
+                                            v-model:selectedDishes="selectedDishes"
+                                            :isDateAvailable="isServiceAvailableOnDate(service)" />
                                     </div>
                                     <div v-if="service.photography_service">
                                         <PhotographySelectionCard :service="service"
-                                            :isSelected="isServiceSelected(service)" @select="selectService" />
+                                            :isSelected="isServiceSelected(service)" @select="selectService"
+                                            :isDateAvailable="isServiceAvailableOnDate(service)" />
                                     </div>
                                 </div>
                             </div>
