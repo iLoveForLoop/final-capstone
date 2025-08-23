@@ -1,4 +1,6 @@
 <script setup>
+
+import ServiceViewModal from '@/Components/ServiceViewModal.vue';
 import { ref } from 'vue';
 
 const props = defineProps({
@@ -17,6 +19,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['select', 'view'])
+
+const serviceViewModal = ref(null)
 
 const showDetails = ref(false);
 
@@ -45,11 +49,17 @@ const handleSelect = () => {
 }
 
 const handleView = () => {
-    emit('view', props.service.id)
+    serviceViewModal.value?.openModal()
 }
+
+const handleServiceViewClose = () => {
+    console.log('closeeedd')
+}
+
 </script>
 
 <template>
+    <ServiceViewModal ref="serviceViewModal" :service="service" @close="handleServiceViewClose" />
     <div class="bg-white rounded-xl border border-gray-200 p-5 space-y-5 hover:shadow-sm transition-shadow">
         <!-- Header with Price and Coverage Type -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

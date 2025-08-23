@@ -260,10 +260,10 @@ defineExpose({
                                                         :class="{ 'text-[#239BA7]': isDishSelected(category, dish) }">
                                                         {{ dish }}
                                                     </h5>
-                                                    <p v-if="!isDishSelected(category, dish) && isSelectionLimitReached(category)"
+                                                    <!-- <p v-if="!isDishSelected(category, dish) && isSelectionLimitReached(category)"
                                                         class="text-xs text-gray-500 mt-1">
                                                         Selection limit reached
-                                                    </p>
+                                                    </p> -->
                                                 </div>
                                             </div>
                                         </div>

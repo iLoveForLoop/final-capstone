@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import DishSelectionModal from './DishSelectionModal.vue';
+import ServiceViewModal from '../../ServiceViewModal.vue';
 
 const props = defineProps({
     service: {
@@ -15,7 +16,6 @@ const props = defineProps({
         type: Boolean,
         default: false
     }
-
 })
 
 const emit = defineEmits(['select', 'view'])
@@ -48,13 +48,13 @@ const handleSelect = () => {
     } else {
         emit('select', props.service.id)
     }
-
 }
 
 const handleView = () => {
-    emit('view', props.service.id)
+    serviceViewModal.value?.openModal();
 }
 
+// Dish Selection Modal
 const dishModal = ref(null);
 const selectedDishes = ref({});
 
@@ -72,17 +72,22 @@ const toggleDishModal = () => {
 
 const updateSelectedDishes = (newSelection) => {
     selectedDishes.value = newSelection || {};
-
     finalSelectedDishes.value = selectedDishes.value
 
     if (hasSelections()) {
         emit('select', props.service.id);
     }
-
 };
 
 const handleModalClose = () => {
     console.log('Modal was closed');
+};
+
+// Service View Modal
+const serviceViewModal = ref(null);
+
+const handleServiceViewClose = () => {
+    console.log('Service view modal was closed');
 };
 
 // Helper function to get selected dish count
@@ -102,13 +107,14 @@ watch(() => props.isSelected, (newValue) => {
         selectedDishes.value = {}
     }
 })
-
 </script>
 
 <template>
-
+    <!-- Modals -->
     <DishSelectionModal ref="dishModal" :service="service" v-model="selectedDishes"
         @update:modelValue="updateSelectedDishes" @close="handleModalClose" :isSelected="isSelected" />
+
+    <ServiceViewModal ref="serviceViewModal" :service="service" @close="handleServiceViewClose" />
 
     <div class="bg-white rounded-xl border border-gray-200 p-5 space-y-5 hover:shadow-sm transition-shadow">
         <!-- Header with Price and Buffet Type -->
