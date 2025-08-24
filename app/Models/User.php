@@ -51,10 +51,10 @@ class User extends Authenticatable implements HasMedia
         ];
     }
 
-    public function vendors()
-    {
-        return $this->hasMany(Vendor::class);
-    }
+    // public function vendors()
+    // {
+    //     return $this->hasMany(Vendor::class);
+    // }
 
     public function vendor()
     {

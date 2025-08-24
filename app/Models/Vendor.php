@@ -35,6 +35,11 @@ class Vendor extends Model
         return $this->hasMany(Review::class); // vendor_id on reviews
     }
 
+    public function averageRating()
+    {
+        return $this->reviews()->avg('rating');
+    }
+
     public function bookings()
     {
         return $this->hasMany(Booking::class); // vendor_id on bookings

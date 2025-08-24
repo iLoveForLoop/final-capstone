@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -11,48 +12,73 @@ class ServiceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-        {
-            $vendor = auth()->user()->vendor;
+    public function index(Request $request)
+    {
+        $user = auth()->user();
+        $isVendor = $user->hasRole('vendor');
 
-            $services = $vendor->services()->paginate(10);
-
-
-            $categories = $vendor->serviceCategories;
-
-            // dd($categories);
-
-
-            $service_categories = $vendor->serviceCategories()->select('id', 'name')->get();
-
-            $services->getCollection()->transform(function ($service) {
-                    return [
-                        'id' => $service->id,
-                        'vendor_id' => $service->vendor_id,
-                        'service_category_id' => $service->service_category_id,
-                        'name' => $service->name,
-                        'description' => $service->description,
-                        'price' => $service->price,
-                        'is_available' => $service->is_available,
-                        'image_url' =>$service->getFirstMediaUrl('images'),
-                        'category' => $service->category,
-                        'catering_service' => $service->cateringService ?? null,
-                        'photography_service' => $service->photographyService ?? null
-                    ];
-                });
-
-            // if ($vendor->serviceCategories()->where('name', 'catering')->exists()) {
-
-
-            //     $dishes = $vendor->dishes()->paginate(10);
-
-            //     return inertia('Vendor/Services/Catering/Index', compact('services', 'dishes', 'service_categories'));
-            // }
-
-
-
-            return inertia('Vendor/Services/Index', compact('services', 'categories', 'service_categories'));
+        // 🔹 Base query: Vendor services or all services for clients/others
+        if ($isVendor && $user->vendor) {
+            $query = $user->vendor->services()
+                ->with(['category', 'cateringService', 'photographyService']);
+        } else {
+            $query = Service::with(['category', 'cateringService', 'photographyService']);
         }
+
+        // 🔹 Search filter
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        // 🔹 Availability filter
+        if ($request->availability === 'available') {
+            $query->where('is_available', true);
+        } elseif ($request->availability === 'unavailable') {
+            $query->where('is_available', false);
+        }
+
+        // 🔹 Category filter
+        if ($request->category && $request->category !== 'all') {
+            $query->where('service_category_id', $request->category);
+        }
+
+        // 🔹 Pagination + transform for frontend
+        $services = $query->paginate(10)->withQueryString()->through(fn($service) => [
+            'id' => $service->id,
+            'vendor_id' => $service->vendor_id,
+            'service_category_id' => $service->service_category_id,
+            'name' => $service->name,
+            'description' => $service->description,
+            'price' => $service->price,
+            'is_available' => $service->is_available,
+            'image_url' => $service->getFirstMediaUrl('images'),
+            'category' => $service->category,
+            'catering_service' => $service->cateringService,
+            'photography_service' => $service->photographyService,
+            'average_rating' => $service->vendor->averageRating()
+        ]);
+
+        // 🔹 Categories: vendor-specific or all
+        $categories = $isVendor && $user->vendor
+            ? $user->vendor->serviceCategories()->select('id', 'name')->get()
+            : ServiceCategory::select('id', 'name')->get();
+
+        // 🔹 Pass filters back to Inertia
+        $filters = $request->only(['search', 'availability', 'category']);
+
+        // 🔹 Choose correct view
+        $view = match (true) {
+            $user->hasRole('vendor') => 'Vendor/Services/Index',
+            $user->hasRole('client') => 'Client/Services/Index',
+            default => 'Services/Index',
+        };
+
+        return inertia($view, compact('services', 'categories', 'filters'));
+    }
+
+
+
+
 
     /**
      * Show the form for creating a new resource.

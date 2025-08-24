@@ -16,56 +16,57 @@ class BookingController extends Controller
      */
     public function index(Request $request)
     {
-        $vendor = auth()->user()->vendor;
+        $user = auth()->user();
 
+        // 🔹 Base query: Vendor sees their bookings, Client sees their own bookings
+        if ($user->hasRole('vendor')) {
+            $vendor = $user->vendor;
 
+            if (!$vendor) {
+                return back()->with('error', 'Vendor profile not found.');
+            }
 
-        // Get base query with proper relationships
-        $query = $vendor->bookings()
-        ->with(['user', 'service.category', 'service.cateringService', 'event', 'user.client']);
+            $query = $vendor->bookings()
+                ->with(['user', 'service.category', 'service.cateringService', 'event', 'user.client']);
 
-        // Apply search filter
+        } elseif ($user->hasRole('client')) {
+            $query = $user->bookings()
+                ->with(['service.category', 'service.cateringService', 'event']);
+        } else {
+            return back()->with('error', 'Unauthorized.');
+        }
+
+        // 🔹 Search filter
         if ($request->filled('search')) {
             $search = $request->get('search');
             $query->where(function ($q) use ($search) {
                 $q->where('id', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($userQuery) use ($search) {
-                      $userQuery->where('name', 'like', "%{$search}%")
-                               ->orWhere('email', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('service', function ($serviceQuery) use ($search) {
-                      $serviceQuery->where('name', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('event', function ($eventQuery) use ($search) {
-                      $eventQuery->where('name', 'like', "%{$search}%")
-                               ->orWhere('location', 'like', "%{$search}%");
-                  });
+                ->orWhereHas('user', fn($uq) => $uq->where('name', 'like', "%{$search}%")
+                                                    ->orWhere('email', 'like', "%{$search}%"))
+                ->orWhereHas('service', fn($sq) => $sq->where('name', 'like', "%{$search}%"))
+                ->orWhereHas('event', fn($eq) => $eq->where('name', 'like', "%{$search}%")
+                                                    ->orWhere('location', 'like', "%{$search}%"));
             });
         }
 
-        // Apply status filter
+        // 🔹 Status filter
         if ($request->filled('status') && $request->get('status') !== 'all') {
             $query->where('status', $request->get('status'));
         }
 
-        // Apply date range filter
+        // 🔹 Date range filter
         if ($request->filled('date_range') && $request->get('date_range') !== 'all') {
-            $dateRange = $request->get('date_range');
             $today = Carbon::now()->startOfDay();
-
-            switch ($dateRange) {
+            switch ($request->get('date_range')) {
                 case 'today':
                     $query->whereDate('booking_date', $today);
                     break;
                 case 'week':
-                    $query->whereBetween('booking_date', [
-                        $today,
-                        $today->copy()->addWeek()
-                    ]);
+                    $query->whereBetween('booking_date', [$today, $today->copy()->addWeek()]);
                     break;
                 case 'month':
                     $query->whereMonth('booking_date', $today->month)
-                          ->whereYear('booking_date', $today->year);
+                        ->whereYear('booking_date', $today->year);
                     break;
                 case 'upcoming':
                     $query->where('booking_date', '>=', $today);
@@ -76,7 +77,7 @@ class BookingController extends Controller
             }
         }
 
-        // Apply sorting
+        // 🔹 Sorting
         $sortBy = $request->get('sort', 'date_desc');
         switch ($sortBy) {
             case 'date_desc':
@@ -84,13 +85,13 @@ class BookingController extends Controller
                 break;
             case 'price_asc':
                 $query->join('services', 'bookings.service_id', '=', 'services.id')
-                      ->orderBy('services.price', 'asc')
-                      ->select('bookings.*'); // Ensure we only select booking columns
+                    ->orderBy('services.price', 'asc')
+                    ->select('bookings.*');
                 break;
             case 'price_desc':
                 $query->join('services', 'bookings.service_id', '=', 'services.id')
-                      ->orderBy('services.price', 'desc')
-                      ->select('bookings.*');
+                    ->orderBy('services.price', 'desc')
+                    ->select('bookings.*');
                 break;
             case 'date_asc':
             default:
@@ -98,22 +99,20 @@ class BookingController extends Controller
                 break;
         }
 
-        // Get paginated results
-        $bookings = $query->paginate(20);
+        // 🔹 Paginate + transform
+        $bookings = $query->paginate(20)->withQueryString()->through(function ($booking) {
+            $eventTime = $booking->event && $booking->event->event_time
+                ? Carbon::parse($booking->event->event_time)->format('g:i A')
+                : 'Time TBD';
 
-        // Transform the data for frontend
-        $transformedBookings = $bookings->through(function ($booking) {
-            $eventTime = 'Time TBD';
-            $is_per_pax = ($booking->service->cateringService->price ?? false) !== ($booking->service->cateringService->package_price ?? null);
-            if ($booking->event && $booking->event->event_time) {
-                $eventTime = Carbon::parse($booking->event->event_time)->format('g:i A');
-            }
+            $is_per_pax = $booking->service->cateringService
+                ? ($booking->service->cateringService->price ?? false) !== ($booking->service->cateringService->package_price ?? null)
+                : false;
 
             return [
                 'id' => 'BK' . str_pad($booking->id, 3, '0', STR_PAD_LEFT),
                 'client' => $booking->user->name ?? 'N/A',
                 'client_email' => $booking->user->email ?? 'N/A',
-                // 'service' => $booking->service->name ?? 'N/A',
                 'event_name' => $booking->event->name ?? 'N/A',
                 'event_location' => $booking->event->location ?? 'N/A',
                 'date' => $booking->booking_date,
@@ -133,17 +132,23 @@ class BookingController extends Controller
                 'pax' => $booking->pax,
                 'catering_dishes' => $booking->catering_dishes,
                 'service' => $booking->service,
-                'category' => $booking->service->category->name,
-                'is_per_pax' => $is_per_pax
-
+                'category' => $booking->service->category->name ?? 'N/A',
+                'is_per_pax' => $is_per_pax,
             ];
         });
 
-        // Get booking statistics
-        $stats = $this->getBookingStats($vendor);
+        // 🔹 Vendor gets stats, client doesn’t
+        $stats = $user->hasRole('vendor') ? $this->getBookingStats($user->vendor) : null;
 
-        return inertia('Vendor/Bookings/Index', [
-            'bookings' => $transformedBookings,
+        // 🔹 Choose correct view
+        $view = match (true) {
+            $user->hasRole('vendor') => 'Vendor/Bookings/Index',
+            $user->hasRole('client') => 'Client/Bookings/Index',
+            default => 'Bookings/Index',
+        };
+
+        return inertia($view, [
+            'bookings' => $bookings,
             'stats' => $stats,
             'filters' => [
                 'search' => $request->get('search', ''),
@@ -153,6 +158,7 @@ class BookingController extends Controller
             ]
         ]);
     }
+
 
     /**
      * Accept a pending booking

@@ -84,13 +84,6 @@ const getTotalDishCount = (dishes) => {
                 </span>
             </div>
 
-            <!-- Buffet Type Badge (Bottom Right) -->
-            <div v-if="service.catering_service?.buffet_type" class="absolute bottom-3 right-3">
-                <span
-                    class="text-xs font-semibold text-white bg-indigo-600/90 px-3 py-1 rounded-full shadow-sm backdrop-blur-sm">
-                    {{ service.catering_service.buffet_type }}
-                </span>
-            </div>
         </div>
 
         <!-- Service Details -->
@@ -159,7 +152,7 @@ const getTotalDishCount = (dishes) => {
                 </div>
 
                 <!-- Service Areas -->
-                <!-- <div v-if="service.catering_service?.service_area?.length" class="space-y-2">
+                <div v-if="service.catering_service?.service_area?.length" class="space-y-2">
                     <h4 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
                         <svg class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -175,7 +168,7 @@ const getTotalDishCount = (dishes) => {
                             {{ area }}
                         </span>
                     </div>
-                </div> -->
+                </div>
 
                 <!-- Specifications -->
                 <div v-if="service.catering_service?.specifications?.length" class="space-y-2">

@@ -5,12 +5,15 @@ import { usePage } from '@inertiajs/vue3';
 import LoginModal from '@/Components/LoginModal.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
+import MyDropdown from '@/Components/MyDropdown.vue';
 
 
 
 const page = usePage()
 
 const loginModal = ref(null)
+const isDropdownShowing = ref(false)
+const isMobileMenuOpen = ref(false)
 
 defineProps({
     canLogin: {
@@ -45,129 +48,190 @@ defineProps({
 
 
         <!-- Sticky Navigation -->
-        <nav class="sticky top-0 z-20 bg-white shadow-sm">
-
-            <div class="container mx-auto px-6 py-4">
+        <nav class="sticky top-0 z-30 bg-[#bad6d8] backdrop-blur-md border-b border-slate-300/20">
+            <div class="max-w-7xl mx-auto px-6 py-4 relative">
                 <div class="flex items-center justify-between">
                     <!-- Logo -->
-                    <Link href="/" class="text-2xl font-bold text-[#239BA7]">Eventory</Link>
+                    <div class="flex">
+                        <Link href="/" class="flex items-center space-x-2 group">
+                        <span
+                            class="text-2xl font-bold text-slate-800 group-hover:text-purple-700 transition-colors duration-300 ">
+                            Eventory
+                        </span>
+                        </Link>
+                    </div>
 
-                    <!-- Desktop Navigation -->
-                    <div class="hidden md:flex items-center space-x-8">
-                        <!-- Common Links -->
-                        <Link href="/" class="text-gray-700 hover:text-[#239BA7] transition"
-                            :class="{ 'font-semibold text-[#239BA7]': page.url === '/' }">Home</Link>
-                        <Link href="/services" class="text-gray-700 hover:text-[#239BA7] transition"
-                            :class="{ 'font-semibold text-[#239BA7]': page.url.startsWith('/services') }">Browse
-                        Services</Link>
-
-                        <!-- Conditional Links -->
+                    <!-- Right Side Actions -->
+                    <div class="hidden lg:flex items-center space-x-3">
                         <template v-if="page.props.auth.user">
-                            <Link href="/bookings" class="text-gray-700 hover:text-[#239BA7] transition"
-                                :class="{ 'font-semibold text-[#239BA7]': page.url.startsWith('/bookings') }">My
-                            Bookings</Link>
-                            <Link href="/favorites" class="text-gray-700 hover:text-[#239BA7] transition"
-                                :class="{ 'font-semibold text-[#239BA7]': page.url.startsWith('/favorites') }">
-                            Favorites</Link>
+                            <!-- Use MyDropdown Component -->
+                            <MyDropdown />
                         </template>
-
-                        <Link href="/categories" class="text-gray-700 hover:text-[#239BA7] transition"
-                            :class="{ 'font-semibold text-[#239BA7]': page.url.startsWith('/categories') }">
-                        Categories
-                        </Link>
-                        <Link href="#how-it-works" class="text-gray-700 hover:text-[#239BA7] transition">How It Works
-                        </Link>
-
-                        <!-- Search Bar -->
-                        <!-- <div class="relative ml-4">
-                            <input type="text" placeholder="Search services..."
-                                class="pl-4 pr-10 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent w-48">
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                class="h-5 w-5 text-gray-400 absolute right-3 top-2.5" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div> -->
-
-                        <!-- Auth Links -->
-                        <template v-if="canLogin">
-                            <template v-if="page.props.auth.user">
-                                <!-- Profile Dropdown -->
-                                <div class="relative ml-4">
-                                    <button class="flex items-center space-x-2 focus:outline-none">
-                                        <div
-                                            class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-[#239BA7] font-semibold">
-                                            {{ page.props.auth.user.name.charAt(0) }}
-                                        </div>
-                                    </button>
-                                    <div
-                                        class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden group-hover:block">
-                                        <Link href="/profile" class="block px-4 py-2 text-gray-700 hover:bg-purple-50">
-                                        My Profile</Link>
-                                        <Link href="/logout" method="post" as="button"
-                                            class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-purple-50">
-                                        Logout</Link>
-                                    </div>
-                                </div>
-
-                                <div class="hidden sm:ms-6 sm:flex sm:items-center">
-                                    <!-- Settings Dropdown -->
-                                    <div class="relative ms-3">
-                                        <Dropdown align="right" width="48">
-                                            <template #trigger>
-                                                <span class="inline-flex rounded-md">
-                                                    <button type="button"
-                                                        class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none dark:bg-gray-800 dark:text-gray-400 dark:hover:text-gray-300">
-                                                        {{ $page.props.auth.user.name }}
-
-                                                        <svg class="-me-0.5 ms-2 h-4 w-4"
-                                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                                                            fill="currentColor">
-                                                            <path fill-rule="evenodd"
-                                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                                clip-rule="evenodd" />
-                                                        </svg>
-                                                    </button>
-                                                </span>
-                                            </template>
-
-                                            <template #content>
-                                                <DropdownLink :href="route('profile.edit')">
-                                                    Profile
-                                                </DropdownLink>
-                                                <DropdownLink :href="route('logout')" method="post" as="button">
-                                                    Log Out
-                                                </DropdownLink>
-                                            </template>
-                                        </Dropdown>
-                                    </div>
-                                </div>
-                            </template>
-                            <template v-else>
-                                <button @click="loginModal.show()"
-                                    class="text-gray-700 hover:text-[#239BA7] transition">
-                                    Login</button>
-                                <Link v-if="canRegister" :href="route('register')"
-                                    class="px-4 py-2 bg-[#239BA7] text-white rounded-lg hover:bg-purple-700 transition">
-                                Register</Link>
-                            </template>
+                        <template v-else>
+                            <!-- Login Button -->
+                            <Link href="/login"
+                                class="px-4 py-2 text-slate-700 hover:text-slate-900 transition-all duration-300 font-medium">
+                            Log In
+                            </Link>
+                            <!-- Get Started Button -->
+                            <Link href="/register"
+                                class="px-6 py-2 bg-gradient-to-r from-[#239BA7] to-[#1b848e] text-white rounded-full hover:from-[#2aa8b4] hover:to-[#239BA7] transition-all duration-300 font-semibold shadow-lg hover:shadow-purple-500/25">
+                            Get Started
+                            </Link>
                         </template>
                     </div>
 
                     <!-- Mobile Menu Button -->
-                    <div class="md:hidden">
-                        <button class="text-gray-700 focus:outline-none">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 6h16M4 12h16M4 18h16" />
+                    <div class="lg:hidden">
+                        <button @click="isMobileMenuOpen = !isMobileMenuOpen"
+                            class="p-2 text-slate-700 hover:text-slate-900 hover:bg-white/20 rounded-lg transition-all duration-300">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path v-if="!isMobileMenuOpen" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                                <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
                     </div>
                 </div>
+
+                <!-- ✅ Center Navigation (Always centered) -->
+                <div
+                    class="hidden lg:flex items-center space-x-1 absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
+                    <Link href="/"
+                        class="px-4 py-2 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-white/20 transition-all duration-300 font-medium"
+                        :class="{ 'text-slate-900 bg-white/20': page.url === '/client' }">
+                    Home
+                    </Link>
+
+                    <Link href="/services"
+                        class="px-4 py-2 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-white/20 transition-all duration-300 font-medium"
+                        :class="{ 'text-slate-900 bg-white/20': page.url.startsWith('/services') }">
+                    Services
+                    </Link>
+
+                    <template v-if="page.props.auth.user">
+                        <Link href="/bookings"
+                            class="px-4 py-2 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-white/20 transition-all duration-300 font-medium"
+                            :class="{ 'text-slate-900 bg-white/20': page.url.startsWith('/bookings') }">
+                        Bookings
+                        </Link>
+                        <Link href="/favorites"
+                            class="px-4 py-2 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-white/20 transition-all duration-300 font-medium"
+                            :class="{ 'text-slate-900 bg-white/20': page.url.startsWith('/favorites') }">
+                        Favorites
+                        </Link>
+                    </template>
+
+                    <Link href="/categories"
+                        class="px-4 py-2 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-white/20 transition-all duration-300 font-medium"
+                        :class="{ 'text-slate-900 bg-white/20': page.url.startsWith('/categories') }">
+                    Categories
+                    </Link>
+                </div>
+
+                <!-- Mobile Menu -->
+                <div v-if="isMobileMenuOpen" class="lg:hidden mt-4 pb-4 border-t border-slate-300/20 pt-4">
+                    <div class="flex flex-col space-y-2">
+                        <Link href="/" @click="isMobileMenuOpen = false"
+                            class="px-4 py-3 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-white/20 transition-all duration-300 font-medium"
+                            :class="{ 'text-slate-900 bg-white/20': page.url === '/client' }">
+                        Home
+                        </Link>
+
+                        <Link href="/services" @click="isMobileMenuOpen = false"
+                            class="px-4 py-3 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-white/20 transition-all duration-300 font-medium"
+                            :class="{ 'text-slate-900 bg-white/20': page.url.startsWith('/services') }">
+                        Services
+                        </Link>
+
+                        <template v-if="page.props.auth.user">
+                            <Link href="/bookings" @click="isMobileMenuOpen = false"
+                                class="px-4 py-3 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-white/20 transition-all duration-300 font-medium"
+                                :class="{ 'text-slate-900 bg-white/20': page.url.startsWith('/bookings') }">
+                            Bookings
+                            </Link>
+                            <Link href="/favorites" @click="isMobileMenuOpen = false"
+                                class="px-4 py-3 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-white/20 transition-all duration-300 font-medium"
+                                :class="{ 'text-slate-900 bg-white/20': page.url.startsWith('/favorites') }">
+                            Favorites
+                            </Link>
+                        </template>
+
+                        <Link href="/categories" @click="isMobileMenuOpen = false"
+                            class="px-4 py-3 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-white/20 transition-all duration-300 font-medium"
+                            :class="{ 'text-slate-900 bg-white/20': page.url.startsWith('/categories') }">
+                        Categories
+                        </Link>
+
+                        <!-- Mobile Auth Section -->
+                        <div class="pt-4 border-t border-slate-300/20 mt-4">
+                            <template v-if="page.props.auth.user">
+                                <div
+                                    class="flex items-center space-x-3 px-4 py-3 text-slate-700 mb-2 bg-white/10 rounded-lg border border-slate-300/20">
+                                    <div
+                                        class="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center text-white font-medium text-sm">
+                                        {{page.props.auth.user.name.split(' ').map(word =>
+                                            word.charAt(0)).join('').substring(0, 2).toUpperCase()}}
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">{{ page.props.auth.user.name }}</p>
+                                        <p class="text-xs text-slate-600">{{ page.props.auth.user.email }}</p>
+                                    </div>
+                                </div>
+
+                                <Link :href="route('profile.edit')" @click="isMobileMenuOpen = false"
+                                    class="flex items-center px-4 py-3 text-slate-700 hover:text-slate-900 hover:bg-white/20 transition-all duration-300 font-medium rounded-lg">
+                                <svg class="w-4 h-4 mr-3 text-slate-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                Profile
+                                </Link>
+
+                                <Link href="/settings" @click="isMobileMenuOpen = false"
+                                    class="flex items-center px-4 py-3 text-slate-700 hover:text-slate-900 hover:bg-white/20 transition-all duration-300 font-medium rounded-lg"
+                                    v-if="route().has && route().has('settings')">
+                                <svg class="w-4 h-4 mr-3 text-slate-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                Settings
+                                </Link>
+
+                                <hr class="border-slate-300/20 my-2">
+
+                                <Link :href="route('logout')" method="post" as="button"
+                                    @click="isMobileMenuOpen = false"
+                                    class="flex items-center w-full px-4 py-3 text-slate-700 hover:text-red-600 hover:bg-red-100/30 transition-all duration-300 font-medium rounded-lg">
+                                <svg class="w-4 h-4 mr-3 text-slate-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                Sign out
+                                </Link>
+                            </template>
+                            <template v-else>
+                                <Link href="/login" @click="isMobileMenuOpen = false"
+                                    class="block px-4 py-3 text-slate-700 hover:text-slate-900 hover:bg-white/20 transition-all duration-300 font-medium rounded-lg">
+                                Log In
+                                </Link>
+                                <Link href="/register" @click="isMobileMenuOpen = false"
+                                    class="block mx-4 mt-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-full hover:from-purple-500 hover:to-purple-600 transition-all duration-300 font-semibold text-center shadow-lg">
+                                Get Started
+                                </Link>
+                            </template>
+                        </div>
+                    </div>
+                </div>
             </div>
         </nav>
+
 
         <!-- Hero Section with Search -->
         <section class="container mx-auto px-6 py-12 md:py-20">

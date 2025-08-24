@@ -135,6 +135,18 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client'])->gro
     //Adding Booking
     Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
 
+    //Show Services
+    Route::get('/services', [ServiceController::class, 'index'])->name('service.index');
+
+    //Show Bookings
+    Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
+
+    //Show Favorites
+    Route::get('/favorites', [ClientController::class, 'favorites'])->name('favorites.index');
+
+    // Show Events
+    Route::get('/events', [ClientController::class, 'events'])->name('events.index');
+
 });
 
 

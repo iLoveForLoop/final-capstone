@@ -15,6 +15,11 @@ class Review extends Model
         return $this->belongsTo(Booking::class);
     }
 
+    public function vendor()
+    {
+        return $this->belongsTo(Vendor::class);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

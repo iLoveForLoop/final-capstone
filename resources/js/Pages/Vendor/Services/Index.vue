@@ -23,19 +23,15 @@ const props = defineProps({
         type: Object,
         default: () => ({
             search: '',
-            availability: 'all'
+            availability: 'all',
+            category: 'all'   // 🔹 added
         })
     },
     categories: {
         type: Array
     },
-
-    service_categories: {
-        type: Array
-    }
-
-
 });
+
 
 const availabilityOptions = [
     { value: 'all', label: 'All Services' },
@@ -195,7 +191,7 @@ const formatPrice = (price) => {
             <!-- <Pagination v-if="services.data.length > 0" :links="services.links" class="mt-6" /> -->
 
             <!-- Create Modal -->
-            <ServiceCreateModal ref="serviceCreateModal" :categories="service_categories" />
+            <ServiceCreateModal ref="serviceCreateModal" :categories="categories" />
             <!-- Edit Modal -->
             <!-- <ServiceEditModal ref="serviceEditModal" :categories="categories" /> -->
         </div>

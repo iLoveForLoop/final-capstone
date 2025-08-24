@@ -79,4 +79,14 @@ class ClientController extends Controller
     {
         //
     }
+
+    public function favorites(){
+
+        return inertia('Client/Favorites/Index');
+    }
+
+    public function events(){
+
+        return inertia('Client/Events/Index');
+    }
 }
