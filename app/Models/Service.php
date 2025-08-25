@@ -40,5 +40,10 @@ class Service extends Model implements HasMedia
         return $this->hasOne(PhotographyService::class);
     }
 
+    public function favoritedBy()
+    {
+        return $this->belongsToMany(User::class, 'favorites')->withTimestamps();
+    }
+
     protected $guarded = [];
 }

@@ -14,19 +14,22 @@ class ClientController extends Controller
      */
     public function index()
     {
-        $services = Service::paginate(8);
-        $categories = ServiceCategory::all();
-        // dd('here');
 
-    $services->getCollection()->transform(function ($service) {
-        return [
+        $query = Service::with(['category', 'vendor']);
+        $categories = ServiceCategory::all();
+
+        $services = $query->paginate(8)->withQueryString()->through(fn($service) => [
+
             'id' => $service->id,
             'name' => $service->name,
             'description' => $service->description,
             'price' => $service->price,
-            'image_url' => $service->getFirstMediaUrl('images')
-        ];
-    });
+            'image_url' => $service->getFirstMediaUrl('images'),
+            'category_name' => $service->category->name,
+            'dateAdded' => $service->created_at->format('Y-m-d'),
+            'vendor' => $service->vendor
+        ]);
+
 
     return inertia('Client/Index', compact('services', 'categories'));
 
@@ -87,6 +90,8 @@ class ClientController extends Controller
 
     public function events(){
 
-        return inertia('Client/Events/Index');
+        $events = auth()->user()->events()->get();
+        // dd($events);
+        return inertia('Client/Events/Index', compact('events'));
     }
 }

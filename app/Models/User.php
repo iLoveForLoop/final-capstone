@@ -74,4 +74,13 @@ class User extends Authenticatable implements HasMedia
     public function client(){
         return $this->hasOne(Client::class);
     }
+
+    public function favorites()
+    {
+        return $this->belongsToMany(Service::class, 'favorites')->withTimestamps();
+    }
+
+    public function events(){
+        return $this->hasMany(Event::class);
+    }
 }

@@ -91,72 +91,47 @@ const renderStars = (rating) => {
     <!-- Grid View -->
     <div v-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div v-for="service in services.data" :key="service.id"
-            class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-sm transition-shadow">
-            <!-- Service Image -->
-            <div class="relative h-48 bg-gray-100">
+            class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+            <div class="relative">
                 <img v-if="service.image_url" :src="service.image_url" :alt="service.name"
-                    class="w-full h-full object-cover">
-                <div v-else class="flex items-center justify-center h-full text-gray-400">
-                    <div class="text-4xl">{{ getServiceInfo(service).icon }}</div>
+                    class="w-full h-48 object-cover">
+                <div v-else class="w-full h-48 bg-gray-100 flex items-center justify-center">
+                    <div class="text-4xl text-gray-400">{{ getServiceInfo(service).icon }}</div>
                 </div>
-
-                <!-- Service Type Badge -->
-                <div class="absolute top-3 left-3">
-                    <span
-                        class="px-2 py-1 bg-white/90 backdrop-blur-sm text-gray-700 text-xs rounded-full font-medium capitalize">
-                        {{ getServiceInfo(service).type }}
+                <div class="absolute top-3 right-3 flex space-x-2">
+                    <span v-if="service.is_available" class="bg-green-500 text-white px-2 py-1 text-xs rounded">
+                        Available
                     </span>
-                </div>
-
-                <!-- Availability Badge -->
-                <div class="absolute top-3 right-3">
-                    <span :class="[
-                        'px-2 py-1 text-xs rounded-full font-medium',
-                        service.is_available
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                    ]">
-                        {{ service.is_available ? 'Available' : 'Booked' }}
+                    <span v-else class="bg-red-500 text-white px-2 py-1 text-xs rounded">
+                        Unavailable
                     </span>
                 </div>
             </div>
-
-            <!-- Service Content -->
-            <div class="p-6">
-                <!-- Title and Rating -->
-                <div class="mb-3">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-1 line-clamp-1">{{ service.name }}</h3>
-
-                    <!-- Rating -->
-                    <div v-if="service.average_rating" class="flex items-center gap-2 mb-2">
-                        <div class="flex text-yellow-400 text-sm">
-                            <span v-for="(star, index) in renderStars(service.average_rating)" :key="index"
-                                :class="star === '★' ? 'text-yellow-400' : 'text-gray-300'">
-                                {{ star }}
-                            </span>
-                        </div>
-                        <span class="text-sm text-gray-600">
-                            {{ Number(service.average_rating).toFixed(1) }}
-                            <span v-if="service.reviews_count">({{ service.reviews_count }})</span>
-                        </span>
+            <div class="p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded capitalize">
+                        {{ getServiceInfo(service).type }}
+                    </span>
+                    <div v-if="service.average_rating" class="flex items-center text-sm text-gray-500">
+                        <svg class="w-4 h-4 mr-1 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        {{ Number(service.average_rating).toFixed(1) }}
                     </div>
-                    <div v-else class="text-sm text-gray-500 mb-2">No reviews yet</div>
+                    <div v-else class="text-sm text-gray-400">No reviews</div>
                 </div>
-
-                <!-- Service Category -->
-                <div class="text-sm text-gray-600 mb-2">
-                    {{ service.category?.name || 'Service' }}
-                </div>
+                <h3 class="font-semibold text-gray-900 mb-2 line-clamp-1">{{ service.name }}</h3>
+                <div class="text-sm text-gray-600 mb-2">{{ service.category?.name || 'Service' }}</div>
 
                 <!-- Service-specific details -->
                 <div class="mb-3">
-                    <div class="flex flex-wrap gap-2 mb-2">
+                    <div class="flex flex-wrap gap-1 mb-2">
                         <span v-for="detail in getServiceInfo(service).details.slice(0, 2)" :key="detail"
-                            class="text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded border border-blue-200">
+                            class="text-xs px-2 py-1 bg-gray-50 text-gray-700 rounded border border-gray-200">
                             {{ detail }}
                         </span>
                     </div>
-
                     <!-- Menu count for catering -->
                     <div v-if="getServiceInfo(service).type === 'catering' && getServiceInfo(service).menuCount > 0"
                         class="text-xs text-gray-600">
@@ -164,27 +139,29 @@ const renderStars = (rating) => {
                     </div>
                 </div>
 
-                <!-- Description -->
-                <p class="text-gray-600 text-sm mb-4 line-clamp-2">
-                    {{ service.description }}
-                </p>
-
-                <!-- Price and Action -->
-                <div class="flex items-center justify-between">
-                    <div>
-                        <div class="text-lg font-semibold text-gray-900">
-                            {{ formatPrice(getServiceInfo(service).price) }}
-                            <span v-if="getServiceInfo(service).type === 'catering'"
-                                class="text-sm text-gray-500">/pax</span>
-                        </div>
-                        <div v-if="getServiceInfo(service).hasDelivery" class="text-xs text-gray-500">
-                            + {{ formatPrice(getServiceInfo(service).deliveryFee) }} delivery
-                        </div>
+                <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ service.description }}</p>
+                <div class="flex items-center justify-between mb-3">
+                    <div class="text-lg font-bold text-green-600">
+                        {{ formatPrice(getServiceInfo(service).price) }}
+                        <span v-if="getServiceInfo(service).type === 'catering'"
+                            class="text-sm text-gray-500">/pax</span>
                     </div>
+                </div>
+                <div v-if="getServiceInfo(service).hasDelivery" class="text-xs text-gray-500 mb-3">
+                    + {{ formatPrice(getServiceInfo(service).deliveryFee) }} delivery fee
+                </div>
+                <div v-if="service.reviews_count" class="text-sm text-gray-600 mb-3">
+                    {{ service.reviews_count }} review{{ service.reviews_count !== 1 ? 's' : '' }}
+                </div>
+                <div class="flex space-x-2">
                     <Link :href="`/client/services/${service.id}`"
-                        class="bg-blue-600 text-white px-4 py-2 text-sm rounded hover:bg-blue-700 transition-colors">
+                        class="flex-1 bg-blue-600 text-white py-2 px-4 rounded text-sm hover:bg-blue-700 transition-colors text-center">
                     View Details
                     </Link>
+                    <button
+                        class="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded text-sm hover:bg-gray-50 transition-colors">
+                        Book Now
+                    </button>
                 </div>
             </div>
         </div>
@@ -192,50 +169,37 @@ const renderStars = (rating) => {
 
     <!-- List View -->
     <div v-else class="space-y-4">
-        <div v-for="service in services.data" :key="service.id" class="bg-white border border-gray-200 rounded-lg p-6">
-            <div class="flex items-start space-x-4">
-                <!-- Service Image -->
-                <div class="flex-shrink-0 w-20 h-20 bg-gray-100 rounded overflow-hidden">
-                    <img v-if="service.image_url" :src="service.image_url" :alt="service.name"
-                        class="w-full h-full object-cover">
-                    <div v-else class="flex items-center justify-center h-full text-gray-400">
-                        <div class="text-2xl">{{ getServiceInfo(service).icon }}</div>
-                    </div>
+        <div v-for="service in services.data" :key="service.id"
+            class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+            <div class="flex">
+                <img v-if="service.image_url" :src="service.image_url" :alt="service.name"
+                    class="w-48 h-32 object-cover">
+                <div v-else class="w-48 h-32 bg-gray-100 flex items-center justify-center">
+                    <div class="text-2xl text-gray-400">{{ getServiceInfo(service).icon }}</div>
                 </div>
-
-                <!-- Service Info -->
-                <div class="flex-1 min-w-0">
+                <div class="flex-1 p-4">
                     <div class="flex items-start justify-between">
-                        <div class="flex-1 min-w-0 pr-4">
-                            <!-- Title and Category -->
-                            <div class="flex items-center gap-2 mb-1">
-                                <h3 class="text-lg font-semibold text-gray-900">{{ service.name }}</h3>
-                                <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full capitalize">
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-2 capitalize">
                                     {{ getServiceInfo(service).type }}
                                 </span>
-                            </div>
-
-                            <div class="text-sm text-gray-600 mb-2">{{ service.category?.name || 'Service' }}</div>
-
-                            <!-- Rating -->
-                            <div v-if="service.average_rating" class="flex items-center gap-2 mb-2">
-                                <div class="flex text-yellow-400 text-sm">
-                                    <span v-for="(star, index) in renderStars(service.average_rating)" :key="index"
-                                        :class="star === '★' ? 'text-yellow-400' : 'text-gray-300'">
-                                        {{ star }}
-                                    </span>
-                                </div>
-                                <span class="text-sm text-gray-600">
-                                    {{ Number(service.average_rating).toFixed(1) }}
-                                    <span v-if="service.reviews_count">({{ service.reviews_count }})</span>
+                                <span v-if="service.is_available"
+                                    class="bg-green-500 text-white px-2 py-1 text-xs rounded">
+                                    Available
+                                </span>
+                                <span v-else class="bg-red-500 text-white px-2 py-1 text-xs rounded">
+                                    Unavailable
                                 </span>
                             </div>
-                            <div v-else class="text-sm text-gray-500 mb-2">No reviews yet</div>
+                            <h3 class="font-semibold text-gray-900 mb-1">{{ service.name }}</h3>
+                            <div class="text-sm text-gray-600 mb-2">{{ service.category?.name || 'Service' }}</div>
+                            <p class="text-sm text-gray-600 mb-2 line-clamp-1">{{ service.description }}</p>
 
                             <!-- Service-specific details -->
-                            <div class="flex flex-wrap gap-2 mb-2">
+                            <div class="flex flex-wrap gap-1 mb-2">
                                 <span v-for="detail in getServiceInfo(service).details.slice(0, 3)" :key="detail"
-                                    class="text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded border border-blue-200">
+                                    class="text-xs px-2 py-1 bg-gray-50 text-gray-700 rounded border border-gray-200">
                                     {{ detail }}
                                 </span>
                             </div>
@@ -246,39 +210,37 @@ const renderStars = (rating) => {
                                 {{ getServiceInfo(service).menuCount }} dishes available
                             </div>
 
-                            <!-- Description -->
-                            <p class="text-gray-600 text-sm line-clamp-1">{{ service.description }}</p>
-                        </div>
-
-                        <!-- Right side: Price, Availability, Action -->
-                        <div class="flex items-center space-x-4">
-                            <!-- Availability -->
-                            <span :class="[
-                                'px-2 py-1 text-xs rounded-full whitespace-nowrap',
-                                service.is_available
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-red-100 text-red-800'
-                            ]">
-                                {{ service.is_available ? 'Available' : 'Booked' }}
-                            </span>
-
-                            <!-- Price -->
-                            <div class="text-right">
-                                <div class="text-lg font-semibold text-gray-900">
-                                    {{ formatPrice(getServiceInfo(service).price) }}
-                                    <span v-if="getServiceInfo(service).type === 'catering'"
-                                        class="text-sm text-gray-500">/pax</span>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <div v-if="service.average_rating" class="flex items-center mr-4">
+                                    <svg class="w-4 h-4 mr-1 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path
+                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    </svg>
+                                    {{ Number(service.average_rating).toFixed(1) }}
+                                    <span v-if="service.reviews_count" class="ml-1">({{ service.reviews_count }})</span>
                                 </div>
-                                <div v-if="getServiceInfo(service).hasDelivery" class="text-xs text-gray-500">
-                                    + {{ formatPrice(getServiceInfo(service).deliveryFee) }} delivery
-                                </div>
+                                <span v-else>No reviews yet</span>
                             </div>
-
-                            <!-- Action Button -->
-                            <Link :href="`/client/services/${service.id}`"
-                                class="bg-blue-600 text-white px-4 py-2 text-sm rounded hover:bg-blue-700 transition-colors whitespace-nowrap">
-                            View Details
-                            </Link>
+                        </div>
+                        <div class="flex flex-col items-end ml-4">
+                            <div class="text-lg font-bold text-green-600 mb-2">
+                                {{ formatPrice(getServiceInfo(service).price) }}
+                                <span v-if="getServiceInfo(service).type === 'catering'"
+                                    class="text-sm text-gray-500">/pax</span>
+                            </div>
+                            <div v-if="getServiceInfo(service).hasDelivery" class="text-xs text-gray-500 mb-2">
+                                + {{ formatPrice(getServiceInfo(service).deliveryFee) }} delivery
+                            </div>
+                            <div class="flex space-x-2">
+                                <Link :href="`/client/services/${service.id}`"
+                                    class="bg-blue-600 text-white py-1 px-3 rounded text-sm hover:bg-blue-700 transition-colors">
+                                Details
+                                </Link>
+                                <button
+                                    class="border border-gray-300 text-gray-700 py-1 px-3 rounded text-sm hover:bg-gray-50 transition-colors">
+                                    Book
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

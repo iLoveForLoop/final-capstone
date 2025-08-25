@@ -5,6 +5,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CateringServiceController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DishController;
+use App\Http\Controllers\FavoritesController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PhotographyServiceController;
 use App\Http\Controllers\ProfileController;
@@ -142,7 +143,7 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client'])->gro
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
 
     //Show Favorites
-    Route::get('/favorites', [ClientController::class, 'favorites'])->name('favorites.index');
+    Route::get('/favorites', [FavoritesController::class, 'index'])->name('favorites.index');
 
     // Show Events
     Route::get('/events', [ClientController::class, 'events'])->name('events.index');
