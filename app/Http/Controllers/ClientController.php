@@ -90,8 +90,21 @@ class ClientController extends Controller
 
     public function events(){
 
-        $events = auth()->user()->events()->get();
-        // dd($events);
+        $user = auth()->user();
+
+        $query = $user->events()->with(['bookings.service.category']);
+
+        $events = $query->paginate(10)->withQueryString()->through(fn ($event) => [
+            'id' => 'EVT' . str_pad($event->id, 3, '0', STR_PAD_LEFT),
+            'title' => $event->name,
+            'start' => $event->event_date,
+            'location' => $event->location,
+            'decription' => $event->description,
+            'status' => $event->status
+
+        ]);
+
         return inertia('Client/Events/Index', compact('events'));
     }
+
 }

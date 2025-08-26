@@ -2,6 +2,15 @@
 import ClientNavbar from '@/Components/ClientNavbar.vue';
 import { ref, computed } from 'vue';
 
+const props = defineProps({
+    bookings: {
+        type: Object
+    },
+    categories: {
+        type: Array
+    }
+})
+
 // Mock booking statuses
 const bookingStatuses = [
     { value: 'all', label: 'All Bookings', color: 'gray' },
@@ -11,136 +20,6 @@ const bookingStatuses = [
     { value: 'cancelled', label: 'Cancelled', color: 'red' }
 ];
 
-// Mock categories
-const mockCategories = [
-    { id: 1, name: 'Photography' },
-    { id: 2, name: 'Catering' },
-    { id: 3, name: 'Entertainment' },
-    { id: 4, name: 'Decoration' },
-    { id: 5, name: 'Transportation' }
-];
-
-// Mock bookings data
-const mockBookings = ref({
-    data: [
-        {
-            id: 'BK001',
-            title: 'Professional Wedding Photography',
-            description: 'Wedding photography package with 8-hour coverage, edited photos, and video highlights.',
-            price: 15000,
-            category: { id: 1, name: 'Photography' },
-            provider: {
-                name: 'John\'s Photography Studio',
-                rating: 4.8,
-                phone: '+63 912 345 6789',
-                email: 'john@photostudio.com'
-            },
-            image: 'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=400',
-            status: 'confirmed',
-            bookingDate: '2024-02-15',
-            eventDate: '2024-03-20',
-            eventTime: '10:00 AM - 6:00 PM',
-            location: 'Shangri-La at the Fort, BGC',
-            notes: 'Outdoor ceremony at 4 PM, reception indoor. Need drone shots if weather permits.',
-            paymentStatus: 'partial',
-            amountPaid: 7500,
-            balanceAmount: 7500
-        },
-        {
-            id: 'BK002',
-            title: 'Premium Catering Service',
-            description: 'Buffet-style catering for 100 guests with Filipino and international cuisine.',
-            price: 80000,
-            category: { id: 2, name: 'Catering' },
-            provider: {
-                name: 'Taste of Manila',
-                rating: 4.9,
-                phone: '+63 917 654 3210',
-                email: 'bookings@tasteofmanila.ph'
-            },
-            image: 'https://images.unsplash.com/photo-1555244162-803834f70033?w=400',
-            status: 'pending',
-            bookingDate: '2024-02-10',
-            eventDate: '2024-03-20',
-            eventTime: '6:00 PM - 11:00 PM',
-            location: 'Shangri-La at the Fort, BGC',
-            notes: 'Vegetarian options needed for 15 guests. Setup starts at 4 PM.',
-            paymentStatus: 'unpaid',
-            amountPaid: 0,
-            balanceAmount: 80000
-        },
-        {
-            id: 'BK003',
-            title: 'Live Band Entertainment',
-            description: 'Professional 6-piece band for wedding reception with 4-hour performance.',
-            price: 25000,
-            category: { id: 3, name: 'Entertainment' },
-            provider: {
-                name: 'Manila Music Collective',
-                rating: 4.7,
-                phone: '+63 905 123 4567',
-                email: 'gigs@manilamusic.com'
-            },
-            image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400',
-            status: 'completed',
-            bookingDate: '2024-01-05',
-            eventDate: '2024-01-25',
-            eventTime: '7:00 PM - 11:00 PM',
-            location: 'Diamond Hotel, Manila',
-            notes: 'Special song requests: "Perfect" by Ed Sheeran for first dance, "Ikaw" by Yeng Constantino.',
-            paymentStatus: 'paid',
-            amountPaid: 25000,
-            balanceAmount: 0
-        },
-        {
-            id: 'BK004',
-            title: 'Elegant Event Decoration',
-            description: 'Garden-themed decoration with floral arrangements and ambient lighting.',
-            price: 12000,
-            category: { id: 4, name: 'Decoration' },
-            provider: {
-                name: 'Dream Decorators',
-                rating: 4.6,
-                phone: '+63 908 876 5432',
-                email: 'hello@dreamdecorators.ph'
-            },
-            image: 'https://images.unsplash.com/photo-1519167758481-83f29da78d23?w=400',
-            status: 'cancelled',
-            bookingDate: '2024-01-20',
-            eventDate: '2024-02-14',
-            eventTime: 'Setup: 8:00 AM - 12:00 PM',
-            location: 'Fernbrook Gardens, Alabang',
-            notes: 'Cancelled due to venue change. Refund processed.',
-            paymentStatus: 'refunded',
-            amountPaid: 0,
-            balanceAmount: 0
-        },
-        {
-            id: 'BK005',
-            title: 'Luxury Wedding Car Rental',
-            description: 'Bridal car rental with professional chauffeur and decoration.',
-            price: 8000,
-            category: { id: 5, name: 'Transportation' },
-            provider: {
-                name: 'Elite Car Rentals',
-                rating: 4.5,
-                phone: '+63 920 345 6789',
-                email: 'reservations@elitecarrentals.ph'
-            },
-            image: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400',
-            status: 'confirmed',
-            bookingDate: '2024-02-12',
-            eventDate: '2024-03-20',
-            eventTime: '8:00 AM - 8:00 PM',
-            location: 'Pickup: Makati, Drop-off: Shangri-La BGC',
-            notes: 'White BMW 7 Series requested. Pickup at bride\'s residence at 8 AM.',
-            paymentStatus: 'paid',
-            amountPaid: 8000,
-            balanceAmount: 0
-        }
-    ],
-    total: 5
-});
 
 // Reactive filters
 const searchQuery = ref('');
@@ -151,7 +30,7 @@ const viewMode = ref('list');
 
 // Computed filtered bookings
 const filteredBookings = computed(() => {
-    let filtered = mockBookings.value.data;
+    let filtered = props.bookings.data;
 
     // Search filter
     if (searchQuery.value) {
@@ -201,7 +80,7 @@ const filteredBookings = computed(() => {
 // Booking statistics
 const bookingStats = computed(() => {
     const stats = {
-        total: mockBookings.value.data.length,
+        total: props.bookings.data.length,
         confirmed: 0,
         pending: 0,
         completed: 0,
@@ -211,15 +90,22 @@ const bookingStats = computed(() => {
         totalBalance: 0
     };
 
-    mockBookings.value.data.forEach(booking => {
+    props.bookings.data.forEach(booking => {
         stats[booking.status]++;
-        stats.totalSpent += booking.price;
-        stats.totalPaid += booking.amountPaid;
-        stats.totalBalance += booking.balanceAmount;
+
+        const price = Number(booking.raw_amount) || 0;
+        const amountPaid = Number(booking.amountPaid) || 0;
+        const balanceAmount = Number(booking.balanceAmount) || 0;
+
+        if (booking.status === 'completed') stats.totalSpent += price;
+
+        stats.totalPaid += amountPaid;
+        stats.totalBalance += balanceAmount;
     });
 
     return stats;
 });
+
 
 const clearFilters = () => {
     searchQuery.value = '';
@@ -231,7 +117,7 @@ const clearFilters = () => {
 // Booking actions
 const cancelBooking = (bookingId) => {
     if (confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
-        const booking = mockBookings.value.data.find(b => b.id === bookingId);
+        const booking = props.bookings.data.find(b => b.id === bookingId);
         if (booking) {
             booking.status = 'cancelled';
             alert('Booking cancelled successfully. You will receive a confirmation email shortly.');
@@ -369,7 +255,7 @@ const getPaymentStatusColor = (status) => {
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Total Spent</p>
+                            <p class="text-sm font-medium text-gray-600">Estimated Total Spent</p>
                             <p class="text-2xl font-bold text-gray-900">{{ formatPrice(bookingStats.totalSpent) }}</p>
                         </div>
                     </div>
@@ -395,7 +281,7 @@ const getPaymentStatusColor = (status) => {
                         <select v-model="selectedCategory"
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                             <option value="all">All Categories</option>
-                            <option v-for="category in mockCategories" :key="category.id" :value="category.id">
+                            <option v-for="category in categories" :key="category.id" :value="category.id">
                                 {{ category.name }}
                             </option>
                         </select>
@@ -447,7 +333,7 @@ const getPaymentStatusColor = (status) => {
                         <!-- Booking Header -->
                         <div class="flex items-start justify-between mb-4">
                             <div class="flex items-start space-x-4">
-                                <img :src="booking.image" :alt="booking.title"
+                                <img :src="booking.service_image" :alt="booking.title"
                                     class="w-20 h-20 rounded-lg object-cover">
                                 <div class="flex-1">
                                     <div class="flex items-center space-x-2 mb-2">
@@ -460,20 +346,27 @@ const getPaymentStatusColor = (status) => {
                                             {{ booking.category.name }}
                                         </span>
                                     </div>
-                                    <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ booking.title }}</h3>
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ booking.event_name }}</h3>
                                     <p class="text-sm text-gray-600 mb-2">{{ booking.description }}</p>
-                                    <div class="text-sm text-gray-500">
-                                        <span class="font-medium">{{ booking.provider.name }}</span>
+                                    <div class="flex items-center text-sm text-gray-500">
+                                        <span class="font-medium">{{ booking.vendor.business_name }}</span>
                                         <span class="mx-2">•</span>
-                                        <span>Rating: {{ booking.provider.rating }}/5</span>
+                                        <svg class="w-4 h-4 mr-1 text-yellow-400" fill="currentColor"
+                                            viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                        <span v-if="booking.vendor_rating">Rating: {{ booking.vendor_rating }}/5</span>
+                                        <span v-else>No ratings yet</span>
                                     </div>
                                 </div>
                             </div>
                             <div class="text-right">
-                                <div class="text-2xl font-bold text-gray-900">{{ formatPrice(booking.price) }}</div>
-                                <div class="text-sm mt-1" :class="getPaymentStatusColor(booking.paymentStatus)">
-                                    {{ booking.paymentStatus.charAt(0).toUpperCase() + booking.paymentStatus.slice(1) }}
+                                <div class="text-2xl font-bold text-gray-900">{{ formatPrice(booking.raw_amount) }}
                                 </div>
+                                <!-- <div class="text-sm mt-1" :class="getPaymentStatusColor(booking.paymentStatus)">
+                        {{ booking.paymentStatus.charAt(0).toUpperCase() + booking.paymentStatus.slice(1) }}
+                    </div> -->
                             </div>
                         </div>
 
@@ -481,21 +374,21 @@ const getPaymentStatusColor = (status) => {
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 bg-gray-50 rounded-lg p-4">
                             <div>
                                 <p class="text-xs font-medium text-gray-500 mb-1">EVENT DATE</p>
-                                <p class="text-sm font-medium text-gray-900">{{ formatDate(booking.eventDate) }}</p>
+                                <p class="text-sm font-medium text-gray-900">{{ formatDate(booking.event_date) }}</p>
                                 <p class="text-xs text-gray-600">{{ booking.eventTime }}</p>
                             </div>
                             <div>
                                 <p class="text-xs font-medium text-gray-500 mb-1">LOCATION</p>
-                                <p class="text-sm font-medium text-gray-900">{{ booking.location }}</p>
+                                <p class="text-sm font-medium text-gray-900">{{ booking.event_location }}</p>
                             </div>
-                            <div>
-                                <p class="text-xs font-medium text-gray-500 mb-1">PAYMENT</p>
-                                <p class="text-sm font-medium text-gray-900">Paid: {{ formatPrice(booking.amountPaid) }}
-                                </p>
-                                <p class="text-xs text-gray-600" v-if="booking.balanceAmount > 0">
-                                    Balance: {{ formatPrice(booking.balanceAmount) }}
-                                </p>
-                            </div>
+                            <!-- <div>
+                    <p class="text-xs font-medium text-gray-500 mb-1">PAYMENT</p>
+                    <p class="text-sm font-medium text-gray-900">Paid: {{ formatPrice(booking.amountPaid) }}
+                    </p>
+                    <p class="text-xs text-gray-600" v-if="booking.balanceAmount > 0">
+                        Balance: {{ formatPrice(booking.balanceAmount) }}
+                    </p>
+                </div> -->
                         </div>
 
                         <!-- Notes -->
@@ -507,23 +400,20 @@ const getPaymentStatusColor = (status) => {
                         <!-- Actions -->
                         <div class="flex items-center justify-between pt-4 border-t border-gray-200">
                             <div class="flex space-x-3">
-                                <button @click="contactProvider(booking)"
-                                    class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                                <button class="text-sm text-blue-600 hover:text-blue-700 font-medium">
                                     Contact Provider
                                 </button>
-                                <button @click="downloadInvoice(booking.id)"
-                                    class="text-sm text-gray-600 hover:text-gray-700">
-                                    Download Invoice
-                                </button>
+                                <!-- <button @click="downloadInvoice(booking.id)" class="text-sm text-gray-600 hover:text-gray-700">
+                        Download Invoice
+                    </button> -->
                             </div>
                             <div class="flex space-x-2">
+                                <!-- <button v-if="booking.status === 'confirmed' || booking.status === 'pending'"
+                        @click="rescheduleBooking(booking.id)"
+                        class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors">
+                        Reschedule
+                    </button> -->
                                 <button v-if="booking.status === 'confirmed' || booking.status === 'pending'"
-                                    @click="rescheduleBooking(booking.id)"
-                                    class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors">
-                                    Reschedule
-                                </button>
-                                <button v-if="booking.status === 'confirmed' || booking.status === 'pending'"
-                                    @click="cancelBooking(booking.id)"
                                     class="px-4 py-2 text-sm border border-red-300 text-red-700 rounded hover:bg-red-50 transition-colors">
                                     Cancel
                                 </button>
@@ -535,10 +425,11 @@ const getPaymentStatusColor = (status) => {
                         </div>
                     </div>
                 </div>
+
             </div>
 
             <!-- Empty State -->
-            <div v-else-if="mockBookings.data.length === 0" class="text-center py-16">
+            <div v-else-if="bookings.data.length === 0" class="text-center py-16">
                 <svg class="mx-auto h-16 w-16 text-gray-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
                         d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">

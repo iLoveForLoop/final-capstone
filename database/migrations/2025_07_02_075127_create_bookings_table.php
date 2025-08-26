@@ -16,7 +16,6 @@ class CreateBookingsTable extends Migration
             $table->foreignId('service_id')->constrained()->onDelete('cascade');   // Booked service
             $table->date('booking_date');
             $table->enum('status', ['pending', 'confirmed', 'cancelled', 'completed'])->default('pending');
-
             //for catering specifics only
             $table->json('catering_dishes')->nullable();
             $table->integer('pax')->nullable();

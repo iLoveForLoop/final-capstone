@@ -285,7 +285,7 @@ const calculateTotalPrice = () => {
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Event
                                                     Time</label>
-                                                <p class="text-gray-900">{{ booking?.time ||
+                                                <p class="text-gray-900"> {{ booking?.time ||
                                                     formatTime(booking?.event?.event_time) }}
                                                 </p>
                                             </div>
@@ -325,7 +325,7 @@ const calculateTotalPrice = () => {
                                             <div class="space-y-1">
                                                 <label
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Category</label>
-                                                <p class="text-gray-900">{{ booking?.category || 'N/A' }}</p>
+                                                <p class="text-gray-900">{{ booking?.category.name || 'N/A' }}</p>
                                             </div>
                                             <div class="space-y-1">
                                                 <label
@@ -354,7 +354,8 @@ const calculateTotalPrice = () => {
                                                         class="text-xs font-medium text-gray-500 uppercase tracking-wide">Service
                                                         Price</label>
                                                     <p class="text-gray-900 font-medium">{{
-                                                        formatCurrency(booking?.raw_amount || booking?.service?.price)
+                                                        formatCurrency(booking?.raw_amount ||
+                                                            booking?.service?.price_formatted)
                                                     }} <span v-if="booking.is_per_pax">per person</span></p>
                                                 </div>
                                             </template>

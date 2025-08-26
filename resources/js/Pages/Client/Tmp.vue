@@ -146,7 +146,7 @@ const formatPrice = (price) => {
 <template>
 
     <!-- Grid View -->
-    <div v-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div v-for="service in filteredFavorites.data" :key="service.id"
             class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
             <div class="relative">
@@ -212,20 +212,99 @@ const formatPrice = (price) => {
     </div>
 
 
+    <!-- BOOKINGS -->
+
+
+    <div v-for="booking in filteredBookings.data" :key="booking.id"
+        class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+        <div class="p-6">
+            <!-- Booking Header -->
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-start space-x-4">
+                    <img :src="booking.service_image" :alt="booking.title" class="w-20 h-20 rounded-lg object-cover">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <span class="text-sm font-mono text-gray-500">{{ booking.id }}</span>
+                            <span :class="['px-2 py-1 text-xs rounded-full', getStatusColor(booking.status)]">
+                                {{ booking.status.charAt(0).toUpperCase() + booking.status.slice(1) }}
+                            </span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                                {{ booking.category.name }}
+                            </span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ booking.event_name }}</h3>
+                        <p class="text-sm text-gray-600 mb-2">{{ booking.description }}</p>
+                        <div class="text-sm text-gray-500">
+                            <span class="font-medium">{{ booking.vendor.business_name }}</span>
+                            <span class="mx-2">•</span>
+                            <span>Rating: {{ booking.vendor_rating }}/5</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-2xl font-bold text-gray-900">{{ formatPrice(booking.raw_amount) }}</div>
+                    <!-- <div class="text-sm mt-1" :class="getPaymentStatusColor(booking.paymentStatus)">
+                        {{ booking.paymentStatus.charAt(0).toUpperCase() + booking.paymentStatus.slice(1) }}
+                    </div> -->
+                </div>
+            </div>
+
+            <!-- Booking Details -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 bg-gray-50 rounded-lg p-4">
+                <div>
+                    <p class="text-xs font-medium text-gray-500 mb-1">EVENT DATE</p>
+                    <p class="text-sm font-medium text-gray-900">{{ formatDate(booking.event_date) }}</p>
+                    <p class="text-xs text-gray-600">{{ booking.eventTime }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-gray-500 mb-1">LOCATION</p>
+                    <p class="text-sm font-medium text-gray-900">{{ booking.event_location }}</p>
+                </div>
+                <!-- <div>
+                    <p class="text-xs font-medium text-gray-500 mb-1">PAYMENT</p>
+                    <p class="text-sm font-medium text-gray-900">Paid: {{ formatPrice(booking.amountPaid) }}
+                    </p>
+                    <p class="text-xs text-gray-600" v-if="booking.balanceAmount > 0">
+                        Balance: {{ formatPrice(booking.balanceAmount) }}
+                    </p>
+                </div> -->
+            </div>
+
+            <!-- Notes -->
+            <div v-if="booking.notes" class="mb-4">
+                <p class="text-xs font-medium text-gray-500 mb-1">NOTES</p>
+                <p class="text-sm text-gray-700 bg-gray-50 rounded p-3">{{ booking.notes }}</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                <div class="flex space-x-3">
+                    <button class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                        Contact Provider
+                    </button>
+                    <!-- <button @click="downloadInvoice(booking.id)" class="text-sm text-gray-600 hover:text-gray-700">
+                        Download Invoice
+                    </button> -->
+                </div>
+                <div class="flex space-x-2">
+                    <!-- <button v-if="booking.status === 'confirmed' || booking.status === 'pending'"
+                        @click="rescheduleBooking(booking.id)"
+                        class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors">
+                        Reschedule
+                    </button> -->
+                    <button v-if="booking.status === 'confirmed' || booking.status === 'pending'"
+                        class="px-4 py-2 text-sm border border-red-300 text-red-700 rounded hover:bg-red-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button v-if="booking.status === 'completed'"
+                        class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                        Leave Review
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
 </template>
-
-<style scoped>
-.line-clamp-1 {
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-</style>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Event;
 use App\Models\Service;
+use App\Models\ServiceCategory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -17,6 +18,7 @@ class BookingController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
+        $categories = ServiceCategory::all();
 
         // 🔹 Base query: Vendor sees their bookings, Client sees their own bookings
         if ($user->hasRole('vendor')) {
@@ -31,7 +33,7 @@ class BookingController extends Controller
 
         } elseif ($user->hasRole('client')) {
             $query = $user->bookings()
-                ->with(['service.category', 'service.cateringService', 'event']);
+                ->with(['service.category', 'service.cateringService', 'event', 'service.vendor',]);
         } else {
             return back()->with('error', 'Unauthorized.');
         }
@@ -119,6 +121,7 @@ class BookingController extends Controller
                 'event_date' => $booking->event->event_date ?? $booking->booking_date,
                 'time' => $eventTime,
                 'status' => $booking->status,
+                'description' => $booking->event->description,
                 'price' => '₱' . number_format($booking->service->price ?? 0, 0),
                 'contact' => $booking->user->email ?? 'N/A',
                 'notes' => $booking->event->description ?? 'No additional notes',
@@ -132,8 +135,13 @@ class BookingController extends Controller
                 'pax' => $booking->pax,
                 'catering_dishes' => $booking->catering_dishes,
                 'service' => $booking->service,
-                'category' => $booking->service->category->name ?? 'N/A',
+                'category' => $booking->service->category,
                 'is_per_pax' => $is_per_pax,
+                'service_image' => $booking->service->getFirstMediaUrl('images'),
+                'vendor' => $booking->service->vendor,
+                'vendor_rating' => $booking->service->vendor->averageRating()
+
+
             ];
         });
 
@@ -150,6 +158,7 @@ class BookingController extends Controller
         return inertia($view, [
             'bookings' => $bookings,
             'stats' => $stats,
+            'categories' => $categories,
             'filters' => [
                 'search' => $request->get('search', ''),
                 'status' => $request->get('status', 'all'),

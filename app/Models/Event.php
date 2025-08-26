@@ -20,6 +20,29 @@ class Event extends Model
         return $this->hasMany(Booking::class);
     }
 
+    public function getStatusAttribute()
+    {
+        $statuses = $this->bookings->pluck('status');
+
+        if ($statuses->every(fn($s) => $s === 'confirmed')) {
+            return 'confirmed';
+        }
+
+        if ($statuses->every(fn($s) => $s === 'completed')) {
+            return 'completed';
+        }
+
+        if ($statuses->contains('pending')) {
+            return 'pending';
+        }
+
+        if ($statuses->contains('cancelled')) {
+            return 'cancelled';
+        }
+
+        return 'unknown'; // fallback
+    }
+
 
     protected $guarded = [];
 }

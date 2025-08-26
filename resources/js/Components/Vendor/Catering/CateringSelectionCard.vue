@@ -291,7 +291,12 @@ watch(() => props.isSelected, (newValue) => {
                         <div v-for="(dish, category) in selectedDishes" :key="category"
                             class="flex items-center justify-between py-1 px-2 bg-white rounded text-xs">
                             <span class="font-medium text-gray-700">{{ category }}:</span>
-                            <span class="text-green-700">{{ dish }}</span>
+                            <div class="flex gap-1">
+                                {{ console.log(dish.length - 1) }}
+                                <span v-for="(d, index) in dish" class="text-green-700" :key="d">{{ d }}<span
+                                        v-if="index !== dish.length - 1"> ,</span></span>
+                            </div>
+
                         </div>
                     </div>
                 </div>
