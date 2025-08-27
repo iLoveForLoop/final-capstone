@@ -7,6 +7,12 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction';
 
+const props = defineProps({
+    events: {
+        type: Object
+    }
+})
+
 // Calendar instance
 const calendar = ref(null);
 const calendarEl = ref(null);
@@ -52,13 +58,13 @@ const mockEvents = ref([
     {
         id: 'evt001',
         title: 'Wedding Ceremony & Reception',
-        // type: 'wedding',
+        type: 'wedding',
         start: '2024-03-20T10:00:00',
-        // end: '2024-03-20T23:00:00',
+        end: '2024-03-20T23:00:00',
         location: 'Shangri-La at the Fort, BGC',
         description: 'Garden ceremony at 4 PM followed by indoor reception. 150 guests expected.',
-        // budget: 500000,
-        // priority: 'high',
+        budget: 500000,
+        priority: 'high',
         status: 'confirmed',
         services: [
             { name: 'Photography', provider: 'John\'s Studio', status: 'confirmed' },
@@ -77,106 +83,7 @@ const mockEvents = ref([
         createdDate: '2024-01-15',
         color: '#e91e63'
     },
-    {
-        id: 'evt002',
-        title: 'Maria\'s 25th Birthday Party',
-        type: 'birthday',
-        start: '2024-03-15T18:00:00',
-        end: '2024-03-15T23:00:00',
-        location: 'Private Residence, Makati',
-        description: 'Surprise birthday party with close friends and family. Theme: Vintage Hollywood.',
-        budget: 75000,
-        priority: 'medium',
-        status: 'planning',
-        services: [
-            { name: 'Catering', provider: 'Party Delights', status: 'confirmed' },
-            { name: 'Decoration', provider: 'Dream Decorators', status: 'confirmed' },
-            { name: 'Photography', provider: 'Snap Moments', status: 'pending' }
-        ],
-        tasks: [
-            { task: 'Send invitations', completed: true, dueDate: '2024-03-01' },
-            { task: 'Order birthday cake', completed: false, dueDate: '2024-03-12' },
-            { task: 'Set up playlist', completed: false, dueDate: '2024-03-14' }
-        ],
-        reminders: [
-            { type: 'email', time: '2days', sent: false }
-        ],
-        createdDate: '2024-02-20',
-        color: '#ff9800'
-    },
-    {
-        id: 'evt003',
-        title: 'Q1 Company Conference',
-        type: 'corporate',
-        start: '2024-03-28T08:00:00',
-        end: '2024-03-28T17:00:00',
-        location: 'Manila Hotel, Rizal Park',
-        description: 'Quarterly business review and team building activities for 200 employees.',
-        budget: 250000,
-        priority: 'high',
-        status: 'confirmed',
-        services: [
-            { name: 'Venue', provider: 'Manila Hotel Events', status: 'confirmed' },
-            { name: 'Catering', provider: 'Corporate Catering Co.', status: 'confirmed' },
-            { name: 'Audio/Visual', provider: 'TechPro Solutions', status: 'confirmed' }
-        ],
-        tasks: [
-            { task: 'Prepare presentation slides', completed: true, dueDate: '2024-03-20' },
-            { task: 'Print conference materials', completed: false, dueDate: '2024-03-25' },
-            { task: 'Set up registration desk', completed: false, dueDate: '2024-03-28' }
-        ],
-        reminders: [
-            { type: 'email', time: '1week', sent: true },
-            { type: 'email', time: '1day', sent: false }
-        ],
-        createdDate: '2024-01-10',
-        color: '#2196f3'
-    },
-    {
-        id: 'evt004',
-        title: 'Golden Anniversary Celebration',
-        type: 'anniversary',
-        start: '2024-04-05T15:00:00',
-        end: '2024-04-05T21:00:00',
-        location: 'Heritage Hotel, Pasay',
-        description: '50th wedding anniversary celebration for grandparents. Family gathering with 80 guests.',
-        budget: 120000,
-        priority: 'medium',
-        status: 'planning',
-        services: [
-            { name: 'Venue', provider: 'Heritage Hotel Events', status: 'confirmed' },
-            { name: 'Catering', provider: 'Classic Cuisine', status: 'pending' }
-        ],
-        tasks: [
-            { task: 'Create photo slideshow', completed: false, dueDate: '2024-04-01' },
-            { task: 'Order anniversary cake', completed: false, dueDate: '2024-04-03' }
-        ],
-        reminders: [
-            { type: 'email', time: '1week', sent: false }
-        ],
-        createdDate: '2024-03-01',
-        color: '#9c27b0'
-    },
-    {
-        id: 'evt005',
-        title: 'Graduation Party',
-        type: 'graduation',
-        start: '2024-04-12T16:00:00',
-        end: '2024-04-12T22:00:00',
-        location: 'Home Garden, Quezon City',
-        description: 'High school graduation celebration. Casual outdoor party with barbecue.',
-        budget: 35000,
-        priority: 'low',
-        status: 'draft',
-        services: [],
-        tasks: [
-            { task: 'Plan menu', completed: false, dueDate: '2024-04-05' },
-            { task: 'Buy decorations', completed: false, dueDate: '2024-04-10' }
-        ],
-        reminders: [],
-        createdDate: '2024-03-05',
-        color: '#4caf50'
-    }
+
 ]);
 
 // Filters
@@ -187,7 +94,7 @@ const searchQuery = ref('');
 
 // Computed properties
 const filteredEvents = computed(() => {
-    let filtered = mockEvents.value;
+    let filtered = props.events.data;
 
     if (selectedEventType.value !== 'all') {
         filtered = filtered.filter(event => event.type === selectedEventType.value);
@@ -215,7 +122,7 @@ const filteredEvents = computed(() => {
 
 const upcomingEvents = computed(() => {
     const today = new Date();
-    return mockEvents.value
+    return props.events.data
         .filter(event => new Date(event.start) >= today)
         .sort((a, b) => new Date(a.start) - new Date(b.start))
         .slice(0, 3);
@@ -227,13 +134,13 @@ const eventStats = computed(() => {
     const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
 
     return {
-        total: mockEvents.value.length,
-        upcoming: mockEvents.value.filter(e => new Date(e.start) >= today).length,
-        thisMonth: mockEvents.value.filter(e => {
+        total: props.events.data.length,
+        upcoming: props.events.data.filter(e => new Date(e.start) >= today).length,
+        thisMonth: props.events.data.filter(e => {
             const eventDate = new Date(e.start);
             return eventDate >= thisMonth && eventDate < nextMonth;
         }).length,
-        totalBudget: mockEvents.value.reduce((sum, e) => sum + e.budget, 0)
+        totalBudget: props.events.data.reduce((sum, e) => sum + e.budget, 0)
     };
 });
 
@@ -249,7 +156,7 @@ const initializeCalendar = () => {
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
         },
-        events: mockEvents.value.map(event => ({
+        events: props.events.data.map(event => ({
             id: event.id,
             title: event.title,
             start: event.start,
@@ -313,7 +220,7 @@ const createEvent = () => {
         color: eventType?.color || '#9e9e9e'
     };
 
-    mockEvents.value.push(newEventData);
+    props.events.data.push(newEventData);
 
     // Add to calendar
     if (calendar.value) {
@@ -334,9 +241,9 @@ const createEvent = () => {
 
 const deleteEvent = (eventId) => {
     if (confirm('Are you sure you want to delete this event?')) {
-        const index = mockEvents.value.findIndex(e => e.id === eventId);
+        const index = props.events.data.findIndex(e => e.id === eventId);
         if (index !== -1) {
-            mockEvents.value.splice(index, 1);
+            props.events.data.splice(index, 1);
             if (calendar.value) {
                 const calendarEvent = calendar.value.getEventById(eventId);
                 if (calendarEvent) calendarEvent.remove();
@@ -635,9 +542,9 @@ onMounted(() => {
                                                 :class="['px-2 py-1 text-xs rounded-full', getStatusColor(event.status)]">
                                                 {{ event.status.charAt(0).toUpperCase() + event.status.slice(1) }}
                                             </span>
-                                            <span class="text-xs" :class="getPriorityColor(event.priority)">
+                                            <!-- <span class="text-xs" :class="getPriorityColor(event.priority)">
                                                 {{ event.priority.toUpperCase() }} PRIORITY
-                                            </span>
+                                            </span> -->
                                         </div>
                                         <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ event.title }}</h3>
                                         <p class="text-sm text-gray-600 mb-2">{{ event.description }}</p>
@@ -679,14 +586,14 @@ onMounted(() => {
                             <div class="mb-4">
                                 <div class="flex items-center justify-between mb-2">
                                     <span class="text-sm font-medium text-gray-600">Tasks Progress</span>
-                                    <span class="text-sm text-gray-500">
+                                    <!-- <span class="text-sm text-gray-500">
                                         {{event.tasks.filter(t => t.completed).length}}/{{ event.tasks.length }}
-                                    </span>
+                                    </span> -->
                                 </div>
                                 <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="bg-blue-600 h-2 rounded-full"
+                                    <!-- <div class="bg-blue-600 h-2 rounded-full"
                                         :style="{ width: event.tasks.length > 0 ? (event.tasks.filter(t => t.completed).length / event.tasks.length * 100) + '%' : '0%' }">
-                                    </div>
+                                    </div> -->
                                 </div>
                             </div>
 

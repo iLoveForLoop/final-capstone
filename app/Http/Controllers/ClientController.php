@@ -92,7 +92,9 @@ class ClientController extends Controller
 
         $user = auth()->user();
 
-        $query = $user->events()->with(['bookings.service.category']);
+        $query = $user->events()->with(['bookings.service' => function ($q) {
+            $q->with(['category', 'vendor']);
+        }]);
 
         $events = $query->paginate(10)->withQueryString()->through(fn ($event) => [
             'id' => 'EVT' . str_pad($event->id, 3, '0', STR_PAD_LEFT),
@@ -100,7 +102,13 @@ class ClientController extends Controller
             'start' => $event->event_date,
             'location' => $event->location,
             'decription' => $event->description,
-            'status' => $event->status
+            'status' => $event->status,
+            'services' => $event->bookings->map(fn ($booking) => [
+                'name' => $booking->service->category->name,
+                'provider' => $booking->service->vendor->business_name,
+                'status' => $booking->status
+            ]),
+            'createdDate' => $event->created_at
 
         ]);
 
