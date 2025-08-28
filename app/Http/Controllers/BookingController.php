@@ -133,7 +133,7 @@ class BookingController extends Controller
                 'user' => $booking->user,
                 'event' => $booking->event,
                 'pax' => $booking->pax,
-                'catering_dishes' => $booking->catering_dishes,
+                'selected_catering_dishes' => $booking->catering_dishes,
                 'service' => $booking->service,
                 'category' => $booking->service->category,
                 'is_per_pax' => $is_per_pax,

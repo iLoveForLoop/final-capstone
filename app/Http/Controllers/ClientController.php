@@ -15,6 +15,7 @@ class ClientController extends Controller
     public function index()
     {
 
+
         $query = Service::with(['category', 'vendor']);
         $categories = ServiceCategory::all();
 
@@ -27,7 +28,8 @@ class ClientController extends Controller
             'image_url' => $service->getFirstMediaUrl('images'),
             'category_name' => $service->category->name,
             'dateAdded' => $service->created_at->format('Y-m-d'),
-            'vendor' => $service->vendor
+            'vendor' => $service->vendor,
+            'rating' => $service->vendor->averageRating()
         ]);
 
 
@@ -84,6 +86,8 @@ class ClientController extends Controller
     }
 
     public function favorites(){
+
+        // dd('hi');
 
         return inertia('Client/Favorites/Index');
     }

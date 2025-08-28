@@ -6,12 +6,15 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction';
+import { useUIStore } from '@/store/ui';
 
 const props = defineProps({
     events: {
         type: Object
     }
 })
+
+const ui = ref(useUIStore())
 
 // Calendar instance
 const calendar = ref(null);
@@ -420,17 +423,17 @@ onMounted(() => {
                 <!-- View Toggle -->
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex rounded-lg border border-gray-300 p-1">
-                        <button @click="viewMode = 'calendar'; nextTick(() => initializeCalendar())" :class="[
+                        <button @click="ui.toggleEventCalendarView(); nextTick(() => initializeCalendar())" :class="[
                             'px-4 py-2 text-sm rounded-md transition-colors',
-                            viewMode === 'calendar'
+                            ui.isEventCalendarView
                                 ? 'bg-blue-600 text-white'
                                 : 'text-gray-600 hover:text-gray-800'
                         ]">
-                            Calendar View
+                            Calendar Viewss
                         </button>
-                        <button @click="viewMode = 'list'" :class="[
+                        <button @click="ui.toggleEventCalendarView" :class="[
                             'px-4 py-2 text-sm rounded-md transition-colors',
-                            viewMode === 'list'
+                            !ui.isEventCalendarView
                                 ? 'bg-blue-600 text-white'
                                 : 'text-gray-600 hover:text-gray-800'
                         ]">
@@ -440,7 +443,7 @@ onMounted(() => {
                 </div>
 
                 <!-- Filters -->
-                <div v-if="viewMode === 'list'" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div v-if="!ui.isEventCalendarView" class="grid grid-cols-1 md:grid-cols-5 gap-4">
                     <!-- Search -->
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Search Events</label>
@@ -449,7 +452,7 @@ onMounted(() => {
                     </div>
 
                     <!-- Event Type -->
-                    <div>
+                    <!-- <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Event Type</label>
                         <select v-model="selectedEventType"
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
@@ -458,7 +461,7 @@ onMounted(() => {
                                 {{ type.icon }} {{ type.label }}
                             </option>
                         </select>
-                    </div>
+                    </div> -->
 
                     <!-- Status -->
                     <div>
@@ -475,7 +478,7 @@ onMounted(() => {
                     </div>
 
                     <!-- Priority -->
-                    <div>
+                    <!-- <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
                         <select v-model="selectedPriority"
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
@@ -484,10 +487,10 @@ onMounted(() => {
                             <option value="medium">Medium</option>
                             <option value="low">Low</option>
                         </select>
-                    </div>
+                    </div> -->
                 </div>
 
-                <div v-if="viewMode === 'list'" class="mt-4 flex items-center justify-between">
+                <div v-if="!ui.isEventCalendarView" class="mt-4 flex items-center justify-between">
                     <div class="text-sm text-gray-600">
                         {{ filteredEvents.length }} event{{ filteredEvents.length !== 1 ? 's' : '' }} found
                     </div>
@@ -504,8 +507,7 @@ onMounted(() => {
                 <!-- Calendar/List View -->
                 <div class="lg:col-span-3">
                     <!-- Calendar View -->
-                    <div v-if="viewMode === 'calendar'"
-                        class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div v-if="ui.isEventCalendarView" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                         <div ref="calendarEl"></div>
                     </div>
 
@@ -575,7 +577,7 @@ onMounted(() => {
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <div class="text-lg font-bold text-gray-900">{{ formatPrice(event.budget) }}</div>
+                                    <!-- <div class="text-lg font-bold text-gray-900">{{ formatPrice(event.budget) }}</div> -->
                                     <div class="text-sm text-gray-500 mt-1">
                                         {{ event.services.length }} service{{ event.services.length !== 1 ? 's' : '' }}
                                     </div>
@@ -583,19 +585,19 @@ onMounted(() => {
                             </div>
 
                             <!-- Progress Bar -->
-                            <div class="mb-4">
+                            <!-- <div class="mb-4">
                                 <div class="flex items-center justify-between mb-2">
-                                    <span class="text-sm font-medium text-gray-600">Tasks Progress</span>
-                                    <!-- <span class="text-sm text-gray-500">
+                                    <span class="text-sm font-medium text-gray-600">Tasks Progress</span> -->
+                            <!-- <span class="text-sm text-gray-500">
                                         {{event.tasks.filter(t => t.completed).length}}/{{ event.tasks.length }}
                                     </span> -->
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <!-- <div class="bg-blue-600 h-2 rounded-full"
+                            <!-- </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2"> -->
+                            <!-- <div class="bg-blue-600 h-2 rounded-full"
                                         :style="{ width: event.tasks.length > 0 ? (event.tasks.filter(t => t.completed).length / event.tasks.length * 100) + '%' : '0%' }">
                                     </div> -->
-                                </div>
-                            </div>
+                            <!-- </div>
+                            </div> -->
 
                             <!-- Services Preview -->
                             <div v-if="event.services.length > 0" class="flex flex-wrap gap-2">
@@ -670,7 +672,7 @@ onMounted(() => {
                         <div class="space-y-2">
                             <div v-for="type in eventTypes" :key="type.value"
                                 class="flex items-center justify-between p-2 rounded hover:bg-gray-50 cursor-pointer"
-                                @click="selectedEventType = type.value; viewMode = 'list'">
+                                @click="selectedEventType = type.value; ui.toggleEventCalendarView">
                                 <div class="flex items-center space-x-3">
                                     <span class="text-lg">{{ type.icon }}</span>
                                     <span class="text-sm text-gray-700">{{ type.label }}</span>

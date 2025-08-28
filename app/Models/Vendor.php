@@ -37,7 +37,8 @@ class Vendor extends Model
 
     public function averageRating()
     {
-        return $this->reviews()->avg('rating');
+        $avg = $this->reviews()->avg('rating');
+        return $avg ? number_format($avg, 1) : 0;
     }
 
     public function bookings()

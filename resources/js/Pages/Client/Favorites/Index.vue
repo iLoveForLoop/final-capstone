@@ -1,6 +1,13 @@
 <script setup>
 import ClientNavbar from '@/Components/ClientNavbar.vue';
 import { ref, computed } from 'vue';
+import { router } from '@inertiajs/vue3';
+
+const props = defineProps({
+    favorites: {
+        type: Object,
+    }
+})
 
 // Mock data
 const mockCategories = [
@@ -11,71 +18,7 @@ const mockCategories = [
     { id: 5, name: 'Transportation' }
 ];
 
-const mockFavorites = ref({
-    data: [
-        {
-            id: 1,
-            title: 'Professional Wedding Photography',
-            description: 'Capture your special moments with our professional wedding photography service. High-quality photos and video coverage.',
-            price: 15000,
-            category: { id: 1, name: 'Photography' },
-            provider: { name: 'John\'s Photography Studio', rating: 4.8 },
-            image: 'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=400',
-            availability: 'available',
-            location: 'Metro Manila',
-            dateAdded: '2024-01-15'
-        },
-        {
-            id: 2,
-            title: 'Premium Catering Service',
-            description: 'Delicious Filipino and international cuisine for your events. Professional service and presentation.',
-            price: 800,
-            category: { id: 2, name: 'Catering' },
-            provider: { name: 'Taste of Manila', rating: 4.9 },
-            image: 'https://images.unsplash.com/photo-1555244162-803834f70033?w=400',
-            availability: 'available',
-            location: 'Quezon City',
-            dateAdded: '2024-01-12'
-        },
-        {
-            id: 3,
-            title: 'Live Band Entertainment',
-            description: 'Professional live band for weddings, corporate events, and parties. Versatile repertoire and engaging performance.',
-            price: 25000,
-            category: { id: 3, name: 'Entertainment' },
-            provider: { name: 'Manila Music Collective', rating: 4.7 },
-            image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400',
-            availability: 'unavailable',
-            location: 'Makati City',
-            dateAdded: '2024-01-10'
-        },
-        {
-            id: 4,
-            title: 'Elegant Event Decoration',
-            description: 'Transform your venue with our elegant decoration services. Custom themes and professional setup.',
-            price: 12000,
-            category: { id: 4, name: 'Decoration' },
-            provider: { name: 'Dream Decorators', rating: 4.6 },
-            image: 'https://images.unsplash.com/photo-1519167758481-83f29da78d23?w=400',
-            availability: 'available',
-            location: 'Pasig City',
-            dateAdded: '2024-01-08'
-        },
-        {
-            id: 5,
-            title: 'Luxury Wedding Car Rental',
-            description: 'Premium wedding car rental service with professional chauffeur. Make your special day even more memorable.',
-            price: 8000,
-            category: { id: 5, name: 'Transportation' },
-            provider: { name: 'Elite Car Rentals', rating: 4.5 },
-            image: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400',
-            availability: 'available',
-            location: 'BGC, Taguig',
-            dateAdded: '2024-01-05'
-        }
-    ],
-    total: 5
-});
+console.log(props.favorites)
 
 // Reactive filters
 const searchQuery = ref('');
@@ -85,15 +28,15 @@ const viewMode = ref('grid'); // grid or list
 
 // Filter favorites
 const filteredFavorites = computed(() => {
-    let filtered = mockFavorites.value.data;
+    let filtered = props.favorites.data;
 
     // Search filter
     if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase();
         filtered = filtered.filter(service =>
-            service.title.toLowerCase().includes(query) ||
+            service.name.toLowerCase().includes(query) ||
             service.description.toLowerCase().includes(query) ||
-            service.provider.name.toLowerCase().includes(query)
+            service.vendor.name.toLowerCase().includes(query)
         );
     }
 
@@ -122,16 +65,23 @@ const clearFilters = () => {
 // Remove from favorites
 const removeFromFavorites = (serviceId) => {
     if (confirm('Remove this service from your favorites?')) {
-        mockFavorites.value.data = mockFavorites.value.data.filter(service => service.id !== serviceId);
-        mockFavorites.value.total = mockFavorites.value.data.length;
+        props.favorites.data = props.favorites.data.filter(service => service.id !== serviceId);
+        props.favorites.total = props.favorites.data.length;
+        try {
+            router.delete(route('client.favorites.destroy', serviceId))
+        } catch (error) {
+            console.log('Error: ', error.message)
+        }
+
+
     }
 };
 
 // Clear all favorites
 const clearAllFavorites = () => {
     if (confirm('Are you sure you want to remove all services from your favorites?')) {
-        mockFavorites.value.data = [];
-        mockFavorites.value.total = 0;
+        props.favorites.data = [];
+        props.favorites.total = 0;
     }
 };
 
@@ -154,7 +104,7 @@ const formatPrice = (price) => {
                         <h1 class="text-3xl font-bold text-gray-900 mb-2">My Favorites</h1>
                         <p class="text-gray-600">Your saved services for easy access</p>
                     </div>
-                    <div v-if="mockFavorites.data.length > 0">
+                    <div v-if="favorites.data.length > 0">
                         <button @click="clearAllFavorites"
                             class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors text-sm">
                             Clear All Favorites
@@ -165,7 +115,7 @@ const formatPrice = (price) => {
         </div>
 
         <!-- Filters Section -->
-        <div v-if="mockFavorites.data.length > 0" class="bg-white border-b border-gray-200">
+        <div v-if="favorites.data.length > 0" class="bg-white border-b border-gray-200">
             <div class="max-w-7xl mx-auto px-6 py-6">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                     <!-- Search -->
@@ -239,15 +189,15 @@ const formatPrice = (price) => {
                     <div v-for="service in filteredFavorites.data" :key="service.id"
                         class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
                         <div class="relative">
-                            <img :src="service.image" :alt="service.title" class="w-full h-48 object-cover">
+                            <img :src="service.image_url" :alt="service.name" class="w-full h-48 object-cover">
                             <div class="absolute top-3 right-3 flex space-x-2">
-                                <span v-if="service.availability === 'available'"
+                                <!-- <span v-if="service.availability === 'available'"
                                     class="bg-green-500 text-white px-2 py-1 text-xs rounded">
                                     Available
                                 </span>
                                 <span v-else class="bg-red-500 text-white px-2 py-1 text-xs rounded">
                                     Unavailable
-                                </span>
+                                </span> -->
                                 <button @click="removeFromFavorites(service.id)"
                                     class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-full transition-colors">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -261,7 +211,7 @@ const formatPrice = (price) => {
                         <div class="p-4">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                                    {{ service.category.name }}
+                                    {{ service.category_name }}
                                 </span>
                                 <div class="flex items-center text-sm text-gray-500">
                                     <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -272,7 +222,7 @@ const formatPrice = (price) => {
                                     {{ service.dateAdded }}
                                 </div>
                             </div>
-                            <h3 class="font-semibold text-gray-900 mb-2 line-clamp-1">{{ service.title }}</h3>
+                            <h3 class="font-semibold text-gray-900 mb-2 line-clamp-1">{{ service.name }}</h3>
                             <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ service.description }}</p>
                             <div class="flex items-center justify-between mb-3">
                                 <div class="text-lg font-bold text-green-600">{{ formatPrice(service.price) }}</div>
@@ -281,11 +231,15 @@ const formatPrice = (price) => {
                                         <path
                                             d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                     </svg>
-                                    {{ service.provider.rating }}
+
+                                    {{ service.rating ?? 'No ratings yet' }}
                                 </div>
+
                             </div>
                             <div class="text-sm text-gray-600 mb-3">
-                                <span class="font-medium">{{ service.provider.name }}</span> • {{ service.location }}
+                                <!-- {{ console.log(service.vendor) }} -->
+                                <span class="font-medium">{{ service.vendor.business_name }}</span> • {{
+                                    service.vendor.location }}
                             </div>
                             <div class="flex space-x-2">
                                 <button
@@ -306,7 +260,7 @@ const formatPrice = (price) => {
                     <div v-for="service in filteredFavorites.data" :key="service.id"
                         class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
                         <div class="flex">
-                            <img :src="service.image" :alt="service.title" class="w-48 h-32 object-cover">
+                            <img :src="service.image" :alt="service.name" class="w-48 h-32 object-cover">
                             <div class="flex-1 p-4">
                                 <div class="flex items-start justify-between">
                                     <div class="flex-1">
@@ -322,10 +276,10 @@ const formatPrice = (price) => {
                                                 Unavailable
                                             </span>
                                         </div>
-                                        <h3 class="font-semibold text-gray-900 mb-1">{{ service.title }}</h3>
+                                        <h3 class="font-semibold text-gray-900 mb-1">{{ service.name }}</h3>
                                         <p class="text-sm text-gray-600 mb-2 line-clamp-1">{{ service.description }}</p>
                                         <div class="flex items-center text-sm text-gray-500 mb-2">
-                                            <span class="font-medium">{{ service.provider.name }}</span>
+                                            <span class="font-medium">{{ service.vendor.name }}</span>
                                             <span class="mx-2">•</span>
                                             <span>{{ service.location }}</span>
                                             <span class="mx-2">•</span>
@@ -335,7 +289,7 @@ const formatPrice = (price) => {
                                                     <path
                                                         d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                                 </svg>
-                                                {{ service.provider.rating }}
+                                                {{ service.vendor.rating }}
                                             </div>
                                         </div>
                                         <div class="text-lg font-bold text-green-600">{{ formatPrice(service.price) }}
@@ -369,7 +323,7 @@ const formatPrice = (price) => {
             </div>
 
             <!-- Empty State -->
-            <div v-else-if="mockFavorites.data.length === 0" class="text-center py-16">
+            <div v-else-if="favorites.data.length === 0" class="text-center py-16">
                 <svg class="mx-auto h-16 w-16 text-gray-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
                         d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -400,7 +354,7 @@ const formatPrice = (price) => {
         </div>
 
         <!-- Quick Actions for non-empty favorites -->
-        <div v-if="mockFavorites.data.length > 0" class="bg-white border-t border-gray-200">
+        <div v-if="favorites.data.length > 0" class="bg-white border-t border-gray-200">
             <div class="max-w-7xl mx-auto px-6 py-6">
                 <div class="flex items-center justify-between">
                     <div class="text-sm text-gray-600">

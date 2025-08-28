@@ -67,7 +67,7 @@ const formatCurrency = (amount) => {
 }
 
 const isCateringService = () => {
-    return booking.value?.category === 'Catering'
+    return booking.value?.category.name === 'Catering'
 }
 
 const getCateringDishes = () => {
@@ -320,7 +320,7 @@ const calculateTotalPrice = () => {
                                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide">Service</label>
                                                 <p class="text-gray-900 font-medium">{{
                                                     booking?.service?.name || 'N/A'
-                                                }}</p>
+                                                    }}</p>
                                             </div>
                                             <div class="space-y-1">
                                                 <label

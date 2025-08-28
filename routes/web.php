@@ -142,8 +142,11 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client'])->gro
     //Show Bookings
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
 
-    //Show Favorites
+    //Favorites
     Route::get('/favorites', [FavoritesController::class, 'index'])->name('favorites.index');
+    Route::post('favorites/{service}', [FavoritesController::class, 'store'])->name('favorites.store');
+    Route::delete('favorites/{service}', [FavoritesController::class, 'destroy'])->name('favorites.destroy');
+
 
     // Show Events
     Route::get('/events', [ClientController::class, 'events'])->name('events.index');
