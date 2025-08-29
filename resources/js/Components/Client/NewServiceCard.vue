@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from 'vue';
 import BookingForm from './BookingForm.vue';
+import BookingModal from './BookingModal.vue';
+
 
 defineProps({
     service: {
@@ -18,10 +20,13 @@ const formatPrice = (price) => {
         currency: 'PHP'
     }).format(price);
 };
+
+const bookingModal = ref(null);
 </script>
 
 <template>
     <BookingForm ref="bookingForm" :service="service" />
+    <BookingModal ref="bookingModal" />
     <div class="relative">
         <img :src="service.image_url" :alt="service.title" class="w-full h-48 object-cover">
     </div>
@@ -56,7 +61,7 @@ const formatPrice = (price) => {
                 service.vendor.location }}
         </div>
         <div class="flex space-x-2">
-            <button @click="bookingForm.open"
+            <button @click="bookingModal.openModal"
                 class="flex-1 bg-blue-600 text-white py-2 px-4 rounded text-sm hover:bg-blue-700 transition-colors">
                 Book Now
             </button>
