@@ -16,7 +16,7 @@ class ClientController extends Controller
     {
 
 
-        $query = Service::with(['category', 'vendor']);
+        $query = Service::with(['category', 'vendor', 'cateringService']);
         $categories = ServiceCategory::all();
 
         $services = $query->paginate(8)->withQueryString()->through(fn($service) => [
@@ -29,7 +29,9 @@ class ClientController extends Controller
             'category_name' => $service->category->name,
             'dateAdded' => $service->created_at->format('Y-m-d'),
             'vendor' => $service->vendor,
-            'rating' => $service->vendor->averageRating()
+            'rating' => $service->vendor->averageRating(),
+            'is_available' => $service->is_available,
+            'catering_service' => $service->cateringService ?? null
         ]);
 
 
