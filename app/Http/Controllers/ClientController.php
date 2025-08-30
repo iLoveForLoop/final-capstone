@@ -100,7 +100,7 @@ class ClientController extends Controller
 
         $query = $user->events()->with(['bookings.service' => function ($q) {
             $q->with(['category', 'vendor']);
-        }]);
+        }])->latest('created_at');
 
         $events = $query->paginate(10)->withQueryString()->through(fn ($event) => [
             'id' => 'EVT' . str_pad($event->id, 3, '0', STR_PAD_LEFT),

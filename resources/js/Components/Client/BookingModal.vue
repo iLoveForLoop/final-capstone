@@ -24,7 +24,7 @@ const form = useForm({
     description: '',
     pax: '',
     dishes: {},
-    vendors: []
+    vendors: [props.service]
 });
 
 // Dish selection functionality
@@ -182,7 +182,10 @@ const prevStep = () => {
 const submitBooking = async () => {
     isLoading.value = true;
 
-    form.post('/events', {
+    // console.log(form);
+
+    form.post(route('client.bookings.store'), {
+        preserveScroll: true,
         onSuccess: () => {
             closeModal();
             // Reset form
@@ -227,8 +230,7 @@ defineExpose({
 
             <!-- Modal Content -->
             <Transition name="modal-content">
-                <div v-if="isOpen"
-                    class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+                <div v-if="isOpen" class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden">
 
                     <!-- Modal Header -->
                     <div class="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
@@ -490,6 +492,7 @@ defineExpose({
                         <!-- Step 2: Review & Confirm -->
                         <Transition name="step" mode="out-in">
                             <div v-if="currentStep === 2" key="step2" class="space-y-6">
+
                                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Review & Confirm</h3>
 
                                 <!-- Service Details -->

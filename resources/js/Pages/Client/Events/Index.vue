@@ -15,6 +15,7 @@ const props = defineProps({
 })
 
 const ui = ref(useUIStore())
+console.log('Events: ', props.events);
 
 // Calendar instance
 const calendar = ref(null);
