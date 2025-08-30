@@ -26,7 +26,7 @@ const bookingModal = ref(null);
 
 <template>
     <BookingForm ref="bookingForm" :service="service" />
-    <BookingModal ref="bookingModal" />
+    <BookingModal ref="bookingModal" :service="service" />
     <div class="relative">
         <img :src="service.image_url" :alt="service.title" class="w-full h-48 object-cover">
     </div>
