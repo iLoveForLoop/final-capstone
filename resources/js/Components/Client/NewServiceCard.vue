@@ -2,9 +2,10 @@
 import { ref } from 'vue';
 import BookingForm from './BookingForm.vue';
 import BookingModal from './BookingModal.vue';
+import { router } from '@inertiajs/vue3'
 
 
-defineProps({
+const props = defineProps({
     service: {
         type: Object
     }
@@ -22,12 +23,18 @@ const formatPrice = (price) => {
 };
 
 const bookingModal = ref(null);
+
+const handleViewDetails = () => {
+    router.get(route('client.service.show', props.service.id))
+}
+
 </script>
 
 <template>
     <BookingForm ref="bookingForm" :service="service" />
     <BookingModal ref="bookingModal" :service="service" />
     <div class="relative">
+        <slot name="favorite"></slot>
         <img :src="service.image_url" :alt="service.title" class="w-full h-48 object-cover">
     </div>
     <div class="p-4">
@@ -65,7 +72,7 @@ const bookingModal = ref(null);
                 class="flex-1 bg-blue-600 text-white py-2 px-4 rounded text-sm hover:bg-blue-700 transition-colors">
                 Book Now
             </button>
-            <button
+            <button @click="handleViewDetails"
                 class="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded text-sm hover:bg-gray-50 transition-colors">
                 View Details
             </button>

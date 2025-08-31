@@ -162,7 +162,7 @@ const pendingVendors = ref([
                                         </div>
                                         <div class="ml-4">
                                             <div class="text-sm font-medium text-gray-900">{{ vendor.user?.name ?? 'N/A'
-                                            }}</div>
+                                                }}</div>
                                             <div class="text-sm text-gray-500">{{ vendor.business_name }}</div>
                                         </div>
                                     </div>
@@ -178,9 +178,9 @@ const pendingVendors = ref([
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <span class="text-yellow-500">★</span>
-                                        <span class="ml-1 text-sm font-medium text-gray-900">
+                                        <!-- <span class="ml-1 text-sm font-medium text-gray-900">
                                             {{ vendor.reviews_avg_rating?.toFixed(1) ?? 'N/A' }}
-                                        </span>
+                                        </span> -->
                                         <span class="ml-1 text-xs text-gray-500">
                                             ({{ vendor.reviews_count ?? 0 }} reviews)
                                         </span>

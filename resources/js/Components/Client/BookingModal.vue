@@ -7,6 +7,12 @@ const props = defineProps({
     service: {
         type: Object,
         default: () => null
+    },
+    date: {
+        type: String
+    },
+    time: {
+        type: String
     }
 });
 
@@ -19,13 +25,15 @@ const isLoading = ref(false);
 const form = useForm({
     name: '',
     location: '',
-    event_date: '',
-    event_time: '',
+    event_date: props.date ?? '',
+    event_time: props.time ?? '',
     description: '',
     pax: '',
     dishes: {},
     vendors: [props.service]
 });
+
+
 
 // Dish selection functionality
 const selectedDishes = ref({});
@@ -138,10 +146,16 @@ const formatPrice = (price) => {
 };
 
 // Methods
-const openModal = () => {
+const openModal = (date, time) => {
     isOpen.value = true;
     currentStep.value = 1;
     resetForm();
+    if (date && time) {
+        form.event_date = date
+        form.event_time = time
+
+    }
+
 };
 
 const closeModal = () => {

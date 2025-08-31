@@ -137,7 +137,8 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client'])->gro
     Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
 
     //Show Services
-    Route::get('/services', [ServiceController::class, 'index'])->name('service.index');
+    Route::get('/services', [ClientController::class, 'services'])->name('service.index');
+    Route::get('/services/{service}', [ClientController::class, 'serviceShow'])->name('service.show');
 
     //Show Bookings
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');

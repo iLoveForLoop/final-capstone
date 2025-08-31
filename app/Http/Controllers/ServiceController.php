@@ -15,15 +15,17 @@ class ServiceController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $isVendor = $user->hasRole('vendor');
 
-        // 🔹 Base query: Vendor services or all services for clients/others
-        if ($isVendor && $user->vendor) {
-            $query = $user->vendor->services()
-                ->with(['category', 'cateringService', 'photographyService']);
-        } else {
-            $query = Service::with(['category', 'cateringService', 'photographyService']);
+        // dd('hi');
+
+        // Ensure the logged-in user has a vendor profile
+        if (!$user->vendor) {
+            abort(403, 'Unauthorized: Vendor account required.');
         }
+
+        // Base query: vendor's own services
+        $query = $user->vendor->services()
+            ->with(['category', 'cateringService', 'photographyService']);
 
         // 🔹 Search filter
         if ($request->filled('search')) {
@@ -38,43 +40,37 @@ class ServiceController extends Controller
         }
 
         // 🔹 Category filter
-        if ($request->category && $request->category !== 'all') {
+        if ($request->filled('category') && $request->category !== 'all') {
             $query->where('service_category_id', $request->category);
         }
 
         // 🔹 Pagination + transform for frontend
         $services = $query->paginate(10)->withQueryString()->through(fn($service) => [
-            'id' => $service->id,
-            'vendor_id' => $service->vendor_id,
-            'service_category_id' => $service->service_category_id,
-            'name' => $service->name,
-            'description' => $service->description,
-            'price' => $service->price,
-            'is_available' => $service->is_available,
-            'image_url' => $service->getFirstMediaUrl('images'),
-            'category' => $service->category,
-            'catering_service' => $service->cateringService,
-            'photography_service' => $service->photographyService,
-            'average_rating' => $service->vendor->averageRating()
+            'id'                 => $service->id,
+            'vendor_id'          => $service->vendor_id,
+            'service_category_id'=> $service->service_category_id,
+            'name'               => $service->name,
+            'description'        => $service->description,
+            'price'              => $service->price,
+            'is_available'       => $service->is_available,
+            'image_url'          => $service->getFirstMediaUrl('images'),
+            'category'           => $service->category,
+            'catering_service'   => $service->cateringService,
+            'photography_service'=> $service->photographyService,
+            'average_rating'     => $service->vendor->averageRating(),
         ]);
 
-        // 🔹 Categories: vendor-specific or all
-        $categories = $isVendor && $user->vendor
-            ? $user->vendor->serviceCategories()->select('id', 'name')->get()
-            : ServiceCategory::select('id', 'name')->get();
+        // 🔹 Only vendor's categories
+        $categories = $user->vendor->serviceCategories()
+            ->select('id', 'name')
+            ->get();
 
-        // 🔹 Pass filters back to Inertia
+        // 🔹 Pass filters back
         $filters = $request->only(['search', 'availability', 'category']);
 
-        // 🔹 Choose correct view
-        $view = match (true) {
-            $user->hasRole('vendor') => 'Vendor/Services/Index',
-            $user->hasRole('client') => 'Client/Services/Index',
-            default => 'Services/Index',
-        };
-
-        return inertia($view, compact('services', 'categories', 'filters'));
+        return inertia('Vendor/Services/Index', compact('services', 'categories', 'filters'));
     }
+
 
 
 

@@ -24,10 +24,7 @@ class FavoritesController extends Controller
     public function index()
     {
 
-
-
-
-        $query = auth()->user()->favorites()->with(['vendor.reviews', 'category']);
+        $query = auth()->user()->favorites()->with(['vendor.reviews', 'category', 'cateringService']);
 
         $favorites = $query->paginate(10)->withQueryString()->through(fn ($favorite) => [
             'id' => $favorite->id,
@@ -38,7 +35,9 @@ class FavoritesController extends Controller
             'category_name' => $favorite->category->name,
             'dateAdded' => $favorite->created_at->format('Y-m-d'),
             'vendor' => $favorite->vendor,
-            'rating' => $favorite->vendor->averageRating()
+            'rating' => $favorite->vendor->averageRating(),
+            'is_available' => $favorite->is_available,
+            'catering_service' => $favorite->cateringService ?? null
         ]);
 
             // dd('hi');
