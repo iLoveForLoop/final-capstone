@@ -145,12 +145,15 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client'])->gro
 
     //Favorites
     Route::get('/favorites', [FavoritesController::class, 'index'])->name('favorites.index');
-    Route::post('favorites/{service}', [FavoritesController::class, 'store'])->name('favorites.store');
-    Route::delete('favorites/{service}', [FavoritesController::class, 'destroy'])->name('favorites.destroy');
+    Route::post('/favorites/{service}', [FavoritesController::class, 'store'])->name('favorites.store');
+    Route::delete('/favorites/{service}', [FavoritesController::class, 'destroy'])->name('favorites.destroy');
 
 
     // Show Events
     Route::get('/events', [ClientController::class, 'events'])->name('events.index');
+
+    //Show Vendor page
+    Route::get('/vendor/{vendor}', [ClientController::class, 'showVendor'])->name('vendor.show');
 
 });
 

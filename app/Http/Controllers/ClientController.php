@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\Service;
 use App\Models\ServiceCategory;
+use App\Models\Vendor;
 use Illuminate\Http\Request;
 
 class ClientController extends Controller
@@ -248,6 +249,10 @@ class ClientController extends Controller
         ]);
 
         return inertia('Client/Events/Index', compact('events'));
+    }
+
+    public function showVendor(Vendor $vendor) {
+        return inertia('Client/Vendor/Show');
     }
 
 }
