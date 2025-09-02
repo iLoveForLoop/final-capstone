@@ -58,37 +58,7 @@ const eventTypes = [
 ];
 
 // Mock events data
-const mockEvents = ref([
-    {
-        id: 'evt001',
-        title: 'Wedding Ceremony & Reception',
-        type: 'wedding',
-        start: '2024-03-20T10:00:00',
-        end: '2024-03-20T23:00:00',
-        location: 'Shangri-La at the Fort, BGC',
-        description: 'Garden ceremony at 4 PM followed by indoor reception. 150 guests expected.',
-        budget: 500000,
-        priority: 'high',
-        status: 'confirmed',
-        services: [
-            { name: 'Photography', provider: 'John\'s Studio', status: 'confirmed' },
-            { name: 'Catering', provider: 'Taste of Manila', status: 'pending' },
-            { name: 'Transportation', provider: 'Elite Car Rentals', status: 'confirmed' }
-        ],
-        // tasks: [
-        //     { task: 'Finalize menu selection', completed: false, dueDate: '2024-03-10' },
-        //     { task: 'Confirm final guest count', completed: true, dueDate: '2024-03-15' },
-        //     { task: 'Pick up wedding rings', completed: false, dueDate: '2024-03-18' }
-        // ],
-        // reminders: [
-        //     { type: 'email', time: '1day', sent: false },
-        //     { type: 'sms', time: '1hour', sent: false }
-        // ],
-        createdDate: '2024-01-15',
-        color: '#e91e63'
-    },
 
-]);
 
 // Filters
 const selectedEventType = ref('all');
