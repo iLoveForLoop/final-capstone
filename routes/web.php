@@ -154,6 +154,18 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client'])->gro
 
     //Show Vendor page
     Route::get('/vendor/{vendor}', [ClientController::class, 'showVendor'])->name('vendor.show');
+    Route::get('/temp', function () {
+
+    return inertia('Client/Vendor/Temp');
+
+   })->name('temp');
+
+   Route::get('/temp2', function () {
+
+    return inertia('Client/Vendor/Temp2');
+
+   })->name('temp2');
+
 
 });
 

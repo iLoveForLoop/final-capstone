@@ -1,534 +1,59 @@
-<template>
-    <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <!-- Enhanced Header Section -->
-        <div class="relative overflow-hidden">
-            <!-- Background Pattern -->
-            <div class="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-700 to-blue-800"></div>
-            <div class="absolute inset-0 bg-black bg-opacity-20"></div>
-
-            <!-- Header Content -->
-            <div class="relative max-w-7xl mx-auto px-6 py-8">
-                <!-- Back Button -->
-                <button @click="goBack"
-                    class="mb-8 group flex items-center gap-3 text-white hover:text-indigo-200 transition-all duration-300">
-                    <div
-                        class="w-10 h-10 rounded-full bg-white bg-opacity-20 backdrop-blur-sm flex items-center justify-center group-hover:bg-opacity-30 transition-all duration-300">
-                        <i class="fas fa-arrow-left"></i>
-                    </div>
-                    <span class="font-medium">Back to Search</span>
-                </button>
-
-                <!-- Vendor Info Grid -->
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center text-white">
-                    <!-- Avatar Section -->
-                    <div class="lg:col-span-3 flex justify-center lg:justify-start">
-                        <div class="relative">
-                            <div
-                                class="w-40 h-40 rounded-2xl overflow-hidden border-4 border-white border-opacity-30 shadow-2xl">
-                                <img :src="vendor.avatar" :alt="vendor.name" class="w-full h-full object-cover" />
-                            </div>
-                            <!-- Verified Badge -->
-                            <div v-if="vendor.verified"
-                                class="absolute -bottom-3 -right-3 bg-green-500 text-white rounded-full w-12 h-12 flex items-center justify-center border-4 border-white shadow-lg">
-                                <i class="fas fa-check text-lg"></i>
-                            </div>
-                            <!-- Status Indicator -->
-                            <div class="absolute -top-2 -left-2 px-3 py-1 rounded-full text-xs font-semibold"
-                                :class="vendor.available ? 'bg-green-500' : 'bg-red-500'">
-                                {{ vendor.available ? 'Available' : 'Busy' }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Vendor Details -->
-                    <div class="lg:col-span-6 text-center lg:text-left space-y-4">
-                        <div>
-                            <h1 class="text-4xl lg:text-5xl font-bold mb-3 gradient-text-white">{{ vendor.name }}</h1>
-                            <p class="text-xl text-indigo-100 font-medium">{{ vendor.category }}</p>
-                        </div>
-
-                        <!-- Rating & Stats -->
-                        <div
-                            class="flex flex-col sm:flex-row gap-6 items-center lg:items-start justify-center lg:justify-start">
-                            <div class="flex items-center gap-3">
-                                <div class="flex gap-1">
-                                    <i v-for="n in 5" :key="n"
-                                        :class="['fas fa-star text-yellow-400 text-lg', n <= vendor.rating ? 'opacity-100' : 'opacity-30']"></i>
-                                </div>
-                                <span class="font-semibold text-lg">{{ vendor.rating }}</span>
-                                <span class="text-indigo-200">({{ vendor.reviewCount }} reviews)</span>
-                            </div>
-                            <div class="flex items-center gap-2 text-indigo-200">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span>{{ vendor.location }}</span>
-                            </div>
-                        </div>
-
-                        <!-- Quick Stats -->
-                        <div class="flex flex-wrap gap-4 justify-center lg:justify-start">
-                            <div class="stat-badge">
-                                <i class="fas fa-clock"></i>
-                                <span>{{ vendor.responseTime }} response</span>
-                            </div>
-                            <div class="stat-badge">
-                                <i class="fas fa-calendar-check"></i>
-                                <span>{{ vendor.completedEvents }}+ Events</span>
-                            </div>
-                            <div class="stat-badge">
-                                <i class="fas fa-shield-alt"></i>
-                                <span>Verified Vendor</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="lg:col-span-3 flex flex-col gap-4">
-                        <button @click="openBookingModal" class="btn-primary w-full py-4 text-lg font-semibold">
-                            <i class="fas fa-calendar-plus mr-2"></i>
-                            Book Now
-                        </button>
-                        <div class="flex gap-3">
-                            <button @click="sendMessage" class="btn-secondary flex-1 py-3">
-                                <i class="fas fa-comments mr-2"></i>
-                                Message
-                            </button>
-                            <button @click="toggleFavorite" class="btn-icon w-12 h-12"
-                                :class="isFavorite ? 'text-red-400' : 'text-white'">
-                                <i class="fas fa-heart text-xl"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Enhanced Navigation Tabs -->
-        <div class="max-w-7xl mx-auto px-6 -mt-6">
-            <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-                <div class="flex">
-                    <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id" :class="[
-                        'flex-1 px-6 py-5 font-semibold transition-all duration-300 flex items-center justify-center gap-3 relative',
-                        activeTab === tab.id
-                            ? 'text-indigo-600 bg-gradient-to-r from-indigo-50 to-purple-50'
-                            : 'text-gray-600 hover:text-indigo-600 hover:bg-gray-50'
-                    ]">
-                        <i :class="tab.icon" class="text-lg"></i>
-                        <span>{{ tab.name }}</span>
-                        <div v-if="activeTab === tab.id"
-                            class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-600 to-purple-600">
-                        </div>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Enhanced Tab Content -->
-        <div class="max-w-7xl mx-auto px-6 pb-12">
-            <div class="bg-white rounded-b-2xl shadow-xl min-h-96 mt-1">
-
-                <!-- Overview Tab -->
-                <div v-if="activeTab === 'overview'" class="p-8">
-                    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                        <!-- Main Content -->
-                        <div class="xl:col-span-2 space-y-8">
-                            <!-- Photo Gallery -->
-                            <section>
-                                <div class="flex items-center justify-between mb-6">
-                                    <h2 class="text-3xl font-bold text-gray-900">Portfolio Gallery</h2>
-                                    <span class="text-sm text-gray-500">{{ vendor.gallery.length }} photos</span>
-                                </div>
-                                <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <div v-for="(image, index) in vendor.gallery" :key="index"
-                                        @click="openGallery(index)"
-                                        class="gallery-item group cursor-pointer relative aspect-video rounded-xl overflow-hidden">
-                                        <img :src="image.url" :alt="image.caption"
-                                            class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
-                                        <div class="gallery-overlay">
-                                            <i
-                                                class="fas fa-expand-arrows-alt text-white text-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <!-- About Section -->
-                            <section class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8">
-                                <h2 class="text-3xl font-bold text-gray-900 mb-6">About {{ vendor.name }}</h2>
-                                <p class="text-gray-700 leading-relaxed text-lg mb-8">{{ vendor.description }}</p>
-
-                                <div>
-                                    <h3 class="text-xl font-bold text-gray-900 mb-4">Specialties & Services</h3>
-                                    <div class="flex flex-wrap gap-3">
-                                        <span v-for="specialty in vendor.specialties" :key="specialty"
-                                            class="specialty-tag">
-                                            <i class="fas fa-check-circle mr-2"></i>
-                                            {{ specialty }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <!-- Video Section -->
-                            <section v-if="vendor.videoUrl">
-                                <h2 class="text-3xl font-bold text-gray-900 mb-6">Showcase Video</h2>
-                                <div class="video-container">
-                                    <video :src="vendor.videoUrl" controls
-                                        poster="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=400&fit=crop"
-                                        class="w-full rounded-2xl shadow-lg">
-                                    </video>
-                                </div>
-                            </section>
-                        </div>
-
-                        <!-- Enhanced Sidebar -->
-                        <div class="space-y-6">
-                            <!-- Pricing Packages -->
-                            <div class="sidebar-card">
-                                <h3 class="text-2xl font-bold text-gray-900 mb-6">Service Packages</h3>
-                                <div class="space-y-4">
-                                    <div v-for="p in vendor.packages" :key="p.id" class="package-card group">
-                                        <div class="flex justify-between items-start mb-4">
-                                            <h4
-                                                class="text-xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                                                {{ p.name }}
-                                            </h4>
-                                            <div class="text-right">
-                                                <span class="text-3xl font-bold text-indigo-600">₱{{
-                                                    p.price.toLocaleString() }}</span>
-                                                <p class="text-sm text-gray-500">starting price</p>
-                                            </div>
-                                        </div>
-                                        <ul class="space-y-3">
-                                            <li v-for="feature in p.features" :key="feature"
-                                                class="flex items-center gap-3 text-gray-700">
-                                                <i class="fas fa-check text-green-500 text-sm flex-shrink-0"></i>
-                                                <span>{{ feature }}</span>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Enhanced Calendar -->
-                            <div class="sidebar-card">
-                                <h3 class="text-2xl font-bold text-gray-900 mb-6">Availability Calendar</h3>
-                                <div class="calendar-container">
-                                    <!-- Calendar Header -->
-                                    <div class="calendar-header">
-                                        <button @click="prevMonth" class="calendar-nav-btn">
-                                            <i class="fas fa-chevron-left"></i>
-                                        </button>
-                                        <span class="font-bold text-lg text-white">{{ currentMonthYear }}</span>
-                                        <button @click="nextMonth" class="calendar-nav-btn">
-                                            <i class="fas fa-chevron-right"></i>
-                                        </button>
-                                    </div>
-
-                                    <!-- Calendar Grid -->
-                                    <div class="calendar-body">
-                                        <div class="calendar-weekdays">
-                                            <div v-for="day in ['S', 'M', 'T', 'W', 'T', 'F', 'S']" :key="day"
-                                                class="calendar-weekday">{{ day }}</div>
-                                        </div>
-                                        <div class="calendar-dates">
-                                            <div v-for="date in calendarDates" :key="date.date"
-                                                :class="getDateClasses(date)" class="calendar-date">
-                                                {{ date.day }}
-                                            </div>
-                                        </div>
-                                        <!-- Calendar Legend -->
-                                        <div class="calendar-legend">
-                                            <div class="legend-item">
-                                                <div class="w-3 h-3 bg-green-200 rounded-full"></div>
-                                                <span>Available</span>
-                                            </div>
-                                            <div class="legend-item">
-                                                <div class="w-3 h-3 bg-red-200 rounded-full"></div>
-                                                <span>Booked</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Enhanced Contact Card -->
-                            <div class="sidebar-card">
-                                <h3 class="text-2xl font-bold text-gray-900 mb-6">Contact Information</h3>
-                                <div class="space-y-4">
-                                    <a :href="`tel:${vendor.phone}`" class="contact-item group">
-                                        <div
-                                            class="contact-icon bg-green-100 text-green-600 group-hover:bg-green-600 group-hover:text-white">
-                                            <i class="fas fa-phone"></i>
-                                        </div>
-                                        <div>
-                                            <p class="font-semibold text-gray-900">Phone</p>
-                                            <p class="text-gray-600">{{ vendor.phone }}</p>
-                                        </div>
-                                    </a>
-                                    <a :href="`mailto:${vendor.email}`" class="contact-item group">
-                                        <div
-                                            class="contact-icon bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white">
-                                            <i class="fas fa-envelope"></i>
-                                        </div>
-                                        <div>
-                                            <p class="font-semibold text-gray-900">Email</p>
-                                            <p class="text-gray-600">{{ vendor.email }}</p>
-                                        </div>
-                                    </a>
-                                    <a :href="vendor.website" target="_blank" class="contact-item group">
-                                        <div
-                                            class="contact-icon bg-purple-100 text-purple-600 group-hover:bg-purple-600 group-hover:text-white">
-                                            <i class="fas fa-globe"></i>
-                                        </div>
-                                        <div>
-                                            <p class="font-semibold text-gray-900">Website</p>
-                                            <p class="text-gray-600">Visit our site</p>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Enhanced Reviews Tab -->
-                <div v-if="activeTab === 'reviews'" class="p-8">
-                    <!-- Reviews Summary -->
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-                        <div class="review-summary-card">
-                            <div class="text-6xl font-bold text-indigo-600 mb-3">{{ vendor.rating }}</div>
-                            <div class="flex justify-center gap-1 mb-3">
-                                <i v-for="n in 5" :key="n"
-                                    :class="['fas fa-star text-yellow-400 text-xl', n <= vendor.rating ? 'opacity-100' : 'opacity-30']"></i>
-                            </div>
-                            <p class="text-gray-600 font-medium">{{ vendor.reviewCount }} total reviews</p>
-                        </div>
-
-                        <div class="lg:col-span-2 space-y-4">
-                            <div v-for="(count, rating) in vendor.ratingBreakdown" :key="rating" class="rating-bar">
-                                <span class="rating-label">{{ rating }} star{{ rating > 1 ? 's' : '' }}</span>
-                                <div class="rating-progress">
-                                    <div class="rating-fill"
-                                        :style="{ width: (count / vendor.reviewCount) * 100 + '%' }"></div>
-                                </div>
-                                <span class="rating-count">{{ count }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Individual Reviews -->
-                    <div class="space-y-6">
-                        <div v-for="review in vendor.reviews" :key="review.id" class="review-card">
-                            <div class="review-header">
-                                <img :src="review.avatar" :alt="review.name" class="review-avatar" />
-                                <div class="flex-1">
-                                    <h4 class="font-bold text-gray-900 text-lg">{{ review.name }}</h4>
-                                    <div class="flex items-center gap-4 mt-1">
-                                        <div class="flex gap-1">
-                                            <i v-for="n in 5" :key="n"
-                                                :class="['fas fa-star text-yellow-400', n <= review.rating ? 'opacity-100' : 'opacity-30']"></i>
-                                        </div>
-                                        <span class="text-gray-500 text-sm">{{ formatDate(review.date) }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <p class="text-gray-700 leading-relaxed text-lg mt-4">{{ review.comment }}</p>
-                            <div v-if="review.photos" class="review-photos">
-                                <img v-for="photo in review.photos" :key="photo" :src="photo" alt="Review photo"
-                                    class="review-photo" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Enhanced Location Tab -->
-                <div v-if="activeTab === 'location'" class="p-8">
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <!-- Map Placeholder -->
-                        <div class="map-container">
-                            <div class="map-placeholder">
-                                <i class="fas fa-map-marked-alt text-8xl text-indigo-300 mb-6"></i>
-                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Interactive Map</h3>
-                                <p class="text-gray-600 text-lg">{{ vendor.address }}</p>
-                                <button class="mt-6 btn-primary">
-                                    <i class="fas fa-directions mr-2"></i>
-                                    Get Directions
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Location Details -->
-                        <div class="space-y-8">
-                            <div class="location-card">
-                                <h3 class="text-2xl font-bold text-gray-900 mb-6">Service Information</h3>
-                                <div class="space-y-6">
-                                    <div class="location-detail">
-                                        <i class="fas fa-map-marker-alt text-indigo-600"></i>
-                                        <div>
-                                            <span class="detail-label">Primary Location</span>
-                                            <span class="detail-value">{{ vendor.location }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="location-detail">
-                                        <i class="fas fa-compass text-indigo-600"></i>
-                                        <div>
-                                            <span class="detail-label">Service Radius</span>
-                                            <span class="detail-value">{{ vendor.serviceRadius }} km coverage</span>
-                                        </div>
-                                    </div>
-                                    <div class="location-detail">
-                                        <i class="fas fa-home text-indigo-600"></i>
-                                        <div>
-                                            <span class="detail-label">Full Address</span>
-                                            <span class="detail-value">{{ vendor.address }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="location-card">
-                                <h3 class="text-xl font-bold text-gray-900 mb-4">Service Features</h3>
-                                <div class="feature-list">
-                                    <div class="feature-item">
-                                        <i class="fas fa-truck text-green-600"></i>
-                                        <span>Own transportation available</span>
-                                    </div>
-                                    <div class="feature-item">
-                                        <i class="fas fa-tools text-green-600"></i>
-                                        <span>Setup and breakdown included</span>
-                                    </div>
-                                    <div class="feature-item">
-                                        <i class="fas fa-clock text-blue-600"></i>
-                                        <span>Flexible scheduling options</span>
-                                    </div>
-                                    <div class="feature-item">
-                                        <i class="fas fa-info-circle text-orange-600"></i>
-                                        <span>Delivery fee may apply for distant locations</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Enhanced Booking Modal -->
-        <div v-if="showBookingModal" class="modal-overlay" @click="closeBookingModal">
-            <div class="booking-modal" @click.stop>
-                <div class="modal-header">
-                    <h3 class="modal-title">Book {{ vendor.name }}</h3>
-                    <button @click="closeBookingModal" class="modal-close">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-
-                <form @submit.prevent="submitBooking" class="modal-body">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label">Event Date</label>
-                            <input v-model="bookingForm.date" type="date" required class="form-input" />
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Event Time</label>
-                            <input v-model="bookingForm.time" type="time" required class="form-input" />
-                        </div>
-                    </div>
-
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label">Duration (hours)</label>
-                            <input v-model="bookingForm.duration" type="number" min="1" required class="form-input" />
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Select Package</label>
-                            <select v-model="bookingForm.packageId" required class="form-input">
-                                <option value="">Choose a package</option>
-                                <option v-for="p in vendor.packages" :key="p.id" :value="p.id">
-                                    {{ p.name }} - ₱{{ p.price.toLocaleString() }}
-                                </option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Contact Name</label>
-                        <input v-model="bookingForm.contactName" type="text" required class="form-input"
-                            placeholder="Your full name" />
-                    </div>
-
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label">Contact Phone</label>
-                            <input v-model="bookingForm.contactPhone" type="tel" required class="form-input"
-                                placeholder="+63 XXX XXX XXXX" />
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Contact Email</label>
-                            <input v-model="bookingForm.contactEmail" type="email" required class="form-input"
-                                placeholder="your@email.com" />
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Event Location</label>
-                        <input v-model="bookingForm.location" type="text" required class="form-input"
-                            placeholder="Enter event venue address" />
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Additional Notes</label>
-                        <textarea v-model="bookingForm.notes" class="form-textarea"
-                            placeholder="Special requests, requirements, or additional details..."></textarea>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" @click="closeBookingModal" class="btn-secondary">
-                            Cancel
-                        </button>
-                        <button type="submit" class="btn-primary">
-                            <i class="fas fa-paper-plane mr-2"></i>
-                            Send Booking Request
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Gallery Modal -->
-        <div v-if="showGalleryModal" class="modal-overlay" @click="closeGallery">
-            <div class="gallery-modal" @click.stop>
-                <button @click="closeGallery" class="gallery-close">
-                    <i class="fas fa-times"></i>
-                </button>
-                <img :src="vendor.gallery[galleryIndex]?.url" :alt="vendor.gallery[galleryIndex]?.caption"
-                    class="gallery-image" />
-                <div class="gallery-nav">
-                    <button @click="prevImage" class="gallery-nav-btn">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button @click="nextImage" class="gallery-nav-btn">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-                <div class="gallery-caption">
-                    {{ vendor.gallery[galleryIndex]?.caption }}
-                </div>
-            </div>
-        </div>
-    </div>
-</template>
-
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import FullCalendar from '@fullcalendar/vue3'
+import dayGridPlugin from '@fullcalendar/daygrid'
+import interactionPlugin from '@fullcalendar/interaction'
+import {
+    ArrowLeft,
+    Star,
+    MapPin,
+    Clock,
+    Calendar,
+    CalendarCheck,
+    Shield,
+    Heart,
+    MessageCircle,
+    CalendarPlus,
+    CheckCircle,
+    X,
+    ChevronLeft,
+    ChevronRight,
+    Phone,
+    Mail,
+    Globe,
+    Check,
+    Truck,
+    // Tool,
+    Wrench,
+    Info,
+    Expand,
+    Camera,
+    Video,
+    Navigation,
+    User,
+    Home,
+    Award
+} from 'lucide-vue-next'
+
+// Import shadcn-vue components
+import { Button } from '@/Components/ui/button'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card'
+import { Badge } from '@/Components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog'
+import { Input } from '@/Components/ui/input'
+import { Label } from '@/Components/ui/label'
+import { Textarea } from '@/Components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select'
+import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar'
+import { Progress } from '@/Components/ui/progress'
 
 const activeTab = ref('overview')
 const showBookingModal = ref(false)
 const showGalleryModal = ref(false)
 const galleryIndex = ref(0)
 const isFavorite = ref(false)
-const currentMonth = ref(new Date().getMonth())
-const currentYear = ref(new Date().getFullYear())
+const calendarApi = ref(null)
 
 const bookingForm = ref({
     date: '',
@@ -541,12 +66,6 @@ const bookingForm = ref({
     contactPhone: '',
     contactEmail: ''
 })
-
-const tabs = [
-    { id: 'overview', name: 'Overview', icon: 'fas fa-home' },
-    { id: 'reviews', name: 'Reviews', icon: 'fas fa-star' },
-    { id: 'location', name: 'Location', icon: 'fas fa-map-marker-alt' }
-]
 
 const vendor = {
     id: 1,
@@ -647,39 +166,35 @@ const vendor = {
     ]
 }
 
-const currentMonthYear = computed(() => {
-    const months = ['January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December']
-    return `${months[currentMonth.value]} ${currentYear.value}`
-})
-
-const calendarDates = computed(() => {
-    const dates = []
-    const firstDay = new Date(currentYear.value, currentMonth.value, 1)
-    const lastDay = new Date(currentYear.value, currentMonth.value + 1, 0)
-    const startDate = new Date(firstDay)
-    startDate.setDate(startDate.getDate() - firstDay.getDay())
-
-    for (let i = 0; i < 42; i++) {
-        const date = new Date(startDate)
-        date.setDate(date.getDate() + i)
-
-        const today = new Date()
-        const isToday = date.toDateString() === today.toDateString()
-        const inCurrentMonth = date.getMonth() === currentMonth.value
-
-        dates.push({
-            date: date.toISOString().split('T')[0],
-            day: date.getDate(),
-            available: inCurrentMonth && Math.random() > 0.3,
-            booked: inCurrentMonth && Math.random() > 0.8,
-            isToday: isToday,
-            inCurrentMonth: inCurrentMonth
-        })
+// Calendar events
+const calendarEvents = ref([
+    {
+        title: 'Available',
+        start: new Date(),
+        end: new Date(new Date().setDate(new Date().getDate() + 5)),
+        color: '#10b981',
+        display: 'background'
+    },
+    {
+        title: 'Booked - Wedding Event',
+        start: new Date(new Date().setDate(new Date().getDate() + 6)),
+        end: new Date(new Date().setDate(new Date().getDate() + 6)),
+        color: '#ef4444'
+    },
+    {
+        title: 'Available',
+        start: new Date(new Date().setDate(new Date().getDate() + 7)),
+        end: new Date(new Date().setDate(new Date().getDate() + 10)),
+        color: '#10b981',
+        display: 'background'
+    },
+    {
+        title: 'Booked - Corporate Event',
+        start: new Date(new Date().setDate(new Date().getDate() + 12)),
+        end: new Date(new Date().setDate(new Date().getDate() + 12)),
+        color: '#ef4444'
     }
-
-    return dates
-})
+])
 
 // Methods
 const goBack = () => {
@@ -744,24 +259,6 @@ const nextImage = () => {
     }
 }
 
-const prevMonth = () => {
-    if (currentMonth.value === 0) {
-        currentMonth.value = 11
-        currentYear.value--
-    } else {
-        currentMonth.value--
-    }
-}
-
-const nextMonth = () => {
-    if (currentMonth.value === 11) {
-        currentMonth.value = 0
-        currentYear.value++
-    } else {
-        currentMonth.value++
-    }
-}
-
 const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -770,45 +267,646 @@ const formatDate = (dateString) => {
     })
 }
 
-const getDateClasses = (date) => {
-    return [
-        'calendar-date',
-        {
-            'available': date.available && date.inCurrentMonth,
-            'booked': date.booked && date.inCurrentMonth,
-            'today': date.isToday,
-            'other-month': !date.inCurrentMonth
-        }
-    ]
+const handleDateClick = (arg) => {
+    if (arg.event) {
+        // Date is booked, don't allow selection
+        return
+    }
+
+    // Set the selected date in the booking form
+    bookingForm.value.date = arg.dateStr
+    openBookingModal()
 }
+
+const calendarOptions = {
+    plugins: [dayGridPlugin, interactionPlugin],
+    initialView: 'dayGridMonth',
+    events: calendarEvents.value,
+    dateClick: handleDateClick,
+    headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,dayGridWeek'
+    },
+    eventDisplay: 'block',
+    eventColor: '#3b82f6',
+    height: 'auto'
+}
+
+onMounted(() => {
+    // Initialize calendar API if needed
+})
 </script>
+
+<template>
+    <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <!-- Enhanced Header Section -->
+        <div class="relative overflow-hidden">
+            <!-- Simple Background -->
+            <div class="absolute inset-0 bg-gradient-to-r from-slate-900 to-slate-800"></div>
+
+            <!-- Header Content -->
+            <div class="relative max-w-7xl mx-auto px-4 sm:px-6 py-12">
+                <!-- Back Button -->
+                <Button @click="goBack" class="mb-8 text-white bg-transparent">
+                    <ArrowLeft class="mr-2 h-4 w-4" />
+                    Back
+                </Button>
+
+                <!-- Vendor Info Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center text-white">
+                    <!-- Avatar Section -->
+                    <div class="lg:col-span-3 flex justify-center lg:justify-start">
+                        <div class="relative">
+                            <Avatar class="w-32 h-32 md:w-40 md:h-40 border-4 border-white/30 shadow-2xl">
+                                <AvatarImage :src="vendor.avatar" :alt="vendor.name" />
+                                <AvatarFallback>SS</AvatarFallback>
+                            </Avatar>
+                            <!-- Verified Badge -->
+                            <Badge v-if="vendor.verified"
+                                class="absolute -bottom-3 -right-3 bg-green-500 text-white rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center border-4 border-white shadow-lg p-0">
+                                <Check :size="16" />
+                            </Badge>
+                            <!-- Status Indicator -->
+                            <Badge class="absolute -top-2 -left-2"
+                                :class="vendor.available ? 'bg-green-500' : 'bg-red-500'">
+                                {{ vendor.available ? 'Available' : 'Busy' }}
+                            </Badge>
+                        </div>
+                    </div>
+
+                    <!-- Vendor Details -->
+                    <div class="lg:col-span-6 text-center lg:text-left space-y-6">
+                        <div>
+                            <h1 class="text-4xl font-bold">{{ vendor.name }}</h1>
+                            <p class="text-white/80 text-xl mt-2">{{ vendor.category }}</p>
+                        </div>
+
+                        <!-- Rating & Location -->
+                        <div
+                            class="flex flex-col sm:flex-row gap-4 items-center lg:items-start justify-center lg:justify-start">
+                            <div class="flex items-center gap-3">
+                                <div class="flex gap-1">
+                                    <Star v-for="n in 5" :key="n"
+                                        :class="['h-5 w-5 text-yellow-400', n <= vendor.rating ? 'fill-current' : 'opacity-30']" />
+                                </div>
+                                <span class="font-medium text-lg">{{ vendor.rating }}</span>
+                                <span class="text-white/60">({{ vendor.reviewCount }} reviews)</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-white/80">
+                                <MapPin class="h-4 w-4" />
+                                <span>{{ vendor.location }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Simple Stats -->
+                        <div class="flex flex-wrap gap-3 justify-center lg:justify-start">
+                            <span class="flex px-4 py-2 bg-white/10 text-white text-sm rounded-full">
+                                <Clock class="h-4 w-4 mr-2" />
+                                {{ vendor.responseTime }} response
+                            </span>
+                            <span class="flex px-4 py-2 bg-white/10 text-white text-sm rounded-full">
+                                <CalendarCheck class="h-4 w-4 mr-2" />
+                                {{ vendor.completedEvents }}+ Events
+                            </span>
+                            <span v-if="vendor.verified"
+                                class="flex px-4 py-2 bg-white/10 text-white text-sm rounded-full">
+                                <Shield class="h-4 w-4 mr-2" />
+                                Verified Vendor
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="lg:col-span-3 flex flex-col gap-4">
+                        <Button @click="openBookingModal" size="lg"
+                            class="w-full bg-white text-slate-900 hover:bg-slate-100 font-semibold">
+                            <Calendar class="h-5 w-5 mr-2" />
+                            Book Now
+                        </Button>
+                        <div class="flex gap-3">
+                            <Button @click="sendMessage" variant="ghost"
+                                class="bg-white flex-1 border-white text-slate-900 hover:bg-white/90 hover:text-slate-900">
+                                <MessageCircle class="h-4 w-4 mr-2" />
+                                Message
+                            </Button>
+                            <Button @click="toggleFavorite" variant="ghost" size="icon"
+                                class="bg-white border-white hover:bg-white/90 hover:text-slate-900"
+                                :class="isFavorite ? 'text-red-400' : 'text-slate-900'">
+                                <Heart :class="['h-5 w-5', isFavorite ? 'fill-current' : '']" />
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Navigation Tabs -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 ">
+            <Card class="rounded-2xl shadow-xl">
+                <Tabs v-model="activeTab" class="w-full">
+                    <TabsList class="w-full flex h-auto p-0 bg-transparent border-b border-gray-100">
+                        <TabsTrigger value="overview" class="flex-1 px-4 md:px-5 py-3 md:py-4 font-medium rounded-none transition-all duration-200
+               data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600
+               data-[state=active]:bg-transparent hover:text-indigo-500 text-gray-500 hover:bg-gray-50">
+                            <div class="flex flex-col items-center justify-center gap-1">
+                                <Home :size="16" class="transition-colors" />
+                                <span class="text-xs md:text-sm">Overview</span>
+                            </div>
+                        </TabsTrigger>
+                        <TabsTrigger value="reviews" class="flex-1 px-4 md:px-5 py-3 md:py-4 font-medium rounded-none transition-all duration-200
+               data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600
+               data-[state=active]:bg-transparent hover:text-indigo-500 text-gray-500 hover:bg-gray-50">
+                            <div class="flex flex-col items-center justify-center gap-1">
+                                <Star :size="16" class="transition-colors" />
+                                <span class="text-xs md:text-sm">Reviews</span>
+                            </div>
+                        </TabsTrigger>
+                        <TabsTrigger value="location" class="flex-1 px-4 md:px-5 py-3 md:py-4 font-medium rounded-none transition-all duration-200
+               data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600
+               data-[state=active]:bg-transparent hover:text-indigo-500 text-gray-500 hover:bg-gray-50">
+                            <div class="flex flex-col items-center justify-center gap-1">
+                                <MapPin :size="16" class="transition-colors" />
+                                <span class="text-xs md:text-sm">Location</span>
+                            </div>
+                        </TabsTrigger>
+                    </TabsList>
+
+                    <!-- Tab Content -->
+                    <div class="p-4 md:p-6 lg:p-8">
+                        <TabsContent value="overview">
+                            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-8">
+                                <!-- Main Content -->
+                                <div class="xl:col-span-2 space-y-6 md:space-y-8">
+                                    <!-- Photo Gallery -->
+                                    <Card>
+                                        <CardHeader class="flex flex-row items-center justify-between">
+                                            <CardTitle>Portfolio Gallery</CardTitle>
+                                            <span class="text-sm text-gray-500">{{ vendor.gallery.length }}
+                                                photos</span>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                                                <div v-for="(image, index) in vendor.gallery" :key="index"
+                                                    @click="openGallery(index)"
+                                                    class="gallery-item group cursor-pointer relative aspect-video rounded-xl overflow-hidden">
+                                                    <img :src="image.url" :alt="image.caption"
+                                                        class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+                                                    <div class="gallery-overlay">
+                                                        <Expand :size="24"
+                                                            class="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+
+                                    <!-- About Section -->
+                                    <Card class="bg-gradient-to-br from-gray-50 to-gray-100 border-0">
+                                        <CardHeader>
+                                            <CardTitle>About {{ vendor.name }}</CardTitle>
+                                        </CardHeader>
+                                        <CardContent class="space-y-6">
+                                            <p class="text-gray-700 leading-relaxed text-base md:text-lg">{{
+                                                vendor.description }}</p>
+
+                                            <div>
+                                                <h3 class="text-xl md:text-2xl font-semibold text-gray-900 mb-6">
+                                                    Specialties & Services</h3>
+                                                <div class="flex flex-wrap gap-3">
+                                                    <div v-for="specialty in vendor.specialties" :key="specialty"
+                                                        class="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-full transition-colors duration-200">
+                                                        <div class="w-2 h-2 bg-indigo-600 rounded-full"></div>
+                                                        <span class="text-sm font-medium text-gray-700">{{ specialty
+                                                        }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+
+                                    <!-- Video Section -->
+                                    <Card v-if="vendor.videoUrl">
+                                        <CardHeader>
+                                            <CardTitle>Showcase Video</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div class="video-container">
+                                                <video :src="vendor.videoUrl" controls
+                                                    poster="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=400&fit=crop"
+                                                    class="w-full rounded-2xl shadow-lg">
+                                                </video>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+
+                                    <!-- Enhanced Calendar -->
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Availability Calendar</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div class="calendar-container">
+                                                <FullCalendar :options="calendarOptions" class="vendor-calendar" />
+                                                <div class="calendar-legend mt-4">
+                                                    <div class="legend-item">
+                                                        <div class="w-3 h-3 bg-green-200 rounded-full"></div>
+                                                        <span class="text-sm">Available</span>
+                                                    </div>
+                                                    <div class="legend-item">
+                                                        <div class="w-3 h-3 bg-red-200 rounded-full"></div>
+                                                        <span class="text-sm">Booked</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+
+                                <!-- Enhanced Sidebar -->
+                                <div class="space-y-6">
+                                    <!-- Pricing Packages -->
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle class="text-xl sm:text-2xl font-bold text-gray-900">Service
+                                                Packages
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent class="space-y-4">
+                                            <Card v-for="p in vendor.packages" :key="p.id"
+                                                class="border-2 hover:border-primary transition-colors cursor-pointer">
+                                                <CardHeader class="pb-4">
+                                                    <div class="flex justify-between items-start">
+                                                        <CardTitle class="text-lg sm:text-xl">{{ p.name }}</CardTitle>
+                                                        <div class="text-right">
+                                                            <span
+                                                                class="text-2xl sm:text-3xl font-bold text-primary">₱{{
+                                                                    p.price.toLocaleString() }}</span>
+                                                            <p class="text-xs sm:text-sm text-muted-foreground">starting
+                                                                price</p>
+                                                        </div>
+                                                    </div>
+                                                </CardHeader>
+                                                <CardContent>
+                                                    <ul class="space-y-2 sm:space-y-3">
+                                                        <li v-for="feature in p.features" :key="feature"
+                                                            class="flex items-center gap-3 text-sm sm:text-base">
+                                                            <CheckCircle class="h-4 w-4 text-green-500 flex-shrink-0" />
+                                                            <span>{{ feature }}</span>
+                                                        </li>
+                                                    </ul>
+                                                </CardContent>
+                                            </Card>
+                                        </CardContent>
+                                    </Card>
+
+                                    <!-- Enhanced Calendar -->
+                                    <!-- <Card>
+                                        <CardHeader>
+                                            <CardTitle>Availability Calendar</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div class="calendar-container">
+                                                <FullCalendar :options="calendarOptions" class="vendor-calendar" />
+                                                <div class="calendar-legend mt-4">
+                                                    <div class="legend-item">
+                                                        <div class="w-3 h-3 bg-green-200 rounded-full"></div>
+                                                        <span class="text-sm">Available</span>
+                                                    </div>
+                                                    <div class="legend-item">
+                                                        <div class="w-3 h-3 bg-red-200 rounded-full"></div>
+                                                        <span class="text-sm">Booked</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card> -->
+
+                                    <!-- Enhanced Contact Card -->
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Contact Information</CardTitle>
+                                        </CardHeader>
+                                        <CardContent class="space-y-4">
+                                            <div class="contact-item group">
+                                                <div
+                                                    class="contact-icon bg-green-100 text-green-600 group-hover:bg-green-600 group-hover:text-white">
+                                                    <Phone :size="18" />
+                                                </div>
+                                                <div>
+                                                    <p class="font-semibold text-gray-900 text-sm md:text-base">Phone
+                                                    </p>
+                                                    <p class="text-gray-600 text-sm md:text-base">{{ vendor.phone }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="contact-item group">
+                                                <div
+                                                    class="contact-icon bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white">
+                                                    <Mail :size="18" />
+                                                </div>
+                                                <div>
+                                                    <p class="font-semibold text-gray-900 text-sm md:text-base">Email
+                                                    </p>
+                                                    <p class="text-gray-600 text-sm md:text-base">{{ vendor.email }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="contact-item group">
+                                                <div
+                                                    class="contact-icon bg-purple-100 text-purple-600 group-hover:bg-purple-600 group-hover:text-white">
+                                                    <Globe :size="18" />
+                                                </div>
+                                                <div>
+                                                    <p class="font-semibold text-gray-900 text-sm md:text-base">Website
+                                                    </p>
+                                                    <p class="text-gray-600 text-sm md:text-base">Visit our site</p>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="reviews">
+                            <!-- Reviews Summary -->
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 mb-8 md:mb-12">
+                                <Card class="review-summary-card border-indigo-100">
+                                    <CardContent class="pt-6 text-center">
+                                        <div class="text-5xl md:text-6xl font-bold text-indigo-600 mb-3">{{
+                                            vendor.rating }}</div>
+                                        <div class="flex justify-center gap-1 mb-3">
+                                            <Star v-for="n in 5" :key="n" fill="currentColor" :size="20"
+                                                :class="['text-yellow-400', n <= vendor.rating ? 'opacity-100' : 'opacity-30']" />
+                                        </div>
+                                        <p class="text-gray-600 font-medium text-sm md:text-base">{{ vendor.reviewCount
+                                            }} total reviews</p>
+                                    </CardContent>
+                                </Card>
+
+                                <div class="lg:col-span-2 space-y-4">
+                                    <div v-for="(count, rating) in vendor.ratingBreakdown" :key="rating"
+                                        class="rating-bar">
+                                        <span class="rating-label text-sm md:text-base">{{ rating }} star{{ rating > 1 ?
+                                            's' : '' }}</span>
+                                        <Progress :model-value="(count / vendor.reviewCount) * 100"
+                                            class="rating-progress h-2 md:h-3" />
+                                        <span class="rating-count text-sm md:text-base">{{ count }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Individual Reviews -->
+                            <div class="space-y-6">
+                                <Card v-for="review in vendor.reviews" :key="review.id" class="review-card">
+                                    <CardHeader class="px-6 py-5 border-b border-gray-100">
+                                        <div class="flex items-start space-x-4">
+                                            <!-- Avatar -->
+                                            <Avatar class="w-12 h-12 flex-shrink-0 ring-2 ring-gray-100">
+                                                <AvatarImage :src="review.avatar" :alt="review.name" />
+                                                <AvatarFallback
+                                                    class="bg-indigo-100 text-indigo-700 font-medium text-sm">
+                                                    {{ review.name.charAt(0) }}
+                                                </AvatarFallback>
+                                            </Avatar>
+
+                                            <!-- Review Header Info -->
+                                            <div class="flex-1 min-w-0">
+                                                <CardTitle class="text-base font-semibold text-gray-900 truncate">
+                                                    {{ review.name }}
+                                                </CardTitle>
+
+                                                <div class="flex items-center justify-between mt-2">
+                                                    <!-- Rating Stars -->
+                                                    <div class="flex items-center space-x-1">
+                                                        <Star v-for="n in 5" :key="n" :size="16" :class="[
+                                                            'transition-colors duration-150',
+                                                            n <= review.rating
+                                                                ? 'text-amber-400 fill-amber-400'
+                                                                : 'text-gray-300 fill-gray-300'
+                                                        ]" />
+                                                        <span class="ml-2 text-sm font-medium text-gray-700">
+                                                            {{ review.rating }}.0
+                                                        </span>
+                                                    </div>
+
+                                                    <!-- Date -->
+                                                    <span class="text-sm text-gray-500 whitespace-nowrap">
+                                                        {{ formatDate(review.date) }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p class="text-gray-700 leading-relaxed text-base md:text-lg mt-3">{{
+                                            review.comment
+                                            }}</p>
+                                        <div v-if="review.photos" class="review-photos mt-4">
+                                            <img v-for="photo in review.photos" :key="photo" :src="photo"
+                                                alt="Review photo" class="review-photo" />
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="location">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+                                <!-- Map Placeholder -->
+                                <Card class="map-container">
+                                    <CardContent class="pt-6">
+                                        <div class="map-placeholder">
+                                            <MapPin :size="64" class="text-indigo-300 mb-4 md:mb-6" />
+                                            <h3 class="text-xl md:text-2xl font-bold text-gray-800 mb-3">Interactive Map
+                                            </h3>
+                                            <p class="text-gray-600 text-base md:text-lg">{{ vendor.address }}</p>
+                                            <Button class="mt-4 md:mt-6 bg-white">
+                                                <Navigation :size="18" class="mr-2" />
+                                                Get Directions
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                <!-- Location Details -->
+                                <div class="space-y-6 md:space-y-8">
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Service Information</CardTitle>
+                                        </CardHeader>
+                                        <CardContent class="space-y-4 md:space-y-6">
+                                            <div class="location-detail">
+                                                <MapPin :size="20" class="text-indigo-600 flex-shrink-0" />
+                                                <div>
+                                                    <span class="detail-label">Primary Location</span>
+                                                    <span class="detail-value">{{ vendor.location }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="location-detail">
+                                                <Globe :size="20" class="text-indigo-600 flex-shrink-0" />
+                                                <div>
+                                                    <span class="detail-label">Service Radius</span>
+                                                    <span class="detail-value">{{ vendor.serviceRadius }} km
+                                                        coverage</span>
+                                                </div>
+                                            </div>
+                                            <div class="location-detail">
+                                                <MapPin :size="20" class="text-indigo-600 flex-shrink-0" />
+                                                <div>
+                                                    <span class="detail-label">Full Address</span>
+                                                    <span class="detail-value">{{ vendor.address }}</span>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Service Features</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div class="feature-list">
+                                                <div class="feature-item">
+                                                    <Truck :size="18" class="text-green-600 flex-shrink-0" />
+                                                    <span class="text-sm md:text-base">Own transportation
+                                                        available</span>
+                                                </div>
+                                                <div class="feature-item">
+                                                    <Wrench class="h-5 w-5 text-green-600" />
+                                                    <span class="text-sm md:text-base">Setup and breakdown
+                                                        included</span>
+                                                </div>
+                                                <div class="feature-item">
+                                                    <Clock :size="18" class="text-blue-600 flex-shrink-0" />
+                                                    <span class="text-sm md:text-base">Flexible scheduling
+                                                        options</span>
+                                                </div>
+                                                <div class="feature-item">
+                                                    <Info :size="18" class="text-orange-600 flex-shrink-0" />
+                                                    <span class="text-sm md:text-base">Delivery fee may apply for
+                                                        distant locations</span>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            </div>
+                        </TabsContent>
+                    </div>
+                </Tabs>
+            </Card>
+        </div>
+
+        <!-- Enhanced Booking Modal -->
+        <Dialog v-model:open="showBookingModal">
+            <DialogContent class="sm:max-w-[625px]">
+                <DialogHeader>
+                    <DialogTitle>Book {{ vendor.name }}</DialogTitle>
+                    <DialogDescription>
+                        Fill out the form below to send a booking request to the vendor.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <form @submit.prevent="submitBooking" class="grid gap-4 py-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="grid gap-2">
+                            <Label for="date">Event Date</Label>
+                            <Input id="date" v-model="bookingForm.date" type="date" required />
+                        </div>
+                        <div class="grid gap-2">
+                            <Label for="time">Event Time</Label>
+                            <Input id="time" v-model="bookingForm.time" type="time" required />
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="grid gap-2">
+                            <Label for="duration">Duration (hours)</Label>
+                            <Input id="duration" v-model="bookingForm.duration" type="number" min="1" required />
+                        </div>
+                        <div class="grid gap-2">
+                            <Label for="package">Select Package</Label>
+                            <Select v-model="bookingForm.packageId" required>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Choose a package" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem v-for="p in vendor.packages" :key="p.id" :value="p.id">
+                                        {{ p.name }} - ₱{{ p.price.toLocaleString() }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="name">Contact Name</Label>
+                        <Input id="name" v-model="bookingForm.contactName" type="text" required
+                            placeholder="Your full name" />
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="grid gap-2">
+                            <Label for="phone">Contact Phone</Label>
+                            <Input id="phone" v-model="bookingForm.contactPhone" type="tel" required
+                                placeholder="+63 XXX XXX XXXX" />
+                        </div>
+                        <div class="grid gap-2">
+                            <Label for="email">Contact Email</Label>
+                            <Input id="email" v-model="bookingForm.contactEmail" type="email" required
+                                placeholder="your@email.com" />
+                        </div>
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="location">Event Location</Label>
+                        <Input id="location" v-model="bookingForm.location" type="text" required
+                            placeholder="Enter event venue address" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="notes">Additional Notes</Label>
+                        <Textarea id="notes" v-model="bookingForm.notes"
+                            placeholder="Special requests, requirements, or additional details..." />
+                    </div>
+
+                    <div class="flex justify-end gap-3 mt-4">
+                        <Button type="button" variant="outline" @click="closeBookingModal">Cancel</Button>
+                        <Button type="submit">
+                            <Mail :size="18" class="mr-2" />
+                            Send Booking Request
+                        </Button>
+                    </div>
+                </form>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Gallery Modal -->
+        <Dialog v-model:open="showGalleryModal">
+            <DialogContent class="max-w-4xl p-0 bg-transparent border-0 shadow-none">
+                <div class="relative">
+                    <img :src="vendor.gallery[galleryIndex]?.url" :alt="vendor.gallery[galleryIndex]?.caption"
+                        class="w-full h-auto max-h-[80vh] object-contain rounded-lg" />
+                    <Button @click="prevImage" variant="outline" size="icon"
+                        class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white border-white/20 hover:bg-black/70">
+                        <ChevronLeft class="h-4 w-4" />
+                    </Button>
+                    <Button @click="nextImage" variant="outline" size="icon"
+                        class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white border-white/20 hover:bg-black/70">
+                        <ChevronRight class="h-4 w-4" />
+                    </Button>
+                    <!-- <div
+                        class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-6 py-2 rounded-full text-center">
+                        {{ vendor.gallery[galleryIndex]?.caption }}
+                    </div> -->
+                </div>
+            </DialogContent>
+        </Dialog>
+    </div>
+</template>
 
 <style scoped>
 /* Global Styles */
-.gradient-text-white {
-    background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.stat-badge {
-    @apply flex items-center gap-2 bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium border border-white border-opacity-30;
-}
-
-.btn-primary {
-    @apply bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex items-center justify-center;
-}
-
-.btn-secondary {
-    @apply bg-white bg-opacity-20 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-semibold hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center border border-white border-opacity-30;
-}
-
-.btn-icon {
-    @apply bg-white bg-opacity-20 backdrop-blur-sm rounded-xl hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center border border-white border-opacity-30;
-}
-
-/* Gallery Styles */
 .gallery-item {
     @apply relative overflow-hidden rounded-xl shadow-lg transition-all duration-300;
 }
@@ -817,71 +915,41 @@ const getDateClasses = (date) => {
     @apply absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 flex items-center justify-center;
 }
 
-/* Specialty Tags */
-.specialty-tag {
-    @apply bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center shadow-md hover:shadow-lg transition-shadow duration-200;
-}
-
-/* Sidebar Styles */
-.sidebar-card {
-    @apply bg-gradient-to-br from-gray-50 to-white p-6 rounded-2xl shadow-lg border border-gray-100;
-}
-
-.package-card {
-    @apply bg-white p-6 rounded-xl border-2 border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all duration-300 cursor-pointer;
-}
-
 /* Calendar Styles */
 .calendar-container {
-    @apply bg-white rounded-xl overflow-hidden shadow-md;
+    @apply bg-white rounded-xl overflow-hidden shadow-md p-2;
 }
 
-.calendar-header {
-    @apply bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 flex justify-between items-center;
+.vendor-calendar {
+    @apply w-full;
 }
 
-.calendar-nav-btn {
-    @apply hover:bg-white hover:bg-opacity-20 p-2 rounded-full transition-colors duration-200;
+:deep(.fc) {
+    @apply text-sm;
 }
 
-.calendar-body {
-    @apply p-4;
+:deep(.fc-toolbar-title) {
+    @apply text-base font-semibold;
 }
 
-.calendar-weekdays {
-    @apply grid grid-cols-7 gap-1 mb-3;
+:deep(.fc-day) {
+    @apply cursor-pointer;
 }
 
-.calendar-weekday {
-    @apply text-center text-xs font-semibold text-gray-500 py-2;
+:deep(.fc-day-other) {
+    @apply bg-gray-50;
 }
 
-.calendar-dates {
-    @apply grid grid-cols-7 gap-1;
+:deep(.fc-daygrid-day-number) {
+    @apply p-2 text-sm;
 }
 
-.calendar-date {
-    @apply text-center py-3 text-sm rounded-lg cursor-pointer transition-all duration-200 font-medium;
-}
-
-.calendar-date.available {
-    @apply bg-green-100 text-green-800 hover:bg-green-200;
-}
-
-.calendar-date.booked {
-    @apply bg-red-100 text-red-800 cursor-not-allowed;
-}
-
-.calendar-date.today {
-    @apply ring-2 ring-indigo-500;
-}
-
-.calendar-date.other-month {
-    @apply text-gray-300;
+:deep(.fc-event) {
+    @apply cursor-pointer border-none text-xs p-1;
 }
 
 .calendar-legend {
-    @apply flex justify-center gap-6 mt-6 text-xs;
+    @apply flex justify-center gap-4 md:gap-6 text-xs;
 }
 
 .legend-item {
@@ -890,163 +958,61 @@ const getDateClasses = (date) => {
 
 /* Contact Styles */
 .contact-item {
-    @apply flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 cursor-pointer;
+    @apply flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 cursor-pointer;
 }
 
 .contact-icon {
-    @apply w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200;
+    @apply w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200;
 }
 
 /* Reviews Styles */
 .review-summary-card {
-    @apply bg-gradient-to-br from-indigo-50 to-purple-50 p-8 rounded-2xl text-center border border-indigo-100;
+    @apply bg-gradient-to-br from-indigo-50 to-purple-50;
 }
 
 .rating-bar {
-    @apply flex items-center gap-4;
+    @apply flex items-center gap-3 md:gap-4;
 }
 
 .rating-label {
-    @apply text-sm text-gray-600 w-20 flex-shrink-0;
-}
-
-.rating-progress {
-    @apply flex-1 bg-gray-200 rounded-full h-3 overflow-hidden;
-}
-
-.rating-fill {
-    @apply bg-gradient-to-r from-indigo-500 to-purple-600 h-full rounded-full transition-all duration-500;
+    @apply text-xs md:text-sm text-gray-600 w-16 md:w-20 flex-shrink-0;
 }
 
 .rating-count {
-    @apply text-sm text-gray-600 w-8 flex-shrink-0;
-}
-
-.review-card {
-    @apply bg-gradient-to-br from-gray-50 to-white p-6 rounded-2xl shadow-sm border border-gray-100;
-}
-
-.review-header {
-    @apply flex items-start gap-4;
-}
-
-.review-avatar {
-    @apply w-16 h-16 rounded-full object-cover ring-4 ring-indigo-100;
+    @apply text-xs md:text-sm text-gray-600 w-6 md:w-8 flex-shrink-0;
 }
 
 .review-photos {
-    @apply flex gap-3 mt-4;
+    @apply flex gap-2 md:gap-3 mt-3 md:mt-4;
 }
 
 .review-photo {
-    @apply w-24 h-24 rounded-lg object-cover cursor-pointer hover:scale-105 transition-transform duration-200;
+    @apply w-20 h-20 md:w-24 md:h-24 rounded-lg object-cover cursor-pointer hover:scale-105 transition-transform duration-200;
 }
 
 /* Location Styles */
-.map-container {
-    @apply relative;
-}
-
 .map-placeholder {
-    @apply bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-8 flex flex-col items-center justify-center text-center min-h-96 border-2 border-dashed border-indigo-200;
-}
-
-.location-card {
-    @apply bg-gradient-to-br from-gray-50 to-white p-6 rounded-2xl shadow-lg border border-gray-100;
+    @apply bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-6 flex flex-col items-center justify-center text-center min-h-80 md:min-h-96 border-2 border-dashed border-indigo-200;
 }
 
 .location-detail {
-    @apply flex items-center gap-4;
+    @apply flex items-center gap-3 md:gap-4;
 }
 
 .detail-label {
-    @apply font-semibold text-gray-700 block;
+    @apply font-semibold text-gray-700 block text-sm md:text-base;
 }
 
 .detail-value {
-    @apply text-gray-600 block;
+    @apply text-gray-600 block text-sm md:text-base;
 }
 
 .feature-list {
-    @apply space-y-4;
+    @apply space-y-3 md:space-y-4;
 }
 
 .feature-item {
-    @apply flex items-center gap-3 text-gray-700;
-}
-
-/* Modal Styles */
-.modal-overlay {
-    @apply fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4 z-50;
-}
-
-.booking-modal {
-    @apply bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto;
-}
-
-.modal-header {
-    @apply flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50;
-}
-
-.modal-title {
-    @apply text-2xl font-bold text-gray-900;
-}
-
-.modal-close {
-    @apply text-gray-500 hover:text-gray-700 text-2xl w-10 h-10 rounded-full hover:bg-gray-200 transition-colors duration-200;
-}
-
-.modal-body {
-    @apply p-6 space-y-6;
-}
-
-.modal-footer {
-    @apply flex gap-4 pt-6;
-}
-
-.form-grid {
-    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
-}
-
-.form-group {
-    @apply space-y-2;
-}
-
-.form-label {
-    @apply block text-sm font-semibold text-gray-700;
-}
-
-.form-input {
-    @apply w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200;
-}
-
-.form-textarea {
-    @apply w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent h-32 resize-none transition-colors duration-200;
-}
-
-/* Gallery Modal */
-.gallery-modal {
-    @apply relative max-w-6xl w-full h-full flex items-center justify-center;
-}
-
-.gallery-close {
-    @apply absolute top-4 right-4 z-10 text-white text-2xl w-12 h-12 rounded-full bg-black bg-opacity-50 hover:bg-opacity-70 transition-colors duration-200;
-}
-
-.gallery-image {
-    @apply max-w-full max-h-full object-contain rounded-lg;
-}
-
-.gallery-nav {
-    @apply absolute inset-y-0 left-0 right-0 flex items-center justify-between px-4;
-}
-
-.gallery-nav-btn {
-    @apply text-white text-3xl w-16 h-16 rounded-full bg-black bg-opacity-50 hover:bg-opacity-70 transition-colors duration-200;
-}
-
-.gallery-caption {
-    @apply absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white px-6 py-3 rounded-full text-center;
+    @apply flex items-center gap-3 text-gray-700 text-sm md:text-base;
 }
 
 /* Video Container */
@@ -1055,21 +1021,13 @@ const getDateClasses = (date) => {
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
-    .form-grid {
-        @apply grid-cols-1;
+@media (max-width: 640px) {
+    :deep(.fc-header-toolbar) {
+        @apply flex-col gap-2;
     }
 
-    .calendar-date {
-        @apply py-2 text-xs;
-    }
-
-    .review-avatar {
-        @apply w-12 h-12;
-    }
-
-    .gallery-nav-btn {
-        @apply w-12 h-12 text-xl;
+    :deep(.fc-toolbar-chunk) {
+        @apply mb-2;
     }
 }
 </style>

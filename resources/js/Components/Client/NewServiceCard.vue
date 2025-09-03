@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import BookingForm from './BookingForm.vue';
 import BookingModal from './BookingModal.vue';
-import { router } from '@inertiajs/vue3'
+import { Link, router } from '@inertiajs/vue3'
 
 
 const props = defineProps({
@@ -64,7 +64,9 @@ const handleViewDetails = () => {
             </div>
         </div>
         <div class="text-sm text-gray-600 mb-3">
-            <span class="font-medium">{{ service.vendor.business_name }}</span> • {{
+            <Link :href="route('client.vendor.show', service.vendor.id)"
+                class="font-medium cursor-pointer text-blue-500">{{
+                    service.vendor.business_name }}</Link> • {{
                 service.vendor.location }}
         </div>
         <div class="flex space-x-2">
