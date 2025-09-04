@@ -171,6 +171,8 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client'])->gro
 
 
 
+
+
 //API CALLS
 Route::middleware('auth')->get('/api/vendor-bookings-notifications', [NotificationController::class, 'getVendorUnreadBookingNotifications']);
 

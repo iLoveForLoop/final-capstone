@@ -3,11 +3,25 @@ import { ref } from 'vue'
 
 defineProps({
     vendor: {
-        type: Object
-    }
+        type: Object,
+    },
 })
 
+import {
+    ArrowLeft,
+    Star,
+    MapPin,
+    Clock,
+    Calendar,
+    CalendarCheck,
+    Shield,
+    Heart,
+    MessageCircle,
+    Check,
+} from 'lucide-vue-next'
+
 const showBookingModal = ref(false)
+const isFavorite = ref(false)
 
 const submitBooking = () => {
     console.log('Booking submitted:', bookingForm.value)
@@ -30,7 +44,13 @@ const toggleFavorite = () => {
 const openBookingModal = () => {
     showBookingModal.value = true
 }
+
+// Import shadcn-vue components
+import { Button } from '@/Components/ui/button'
+import { Badge } from '@/Components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar'
 </script>
+
 
 <template>
     <div class="relative overflow-hidden">
