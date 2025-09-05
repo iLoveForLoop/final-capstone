@@ -44,7 +44,7 @@ const previousImage = () => {
 }
 
 const nextImage = () => {
-    if (currentImageIndex.value < service.value.images.length - 1) {
+    if (currentImageIndex.value < props.service.images.length - 1) {
         currentImageIndex.value++
     }
 }

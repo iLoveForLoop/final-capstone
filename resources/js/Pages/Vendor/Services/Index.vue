@@ -63,18 +63,18 @@ const resetFilters = () => {
 
 
 
-const editService = (service) => {
-    serviceEditModal.value.show(service);
-};
+// const editService = (service) => {
+//     serviceEditModal.value.show(service);
+// };
 
-const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-PH', {
-        style: 'currency',
-        currency: 'PHP',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(price);
-};
+// const formatPrice = (price) => {
+//     return new Intl.NumberFormat('en-PH', {
+//         style: 'currency',
+//         currency: 'PHP',
+//         minimumFractionDigits: 0,
+//         maximumFractionDigits: 0
+//     }).format(price);
+// };
 
 
 
@@ -168,7 +168,7 @@ const formatPrice = (price) => {
                     </svg>
                     <h3 class="mt-2 text-lg font-medium text-gray-900">No services found</h3>
                     <p class="mt-1 text-sm text-gray-500">Try adjusting your search or filter criteria</p>
-                    <div class="mt-6">
+                    <div class="mt-6 flex justify-center items-center">
                         <button @click="resetFilters"
                             class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-3">
                             Reset Filters

@@ -17,6 +17,7 @@ class CreateServicesTable extends Migration
             $table->decimal('price', 10, 2);
             $table->decimal('max_price', 10, 2)->nullable();
             $table->boolean('is_available')->default(true);
+            $table->json('specifications')->nullable();
             $table->timestamps();
         });
     }

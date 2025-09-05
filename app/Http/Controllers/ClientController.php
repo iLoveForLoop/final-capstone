@@ -281,7 +281,7 @@ class ClientController extends Controller
                 'id' => $service->id,
                 'name' => $service->name,
                 'price' => $service->price,
-                'features' => ["2 Main Speakers", "1 Wireless Microphone", "Basic Audio Mixing",] // ??,
+                'features' => $service->specifications // ??,
             ]),
 
             'ratingBreakdown' => $vendor->ratingBreakdown(),

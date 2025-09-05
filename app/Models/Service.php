@@ -12,6 +12,10 @@ class Service extends Model implements HasMedia
     /** @use HasFactory<\Database\Factories\ServiceFactory> */
     use HasFactory, InteractsWithMedia;
 
+    protected $casts = [
+        'specifications' => 'array',
+    ];
+
     public function vendor()
     {
         return $this->belongsTo(Vendor::class);
@@ -46,4 +50,6 @@ class Service extends Model implements HasMedia
     }
 
     protected $guarded = [];
+
+
 }

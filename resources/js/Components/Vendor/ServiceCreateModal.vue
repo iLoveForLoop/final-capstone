@@ -102,8 +102,6 @@ defineExpose({
                         <CateringServiceForm @close="show = false" v-if="selectedCategory === 'Catering'"
                             :category_id="selectedCategoryId" />
 
-                        {{ console.log('service cat id: ', selectedCategoryId) }}
-
                         <PhotographyServiceForm @close="show = false" v-if="selectedCategory === 'Photography'"
                             :category_id="selectedCategoryId" />
 

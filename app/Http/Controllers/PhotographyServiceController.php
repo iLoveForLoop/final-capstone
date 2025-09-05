@@ -28,79 +28,88 @@ class PhotographyServiceController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        $vendor = auth()->user()->vendor;
+{
+    $vendor = auth()->user()->vendor;
 
-        // dd($request->service_category_id);
+    $validated = $request->validate([
+        // General service fields
+        'service_category_id' => 'required|integer|exists:service_categories,id',
+        'name' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'price' => 'required|numeric|min:0',
+        'max_price' => 'nullable|numeric|min:0|gt:price',
 
+        // Multiple images validation
+        'cover_images' => 'nullable|array',
+        'cover_images.*' => 'image|mimes:jpeg,png,jpg|max:2048', // Max 2MB per image
 
-        $validated = $request->validate([
-            // General service fields
-            'service_category_id' => 'required|integer|exists:service_categories,id',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'max_price' => 'nullable|numeric|min:0|gt:price',
-            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        'studio_shoot_available' => 'boolean',
+        'specifications' => 'nullable|array',
+        'specifications.*' => 'string|max:255',
 
-            // Photography specific fields
-            // 'coverage_type' => 'nullable',
-            // 'hours_of_coverage' => 'nullable|integer',
-            // 'delivery_time_days' => 'nullable|integer',
-            // 'number_of_photographers' => 'nullable|integer',
-            'studio_shoot_available' => 'boolean',
+        // Notes
+        'notes' => 'nullable|string'
+    ]);
 
-            // Deliverables and specifications
-            // 'deliverables' => 'nullable|array|',
-            // 'deliverables.*' => 'string|max:255',
-            'specifications' => 'nullable|array',
-            'specifications.*' => 'string|max:255',
-
-            // Notes
-            'notes' => 'nullable|string'
-        ]);
-
-        DB::beginTransaction();
-
-        try {
-            // Create the main service record
-            $service = $vendor->services()->create([
-                'service_category_id' => $validated['service_category_id'],
-                'name' => $validated['name'],
-                'description' => $validated['description'] ?? null,
-                'price' => $validated['price'],
-                // 'max_price' => $validated['max_price'] ?? null,
-            ]);
-
-            // Create the photography service record
-            $service->photographyService()->create([
-                // 'coverage_type' => $validated['coverage_type'],
-                // 'hours_of_coverage' => $validated['hours_of_coverage'] ?? null,
-                // 'delivery_time_days' => $validated['delivery_time_days'] ?? 30,
-                // 'number_of_photographers' => $validated['number_of_photographers'] ?? 1,
-                // 'deliverables' => $validated['deliverables'],
-                'specifications' => $validated['specifications'] ?? [],
-                'notes' => $validated['notes'] ?? null,
-                'studio_shoot_available' => $validated['studio_shoot_available'] ?? false,
-            ]);
-
-            // Handle cover image upload
-            if ($request->hasFile('cover_image')) {
-                $service->addMediaFromRequest('cover_image')
-                    ->toMediaCollection('images', 'public');
-            }
-
-            DB::commit();
-
-            return redirect()->back()
-                ->with('success', 'Photography service created successfully!');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withInput()
-                ->with('error', 'Failed to create photography service: ' . $e->getMessage());
+    // Additional validation for multiple images
+    if ($request->hasFile('cover_images')) {
+        $coverImages = $request->file('cover_images');
+        if (count($coverImages) > 8) {
+            return back()->withErrors(['cover_images' => 'You can upload a maximum of 8 images.'])->withInput();
         }
     }
+
+    DB::beginTransaction();
+
+    try {
+        // Create the main service record
+        $service = $vendor->services()->create([
+            'service_category_id' => $validated['service_category_id'],
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+            'price' => $validated['price'],
+            'specifications' => $validated['specifications'] ?? [],
+        ]);
+
+        // Create the photography service record
+        $service->photographyService()->create([
+            'specifications' => $validated['specifications'] ?? [],
+            'notes' => $validated['notes'] ?? null,
+            'studio_shoot_available' => $validated['studio_shoot_available'] ?? false,
+        ]);
+
+        // Handle multiple cover images upload
+        if ($request->hasFile('cover_images')) {
+            $coverImages = $request->file('cover_images');
+
+            foreach ($coverImages as $index => $image) {
+                $mediaItem = $service->addMediaFromRequest("cover_images.{$index}")
+                    ->usingFileName(uniqid() . '.' . $image->getClientOriginalExtension())
+                    ->toMediaCollection('images', 'public');
+
+                // Mark the first image as primary/cover
+                if ($index === 0) {
+                    $mediaItem->setCustomProperty('is_primary', true);
+                    $mediaItem->setCustomProperty('is_cover', true);
+                    $mediaItem->save();
+                } else {
+                    $mediaItem->setCustomProperty('is_portfolio', true);
+                    $mediaItem->save();
+                }
+            }
+        }
+
+        DB::commit();
+
+        return redirect()->back()
+            ->with('success', 'Photography service created successfully!');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->withInput()
+            ->with('error', 'Failed to create photography service: ' . $e->getMessage());
+    }
+}
 
     /**
      * Display the specified resource.

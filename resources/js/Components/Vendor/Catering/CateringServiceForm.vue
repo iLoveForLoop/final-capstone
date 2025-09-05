@@ -2,13 +2,13 @@
 import { onMounted, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { useToast } from 'vue-toastification';
+import { Upload, X, Plus, Image as ImageIcon, Eye } from 'lucide-vue-next';
 
 const toast = useToast();
 const emit = defineEmits(['close', 'created']);
 const show = ref(false);
-const selectedImage = ref(null);
+const selectedImages = ref([]);
 const newSpecification = ref('');
-const dishSearch = ref('');
 
 const props = defineProps({
     categories: {
@@ -27,7 +27,7 @@ const form = useForm({
     description: '',
     price: '',
     max_price: '',
-    cover_image: null,
+    cover_images: [],
     min_pax: 50,
     max_pax: 100,
     package_price: '',
@@ -36,7 +36,7 @@ const form = useForm({
     delivery_fee: '',
     specifications: [],
     dishes: {},
-    dish_selection_limits: {}, // Separate object for selection limits
+    dish_selection_limits: {},
     notes: '',
     _method: 'POST'
 });
@@ -59,15 +59,38 @@ const commonServiceAreas = [
 ];
 
 const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    form.cover_image = file;
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            selectedImage.value = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
+    const files = Array.from(event.target.files);
+
+    files.forEach(file => {
+        if (file && file.type.startsWith('image/')) {
+            // Check if image already exists
+            const existsIndex = selectedImages.value.findIndex(img => img.file.name === file.name && img.file.size === file.size);
+            if (existsIndex === -1) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    selectedImages.value.push({
+                        file: file,
+                        preview: e.target.result,
+                        id: Date.now() + Math.random()
+                    });
+                    updateFormImages();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    });
+
+    // Clear the input
+    event.target.value = '';
+};
+
+const removeImage = (index) => {
+    selectedImages.value.splice(index, 1);
+    updateFormImages();
+};
+
+const updateFormImages = () => {
+    form.cover_images = selectedImages.value.map(img => img.file);
 };
 
 const addSpecification = (spec) => {
@@ -101,13 +124,14 @@ const submit = () => {
     console.log('dish_selection_limits:', form.dish_selection_limits);
     console.log('specifications:', form.specifications);
     console.log('service_area:', form.service_area);
+    console.log('cover_images:', form.cover_images);
 
     form.post(route('vendor.catering-services.store'), {
         preserveScroll: true,
         onSuccess: () => {
             toast.success('Service created successfully');
             form.reset();
-            selectedImage.value = null;
+            selectedImages.value = [];
             show.value = false;
             emit('close');
             emit('created');
@@ -148,7 +172,6 @@ const addDish = () => {
 
 const removeDish = (category, index) => {
     form.dishes[category].splice(index, 1);
-    // Remove category if it becomes empty
     if (form.dishes[category].length === 0) {
         delete form.dishes[category];
         delete form.dish_selection_limits[category];
@@ -201,38 +224,109 @@ const updateSelectionLimit = (category, limit) => {
                             {{ form.errors.description }}</p>
                     </div>
 
-                    <!-- Cover Image -->
+                    <!-- Cover Images Section -->
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Cover Image
+                        <label class="block text-sm font-medium text-gray-700 mb-3">
+                            <ImageIcon class="inline w-4 h-4 mr-1" />
+                            Service Images
                         </label>
-                        <div class="flex items-center space-x-4">
-                            <div class="flex-shrink-0">
+
+                        <!-- Image Upload Area -->
+                        <div class="mb-4">
+                            <label class="cursor-pointer">
                                 <div
-                                    class="h-32 w-32 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
-                                    <img v-if="selectedImage" :src="selectedImage" class="h-full w-full object-cover">
-                                    <svg v-else class="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24"
-                                        stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
+                                    class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-indigo-400 transition-colors duration-200 bg-gray-50 hover:bg-gray-100">
+                                    <Upload class="mx-auto h-12 w-12 text-gray-400 mb-2" />
+                                    <div class="text-sm text-gray-600">
+                                        <span class="font-medium text-indigo-600 hover:text-indigo-500">Click to
+                                            upload</span>
+                                        or drag and drop
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        PNG, JPG, JPEG up to 2MB each (Max 5 images)
+                                    </p>
                                 </div>
+                                <input type="file" class="sr-only" @change="handleImageUpload" accept="image/*" multiple
+                                    :disabled="selectedImages.length >= 5">
+                            </label>
+                        </div>
+
+                        <!-- Selected Images Grid -->
+                        <div v-if="selectedImages.length > 0"
+                            class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                            <div v-for="(image, index) in selectedImages" :key="image.id"
+                                class="relative group rounded-lg overflow-hidden bg-gray-100 aspect-square">
+                                <img :src="image.preview" :alt="`Service image ${index + 1}`"
+                                    class="w-full h-full object-cover">
+
+                                <!-- Image overlay -->
+                                <div
+                                    class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-200 flex items-center justify-center">
+                                    <div
+                                        class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex space-x-2">
+                                        <!-- Preview button -->
+                                        <button type="button"
+                                            class="p-2 bg-white rounded-full text-gray-700 hover:text-indigo-600 transition-colors"
+                                            @click="$refs[`imageModal${index}`].showModal()">
+                                            <Eye class="w-4 h-4" />
+                                        </button>
+                                        <!-- Remove button -->
+                                        <button type="button" @click="removeImage(index)"
+                                            class="p-2 bg-white rounded-full text-red-600 hover:text-red-700 transition-colors">
+                                            <X class="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Primary image badge -->
+                                <div v-if="index === 0"
+                                    class="absolute top-2 left-2 bg-indigo-600 text-white text-xs px-2 py-1 rounded-full">
+                                    Primary
+                                </div>
+
+                                <!-- Image preview modal -->
+                                <dialog :ref="`imageModal${index}`"
+                                    class="rounded-lg backdrop:bg-black backdrop:bg-opacity-50">
+                                    <div class="p-0 max-w-2xl">
+                                        <img :src="image.preview" :alt="`Service image ${index + 1}`"
+                                            class="w-full h-auto rounded-lg">
+                                        <div class="p-4 flex justify-between items-center">
+                                            <span class="text-sm text-gray-600">Image {{ index + 1 }} of {{
+                                                selectedImages.length }}</span>
+                                            <button @click="$refs[`imageModal${index}`].close()"
+                                                class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm">
+                                                Close
+                                            </button>
+                                        </div>
+                                    </div>
+                                </dialog>
                             </div>
-                            <div>
-                                <label class="cursor-pointer">
-                                    <span
-                                        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                        Upload Image
-                                    </span>
-                                    <input type="file" class="sr-only" @change="handleImageUpload" accept="image/*">
+
+                            <!-- Add more images button -->
+                            <div v-if="selectedImages.length < 5"
+                                class="relative group rounded-lg border-2 border-dashed border-gray-300 aspect-square flex items-center justify-center hover:border-indigo-400 transition-colors">
+                                <label class="cursor-pointer w-full h-full flex items-center justify-center">
+                                    <div class="text-center">
+                                        <Plus class="mx-auto h-8 w-8 text-gray-400 group-hover:text-indigo-500" />
+                                        <span class="text-xs text-gray-500 group-hover:text-indigo-600 mt-1">Add
+                                            More</span>
+                                    </div>
+                                    <input type="file" class="sr-only" @change="handleImageUpload" accept="image/*"
+                                        multiple>
                                 </label>
-                                <p class="mt-1 text-xs text-gray-500">
-                                    JPEG, PNG, or JPG (Max. 2MB)
-                                </p>
                             </div>
                         </div>
-                        <p v-if="form.errors.cover_image" class="mt-1 text-sm text-red-600">
-                            {{ form.errors.cover_image }}</p>
+
+                        <!-- Images count and limit info -->
+                        <div class="mt-3 flex items-center justify-between text-sm text-gray-500">
+                            <span>{{ selectedImages.length }} of 5 images selected</span>
+                            <span v-if="selectedImages.length > 0" class="text-xs">
+                                First image will be used as the primary cover
+                            </span>
+                        </div>
+
+                        <p v-if="form.errors.cover_images" class="mt-1 text-sm text-red-600">
+                            {{ form.errors.cover_images }}</p>
                     </div>
                 </div>
             </div>
@@ -274,11 +368,7 @@ const updateSelectionLimit = (category, limit) => {
                                 </div>
                                 <button @click="removeCategory(category)"
                                     class="text-red-600 hover:text-red-800 focus:outline-none">
-                                    <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd"
-                                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                            clip-rule="evenodd" />
-                                    </svg>
+                                    <X class="h-4 w-4" />
                                 </button>
                             </div>
 
@@ -301,11 +391,7 @@ const updateSelectionLimit = (category, limit) => {
                                     {{ dish }}
                                     <button @click.stop="removeDish(category, index)"
                                         class="ml-1.5 inline-flex text-green-600 focus:outline-none">
-                                        <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd"
-                                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                                clip-rule="evenodd" />
-                                        </svg>
+                                        <X class="h-3.5 w-3.5" />
                                     </button>
                                 </span>
                             </div>
@@ -328,7 +414,7 @@ const updateSelectionLimit = (category, limit) => {
                                     @keyup.enter="addCategory">
                                 <button @click="addCategory"
                                     class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                    Add Category
+                                    <Plus class="w-4 h-4" />
                                 </button>
                             </div>
 
@@ -374,7 +460,7 @@ const updateSelectionLimit = (category, limit) => {
                                 @keyup.enter="addDish">
                             <button @click="addDish"
                                 class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                Add Dish
+                                <Plus class="w-4 h-4" />
                             </button>
                         </div>
                     </div>
@@ -474,7 +560,7 @@ const updateSelectionLimit = (category, limit) => {
                             @keyup.enter="addCustomSpecification">
                         <button @click="addCustomSpecification"
                             class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            Add
+                            <Plus class="w-4 h-4" />
                         </button>
                     </div>
 
@@ -501,11 +587,7 @@ const updateSelectionLimit = (category, limit) => {
                                 {{ spec }}
                                 <button @click.stop="removeSpecification(index)"
                                     class="ml-1.5 inline-flex text-indigo-600 focus:outline-none">
-                                    <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd"
-                                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                            clip-rule="evenodd" />
-                                    </svg>
+                                    <X class="h-3.5 w-3.5" />
                                 </button>
                             </span>
                         </div>
