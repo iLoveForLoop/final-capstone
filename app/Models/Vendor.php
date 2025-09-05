@@ -4,11 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Vendor extends Model
+class Vendor extends Model implements HasMedia
 {
     /** @use HasFactory<\Database\Factories\VendorFactory> */
-    use HasFactory;
+    use HasFactory, InteractsWithMedia;
 
     public function user()
     {
@@ -41,9 +43,31 @@ class Vendor extends Model
         return $avg ? number_format($avg, 1) : 0;
     }
 
+    public function ratingBreakdown()
+    {
+        // group reviews by rating and count them
+        $counts = $this->reviews()
+            ->selectRaw('rating, COUNT(*) as count')
+            ->groupBy('rating')
+            ->pluck('count', 'rating')
+            ->toArray();
+
+        // make sure all 1–5 ratings exist, even if zero
+        $breakdown = [];
+        foreach (range(1, 5) as $star) {
+            $breakdown[$star] = $counts[$star] ?? 0;
+        }
+
+        return $breakdown;
+    }
+
     public function bookings()
     {
         return $this->hasMany(Booking::class); // vendor_id on bookings
+    }
+
+    public function getCompletedBookingsCount(){
+        return $this->bookings()->where('status', 'completed')->count();
     }
 
     public function dishes(){

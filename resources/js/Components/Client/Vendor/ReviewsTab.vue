@@ -2,6 +2,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Progress } from '@/Components/ui/progress';
+
 import { Star } from 'lucide-vue-next';
 
 defineProps({
@@ -31,7 +32,7 @@ const formatDate = (dateString) => {
                         :class="['text-yellow-400', n <= vendor.rating ? 'opacity-100' : 'opacity-30']" />
                 </div>
                 <p class="text-gray-600 font-medium text-sm md:text-base">{{ vendor.reviewCount
-                }} total reviews</p>
+                    }} total reviews</p>
             </CardContent>
         </Card>
 
@@ -80,7 +81,7 @@ const formatDate = (dateString) => {
 
                             <!-- Date -->
                             <span class="text-sm text-gray-500 whitespace-nowrap">
-                                {{ formatDate(review.date) }}
+                                {{ review.date }}
                             </span>
                         </div>
                     </div>
@@ -89,7 +90,7 @@ const formatDate = (dateString) => {
             <CardContent>
                 <p class="text-gray-700 leading-relaxed text-base md:text-lg mt-3">{{
                     review.comment
-                }}</p>
+                    }}</p>
                 <div v-if="review.photos" class="review-photos mt-4">
                     <img v-for="photo in review.photos" :key="photo" :src="photo" alt="Review photo"
                         class="review-photo" />

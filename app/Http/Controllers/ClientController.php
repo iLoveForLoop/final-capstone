@@ -157,69 +157,67 @@ class ClientController extends Controller
     }
 
     public function serviceShow(Service $service)
-{
-    // reload service with vendor + completed bookings count
-    $service = Service::with([
+    {
+        $service->load([
         'category',
         'vendor.user',
         'vendor.reviews.user.client',
         'cateringService',
         'photographyService',
-    ])
-    ->with(['vendor' => function ($q) {
-        $q->withCount(['bookings as completed_services_count' => function ($sub) {
-            $sub->where('status', 'completed');
-        }]);
-    }])
-    ->findOrFail($service->id);
+        'vendor' => fn ($q) =>
+            $q->withCount([
+                'bookings as completed_services_count' =>
+                    fn ($sub) => $sub->where('status', 'completed')
+            ])
+        ]);
 
-    // manual transformation (same structure as index)
-    $serviceData = [
-        'id'            => $service->id,
-        'name'          => $service->name,
-        'description'   => $service->description,
-        'price'         => $service->price,
-        'image_url'     => $service->getFirstMediaUrl('images'),
-        'category_name' => $service->category->name,
-        'dateAdded'     => $service->created_at->format('Y-m-d'),
-        'rating'        => $service->vendor->averageRating(),
-        'is_available'  => $service->is_available,
-        'catering_service' => $service->cateringService ?? null,
-        'images'        => $service->getMedia('images')->map(fn ($media) => $media->getUrl()),
-        'specifications'=> $this->specsChecker($service),
-        'menuCategories'=> $service->cateringService->dishes ?? null,
+        // manual transformation (same structure as index)
+        $serviceData = [
+            'id'            => $service->id,
+            'name'          => $service->name,
+            'description'   => $service->description,
+            'price'         => $service->price,
+            'image_url'     => $service->getFirstMediaUrl('images'),
+            'category_name' => $service->category->name,
+            'dateAdded'     => $service->created_at->format('Y-m-d'),
+            'rating'        => $service->vendor->averageRating(),
+            'is_available'  => $service->is_available,
+            'catering_service' => $service->cateringService ?? null,
+            'images'        => $service->getMedia('images')->map(fn ($media) => $media->getUrl()),
+            'specifications'=> $this->specsChecker($service),
+            'menuCategories'=> $service->cateringService->dishes ?? null,
 
-        'vendor' => [
-            'id'                 => $service->vendor->id,
-            'email'              => $service->vendor->user->email,
-            'user_id'            => $service->vendor->user_id,
-            'full_name'          => $service->vendor->full_name,
-            'is_approved'        => $service->vendor->is_approved,
-            'business_name'      => $service->vendor->business_name,
-            'description'        => $service->vendor->description,
-            'location'           => $service->vendor->location,
-            'contact_number'     => $service->vendor->contact_number,
-            'created_at'         => $service->vendor->created_at,
-            'updated_at'         => $service->vendor->updated_at,
-            'completedServices'  => $service->vendor->completed_services_count, // ✅ here now
-            'avatar'             => $service->vendor->user->getFirstMediaUrl('images'),
-            'website'            => 'to be added hehe',
-        ],
+            'vendor' => [
+                'id'                 => $service->vendor->id,
+                'email'              => $service->vendor->user->email,
+                'user_id'            => $service->vendor->user_id,
+                'full_name'          => $service->vendor->full_name,
+                'is_approved'        => $service->vendor->is_approved,
+                'business_name'      => $service->vendor->business_name,
+                'description'        => $service->vendor->description,
+                'location'           => $service->vendor->location,
+                'contact_number'     => $service->vendor->contact_number,
+                'created_at'         => $service->vendor->created_at,
+                'updated_at'         => $service->vendor->updated_at,
+                'completedServices'  => $service->vendor->completed_services_count,
+                'avatar'             => $service->vendor->user->getFirstMediaUrl('images'),
+                'website'            => 'to be added hehe',
+            ],
 
-        'reviews' => $service->vendor->reviews->map(fn($review) => [
-            'id'      => $review->user->client->id,
-            'name'    => $review->user->client->full_name,
-            'rating'  => $review->rating,
-            'date'    => $review->created_at->diffForHumans(),
-            'comment' => $review->comment,
-            'avatar'  => $review->user->getFirstMediaUrl('images') ?? null,
-        ])
-    ];
+            'reviews' => $service->vendor->reviews->map(fn($review) => [
+                'id'      => $review->user->client->id,
+                'name'    => $review->user->client->full_name,
+                'rating'  => $review->rating,
+                'date'    => $review->created_at->diffForHumans(),
+                'comment' => $review->comment,
+                'avatar'  => $review->user->getFirstMediaUrl('images') ?? null,
+            ])
+        ];
 
-    return inertia('Client/Services/Show', [
-        'service' => $serviceData
-    ]);
-}
+        return inertia('Client/Services/Show', [
+            'service' => $serviceData
+        ]);
+    }
 
 
 
@@ -252,7 +250,70 @@ class ClientController extends Controller
     }
 
     public function showVendor(Vendor $vendor) {
-        return inertia('Client/Vendor/Show');
+
+        $vendor->load(['services', 'reviews', 'serviceCategories', 'user', 'bookings.event']);
+
+        $vendorData = [
+            'id' => $vendor->id,
+            'name' => $vendor->business_name,
+            'categories' => $vendor->serviceCategories->pluck('name'),
+            'rating' => $vendor->averageRating(),
+            'reviewCount' => $vendor->reviews()->count(),
+            'location' => $vendor->location,
+            'responseTime' => '2 hours',
+            'completedEvents' => $vendor->getCompletedBookingsCount(),
+            'available' => true, // ??
+            'verified' => true, // ??
+            'avatar' => $vendor->user->getFirstMediaUrl('images') ?? null,
+            'phone' => $vendor->contact_number,
+            'email' => $vendor->user->email,
+            'website' => 'test.com', // ??
+            'address' => $vendor->location,
+            'serviceRadius' => 20, // ??,
+            'description' => $vendor->description,
+            'specialties' => ["Test", "Test", "Test", "Test", "Test", "Test"], // ??,
+            'videoUrl' => "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4", // ??,
+            'gallery' => $vendor->getMedia('images')->map(fn ($media) => [
+                'url' => $media->getUrl()
+            ]) ?? [],
+
+            'packages' => $vendor->services->map(fn($service) => [
+                'id' => $service->id,
+                'name' => $service->name,
+                'price' => $service->price,
+                'features' => ["2 Main Speakers", "1 Wireless Microphone", "Basic Audio Mixing",] // ??,
+            ]),
+
+            'ratingBreakdown' => $vendor->ratingBreakdown(),
+
+            'reviews' => $vendor->reviews->map(fn ($review) => [
+                'id'      => $review->user->client->id,
+                'name'    => $review->user->client->full_name,
+                'rating'  => $review->rating,
+                'date'    => $review->created_at->diffForHumans(),
+                'comment' => $review->comment,
+                'avatar'  => $review->user->getFirstMediaUrl('images') ?? null,
+            ]),
+
+            'calendarEvents' => $vendor->bookings()
+            ->where('status', 'confirmed') // change here
+            ->with('event') // make sure the event is loaded for start date
+            ->get()
+            ->map(fn($booking) => [
+                'title' => 'Booked',
+                'start' => $booking->event?->event_date?->format('Y-m-d'),
+                'color' => '#ef4444', // green for confirmed
+                'status' => $booking->status
+            ]),
+
+
+
+
+        ];
+
+        // dd($vendorData);
+
+        return inertia('Client/Vendor/Show', ['vendor' => $vendorData]);
     }
 
 }

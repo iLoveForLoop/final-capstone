@@ -58,7 +58,7 @@ const handleDateClick = (arg) => {
 const calendarOptions = {
     plugins: [dayGridPlugin, interactionPlugin],
     initialView: 'dayGridMonth',
-    events: calendarEvents.value,
+    events: props.vendor.calendarEvents,
     dateClick: handleDateClick,
     headerToolbar: {
         left: 'prev,next today',
@@ -132,7 +132,7 @@ const nextImage = () => {
                                 class="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-full transition-colors duration-200">
                                 <div class="w-2 h-2 bg-indigo-600 rounded-full"></div>
                                 <span class="text-sm font-medium text-gray-700">{{ specialty
-                                }}</span>
+                                    }}</span>
                             </div>
                         </div>
                     </div>
@@ -212,30 +212,6 @@ const nextImage = () => {
                     </Card>
                 </CardContent>
             </Card>
-
-            <!-- Enhanced Calendar -->
-            <!-- <Card>
-                                        <CardHeader>
-                                            <CardTitle>Availability Calendar</CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div class="calendar-container">
-                                                <FullCalendar :options="calendarOptions" class="vendor-calendar" />
-                                                <div class="calendar-legend mt-4">
-                                                    <div class="legend-item">
-                                                        <div class="w-3 h-3 bg-green-200 rounded-full"></div>
-                                                        <span class="text-sm">Available</span>
-                                                    </div>
-                                                    <div class="legend-item">
-                                                        <div class="w-3 h-3 bg-red-200 rounded-full"></div>
-                                                        <span class="text-sm">Booked</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card> -->
-
-            <!-- Enhanced Contact Card -->
             <Card>
                 <CardHeader>
                     <CardTitle>Contact Information</CardTitle>
@@ -260,6 +236,7 @@ const nextImage = () => {
                         <div>
                             <p class="font-semibold text-gray-900 text-sm md:text-base">Email
                             </p>
+
                             <p class="text-gray-600 text-sm md:text-base">{{ vendor.email }}</p>
                         </div>
                     </div>
@@ -293,10 +270,6 @@ const nextImage = () => {
                     class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white border-white/20 hover:bg-black/70">
                     <ChevronRight class="h-4 w-4" />
                 </Button>
-                <!-- <div
-                        class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-6 py-2 rounded-full text-center">
-                        {{ vendor.gallery[galleryIndex]?.caption }}
-                    </div> -->
             </div>
         </DialogContent>
     </Dialog>

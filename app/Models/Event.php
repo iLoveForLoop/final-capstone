@@ -43,6 +43,10 @@ class Event extends Model
         return 'unknown'; // fallback
     }
 
+    protected $casts = [
+        'event_date' => 'datetime',
+        // 'end_date'   => 'datetime',
+    ];
 
     protected $guarded = [];
 }

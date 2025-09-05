@@ -1,5 +1,14 @@
 <script setup>
 import { ref } from 'vue'
+// Import shadcn-vue components
+import { Button } from '@/Components/ui/button'
+import { Badge } from '@/Components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog'
+import { Label } from '@/Components/ui/label'
+import { Input } from '@/Components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select'
+import { Textarea } from '@/Components/ui/textarea'
 
 defineProps({
     vendor: {
@@ -18,10 +27,40 @@ import {
     Heart,
     MessageCircle,
     Check,
+    Mail,
 } from 'lucide-vue-next'
+
+const bookingForm = ref({
+    date: '',
+    time: '',
+    duration: 4,
+    packageId: '',
+    location: '',
+    notes: '',
+    contactName: '',
+    contactPhone: '',
+    contactEmail: ''
+})
+
 
 const showBookingModal = ref(false)
 const isFavorite = ref(false)
+
+const closeBookingModal = () => {
+    showBookingModal.value = false
+    bookingForm.value = {
+        date: '',
+        time: '',
+        duration: 4,
+        packageId: '',
+        location: '',
+        notes: '',
+        contactName: '',
+        contactPhone: '',
+        contactEmail: ''
+    }
+}
+
 
 const submitBooking = () => {
     console.log('Booking submitted:', bookingForm.value)
@@ -45,10 +84,7 @@ const openBookingModal = () => {
     showBookingModal.value = true
 }
 
-// Import shadcn-vue components
-import { Button } from '@/Components/ui/button'
-import { Badge } from '@/Components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar'
+
 </script>
 
 
@@ -91,7 +127,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar'
                 <div class="lg:col-span-6 text-center lg:text-left space-y-6">
                     <div>
                         <h1 class="text-4xl font-bold">{{ vendor.name }}</h1>
-                        <p class="text-white/80 text-xl mt-2">{{ vendor.category }}</p>
+                        <p class="text-white/80 text-xl mt-2">
+                            {{ vendor.categories.join(", ") }}
+                        </p>
                     </div>
 
                     <!-- Rating & Location -->
@@ -151,6 +189,89 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar'
             </div>
         </div>
     </div>
+    <!-- Enhanced Booking Modal -->
+    <Dialog v-model:open="showBookingModal">
+        <DialogContent class="sm:max-w-[625px]">
+            <DialogHeader>
+                <DialogTitle>Book {{ vendor.name }}</DialogTitle>
+                <DialogDescription>
+                    Fill out the form below to send a booking request to the vendor.
+                </DialogDescription>
+            </DialogHeader>
+
+            <form @submit.prevent="submitBooking" class="grid gap-4 py-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="grid gap-2">
+                        <Label for="date">Event Date</Label>
+                        <Input id="date" v-model="bookingForm.date" type="date" required />
+                    </div>
+                    <div class="grid gap-2">
+                        <Label for="time">Event Time</Label>
+                        <Input id="time" v-model="bookingForm.time" type="time" required />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="grid gap-2">
+                        <Label for="duration">Duration (hours)</Label>
+                        <Input id="duration" v-model="bookingForm.duration" type="number" min="1" required />
+                    </div>
+                    <div class="grid gap-2">
+                        <Label for="package">Select Package</Label>
+                        <Select v-model="bookingForm.packageId" required>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Choose a package" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="p in vendor.packages" :key="p.id" :value="p.id">
+                                    {{ p.name }} - ₱{{ p.price.toLocaleString() }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="name">Contact Name</Label>
+                    <Input id="name" v-model="bookingForm.contactName" type="text" required
+                        placeholder="Your full name" />
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="grid gap-2">
+                        <Label for="phone">Contact Phone</Label>
+                        <Input id="phone" v-model="bookingForm.contactPhone" type="tel" required
+                            placeholder="+63 XXX XXX XXXX" />
+                    </div>
+                    <div class="grid gap-2">
+                        <Label for="email">Contact Email</Label>
+                        <Input id="email" v-model="bookingForm.contactEmail" type="email" required
+                            placeholder="your@email.com" />
+                    </div>
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="location">Event Location</Label>
+                    <Input id="location" v-model="bookingForm.location" type="text" required
+                        placeholder="Enter event venue address" />
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="notes">Additional Notes</Label>
+                    <Textarea id="notes" v-model="bookingForm.notes"
+                        placeholder="Special requests, requirements, or additional details..." />
+                </div>
+
+                <div class="flex justify-end gap-3 mt-4">
+                    <Button type="button" variant="outline" @click="closeBookingModal">Cancel</Button>
+                    <Button type="submit">
+                        <Mail :size="18" class="mr-2" />
+                        Send Booking Request
+                    </Button>
+                </div>
+            </form>
+        </DialogContent>
+    </Dialog>
 </template>
 
 <style></style>
