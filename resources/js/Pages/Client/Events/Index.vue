@@ -400,7 +400,7 @@ onMounted(() => {
                                 ? 'bg-blue-600 text-white'
                                 : 'text-gray-600 hover:text-gray-800'
                         ]">
-                            Calendar Viewss
+                            Calendar View
                         </button>
                         <button @click="ui.toggleEventCalendarView" :class="[
                             'px-4 py-2 text-sm rounded-md transition-colors',

@@ -155,9 +155,140 @@ class CateringServiceController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, CateringService $cateringService)
+    public function update(Request $request, $id)
     {
-        //
+        $vendor = auth()->user()->vendor;
+        $service = $vendor->services()->with(['cateringService', 'media'])->findOrFail($id);
+
+        // Validation logic similar to store method
+        if(!$request->price){
+            $request->validate([
+                'package_price' => 'required|numeric'
+            ]);
+        }
+
+        if(!$request->package_price){
+            $request->validate([
+                'price' => 'required|numeric'
+            ]);
+        }
+
+        if(!$request->package_price && !$request->price){
+            $request->validate([
+                'price' => 'required|numeric',
+                'package_price' => 'required|numeric'
+            ]);
+        }
+
+        $validated = $request->validate([
+            'service_category_id' => 'required|integer|exists:service_categories,id',
+            'name' => 'required|string',
+            'description' => 'nullable|string',
+            'max_price' => 'nullable|numeric',
+
+            // Catering specific
+            'min_pax' => 'required|integer',
+            'max_pax' => 'required|integer',
+            'lead_time_days' => 'nullable|integer',
+            'service_area' => 'nullable|array',
+            'is_customizable' => 'nullable|boolean',
+            'delivery_fee' => 'nullable|numeric',
+            'buffet_type' => 'nullable|string',
+            'specifications' => 'nullable|array',
+            'dishes' => 'required|array',
+            'dish_selection_limits' => 'nullable|array',
+            'notes' => 'nullable|string',
+
+            // Images validation
+            'cover_images' => 'nullable|array',
+            'cover_images.*' => 'image|mimes:jpeg,png,jpg|max:2048',
+            'deleted_images' => 'nullable|array',
+            'deleted_images.*' => 'integer|exists:media,id',
+        ]);
+
+        // Additional validation for multiple images
+        $currentImageCount = $service->media->count();
+        $deletedCount = is_array($request->deleted_images) ? count($request->deleted_images) : 0;
+        $newImageCount = $request->hasFile('cover_images') ? count($request->file('cover_images')) : 0;
+        $totalAfterUpdate = $currentImageCount - $deletedCount + $newImageCount;
+
+        if ($totalAfterUpdate > 5) {
+            return back()->withErrors(['cover_images' => 'Total images cannot exceed 5. Please remove some existing images first.'])->withInput();
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Step 1: Update the general service
+            $service->update([
+                'service_category_id' => $validated['service_category_id'],
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+                'price' => $request->price ?? $request->package_price,
+                'max_price' => $validated['max_price'] ?? null,
+                'specifications' => $validated['specifications'] ?? [],
+            ]);
+
+            // Step 2: Update the related catering service
+            $service->cateringService->update([
+                'name' => $validated['name'],
+                'min_pax' => $validated['min_pax'],
+                'max_pax' => $validated['max_pax'],
+                'price' => $request->price ?? $request->package_price,
+                'package_price' => $request->package_price ?? null,
+                'lead_time_days' => $validated['lead_time_days'] ?? 3,
+                'service_area' => $validated['service_area'] ?? [],
+                'is_customizable' => $validated['is_customizable'] ?? false,
+                'delivery_fee' => $validated['delivery_fee'] ?? null,
+                'buffet_type' => $validated['buffet_type'] ?? null,
+                'specifications' => $validated['specifications'] ?? [],
+                'dishes' => $validated['dishes'] ?? [],
+                'dish_selection_limits' => $validated['dish_selection_limits'] ?? [],
+                'notes' => $validated['notes'] ?? null,
+            ]);
+
+            // Step 3: Handle image deletions
+            if ($request->has('deleted_images') && is_array($request->deleted_images)) {
+                foreach ($request->deleted_images as $mediaId) {
+                    $media = $service->media()->find($mediaId);
+                    if ($media) {
+                        $media->delete();
+                    }
+                }
+            }
+
+            // Step 4: Handle new image uploads
+            if ($request->hasFile('cover_images')) {
+                $coverImages = $request->file('cover_images');
+
+                foreach ($coverImages as $index => $image) {
+                    $service->addMediaFromRequest("cover_images.{$index}")
+                        ->usingFileName(uniqid() . '.' . $image->getClientOriginalExtension())
+                        ->toMediaCollection('images', 'public');
+                }
+            }
+
+            // Step 5: Ensure we have a primary image
+            $allMedia = $service->fresh()->media;
+            $hasPrimary = $allMedia->contains(function ($media) {
+                return $media->getCustomProperty('is_primary', false);
+            });
+
+            if (!$hasPrimary && $allMedia->count() > 0) {
+                $firstMedia = $allMedia->first();
+                $firstMedia->setCustomProperty('is_primary', true);
+                $firstMedia->save();
+            }
+
+            DB::commit();
+
+            return back()->with('success', 'Service updated successfully');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Error updating catering service: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Failed to update service. Please try again.'])->withInput();
+        }
     }
 
     /**

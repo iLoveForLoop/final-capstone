@@ -13,7 +13,8 @@ class CateringService extends Model
         'service_area' => 'array',
         'specifications' => 'array',
         'dishes' => 'array',
-        'dish_selection_limits' => 'array'
+        'dish_selection_limits' => 'array',
+        'is_customizable' => 'boolean'
     ];
 
 

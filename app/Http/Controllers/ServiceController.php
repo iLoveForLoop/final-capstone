@@ -55,9 +55,19 @@ class ServiceController extends Controller
             'is_available'       => $service->is_available,
             'image_url'          => $service->getFirstMediaUrl('images'),
             'category'           => $service->category,
+            'specifications'     => $service->specifications,
             'catering_service'   => $service->cateringService,
             'photography_service'=> $service->photographyService,
             'average_rating'     => $service->vendor->averageRating(),
+            'media' => $service->media->map(fn($media) => [
+                'id' => $media->id,
+                'name' => $media->name,
+                'file_name' => $media->file_name,
+                'mime_type' => $media->mime_type,
+                'size' => $media->size,
+                'original_url' => $media->getUrl(),
+                'custom_properties' => $media->custom_properties,
+            ]),
         ]);
 
         // 🔹 Only vendor's categories
