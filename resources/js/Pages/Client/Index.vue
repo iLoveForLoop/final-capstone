@@ -1,5 +1,5 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 import QuickBookingStepperModal from '@/Components/QuickBookingStepperModal.vue';
@@ -19,6 +19,15 @@ defineProps({
     }
 });
 
+const search = ref("")
+const selectedCategory = ref("")
+
+const handleSearch = () => {
+    router.get(route("client.service.index", {
+        categories: selectedCategory.value || null,
+        search: search.value || null
+    }))
+}
 
 
 </script>
@@ -47,28 +56,31 @@ defineProps({
                     <!-- Search Bar -->
                     <div class="bg-white border border-gray-300 rounded-lg p-4 max-w-2xl mx-auto mb-8">
                         <div class="flex flex-col sm:flex-row gap-3">
+                            <!-- Search Input -->
                             <div class="flex-1">
-                                <input type="text" placeholder="Search vendors or services..."
+                                <input v-model="search" type="text" placeholder="Search vendors or services..."
                                     class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             </div>
+
+                            <!-- Category Select -->
                             <div class="w-full sm:w-48">
-                                <select
+                                <select v-model="selectedCategory"
                                     class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                    <option>All Categories</option>
-                                    <option>Catering</option>
-                                    <option>Photography</option>
-                                    <option>Sound Systems</option>
-                                    <option>Entertainment</option>
-                                    <option>Makeup Artists</option>
-                                    <option>Attire Rentals</option>
+                                    <option value="">All Categories</option>
+                                    <option v-for="category in categories" :key="category.id" :value="category.id">
+                                        {{ category.name }}
+                                    </option>
                                 </select>
                             </div>
-                            <button
+
+                            <!-- Search Button -->
+                            <button @click="handleSearch"
                                 class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium">
                                 Search
                             </button>
                         </div>
                     </div>
+
 
                     <!-- CTA Button -->
                     <button @click="eventModal.open()"
@@ -86,7 +98,7 @@ defineProps({
         <!-- Quick Stats -->
         <section class="py-12 bg-white">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="grid grid-cols-2 lg:grid-cols-3 gap-6">
                     <div class="text-center">
                         <div class="text-2xl font-semibold text-gray-900 mb-1">3</div>
                         <div class="text-sm text-gray-600">Active Bookings</div>
@@ -99,10 +111,7 @@ defineProps({
                         <div class="text-2xl font-semibold text-gray-900 mb-1">8</div>
                         <div class="text-sm text-gray-600">Saved Vendors</div>
                     </div>
-                    <div class="text-center">
-                        <div class="text-2xl font-semibold text-gray-900 mb-1">15%</div>
-                        <div class="text-sm text-gray-600">Budget Saved</div>
-                    </div>
+
                 </div>
             </div>
         </section>

@@ -154,6 +154,14 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client'])->gro
 
     //Show Vendor page
     Route::get('/vendor/{vendor}', [ClientController::class, 'showVendor'])->name('vendor.show');
+
+    //Search page
+    Route::get('/search', [ClientController::class, 'searchPage'])->name('search');
+
+
+
+
+    //ui testing
     Route::get('/temp', function () {
 
     return inertia('Client/Vendor/Temp');
@@ -165,6 +173,12 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client'])->gro
     return inertia('Client/Vendor/Temp2');
 
    })->name('temp2');
+
+   Route::get('/temp3', function () {
+
+    return inertia('Client/Vendor/Temp3');
+
+   })->name('temp3');
 
 
 });

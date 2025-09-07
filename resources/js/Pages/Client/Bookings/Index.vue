@@ -365,8 +365,8 @@ const getPaymentStatusColor = (status) => {
                                 <div class="text-2xl font-bold text-gray-900">{{ formatPrice(booking.raw_amount) }}
                                 </div>
                                 <!-- <div class="text-sm mt-1" :class="getPaymentStatusColor(booking.paymentStatus)">
-                        {{ booking.paymentStatus.charAt(0).toUpperCase() + booking.paymentStatus.slice(1) }}
-                    </div> -->
+                                    {{ booking.paymentStatus.charAt(0).toUpperCase() + booking.paymentStatus.slice(1) }}
+                                </div> -->
                             </div>
                         </div>
 
