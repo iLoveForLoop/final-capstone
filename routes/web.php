@@ -9,6 +9,7 @@ use App\Http\Controllers\FavoritesController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PhotographyServiceController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ServiceCategoryController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\UserController;
@@ -157,6 +158,9 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client'])->gro
 
     //Search page
     Route::get('/search', [ClientController::class, 'searchPage'])->name('search');
+
+    //Reviews routes
+    Route::post('/review', [ReviewController::class, 'store'])->name('review.store');
 
 
 

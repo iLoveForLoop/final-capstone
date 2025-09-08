@@ -1,7 +1,7 @@
 <script setup>
 import BookingModal from '@/Components/Client/BookingModal.vue'
 import ClientNavbar from '@/Components/ClientNavbar.vue'
-import { Link } from '@inertiajs/vue3'
+import { Link, router } from '@inertiajs/vue3'
 import { ref } from 'vue'
 
 // Reactive data
@@ -57,6 +57,14 @@ const handleBooking = () => {
 const requestQuote = () => {
     alert('Quote request submitted! We will contact you within 24 hours.')
     // Handle quote request logic here
+}
+
+const goBack = () => {
+    if (window.history.length > 1) {
+        window.history.back()
+    } else {
+        router.visit('/client')
+    }
 }
 </script>
 
@@ -239,7 +247,9 @@ const requestQuote = () => {
                                 <img :src="service.vendor.avatar" :alt="service.vendor.name"
                                     class="w-20 h-20 rounded-full object-cover">
                                 <div class="flex-1">
-                                    <h3 class="text-xl font-semibold mb-2">{{ service.vendor.business_name }}</h3>
+                                    <Link :href="route('client.vendor.show', service.vendor.id)"
+                                        class="text-xl font-semibold mb-2">{{ service.vendor.business_name }}
+                                    </Link>
                                     <p class="text-gray-600 mb-4">{{ service.vendor.description }}</p>
 
                                     <div class="grid grid-cols-2 gap-4 mb-6">

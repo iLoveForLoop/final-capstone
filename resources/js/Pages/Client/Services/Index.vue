@@ -24,9 +24,15 @@ const page = usePage();
 
 // Reactive filters
 const searchQuery = ref(props.filters.search || '');
-const selectedCategories = ref(props.filters.categories || []);
+const selectedCategories = ref(
+    Array.isArray(props.filters.categories)
+        ? props.filters.categories.map(c => Number(c)) // convert to numbers
+        : []
+);
 const selectedPriceRange = ref(props.filters.price_range || '');
-const selectedRating = ref(props.filters.rating || '');
+const selectedRating = ref(
+    props.filters.rating ? Number(props.filters.rating) : '' // convert to number
+);
 const sortBy = ref('relevance');
 const viewMode = ref('grid');
 
@@ -121,7 +127,11 @@ const getCategoryName = (id) => {
     const category = props.categories.find(cat => cat.id == id);
     return category ? category.name : '';
 };
+
+console.log(props.filters.categories)
 </script>
+
+
 
 <template>
     <div class="min-h-screen bg-gray-50">
@@ -327,12 +337,14 @@ const getCategoryName = (id) => {
                                             : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
                                     ]">
                                     <span class="font-medium">{{ category.name }}</span>
+                                    {{ console.log(selectedCategories) }}
                                     <div :class="[
                                         'w-5 h-5 rounded border-2 flex items-center justify-center transition-colors',
                                         selectedCategories.includes(category.id)
                                             ? 'bg-blue-600 border-blue-600'
                                             : 'border-gray-300'
                                     ]">
+
                                         <Check v-if="selectedCategories.includes(category.id)" :size="14"
                                             class="text-white" />
                                     </div>

@@ -28,7 +28,28 @@ class ReviewController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validate incoming data
+        // dd($request->vendor_id);
+        $validated = $request->validate([
+            'vendor_id'  => 'required|exists:vendors,id',
+            'booking_id' => 'required|exists:bookings,id',
+            'rating'     => 'required|integer|min:1|max:5',
+            'comment'    => 'nullable|string|max:500',
+        ]);
+
+        // Create review
+        $review = Review::create([
+            'vendor_id'  => $validated['vendor_id'],
+            'booking_id' => $validated['booking_id'],
+            'user_id'    => $request->user()->id,
+            'rating'     => $validated['rating'],
+            'comment'    => $validated['comment'] ?? null,
+        ]);
+
+        return response()->json([
+            'message' => 'Review submitted successfully.',
+            'review'  => $review,
+        ], 201);
     }
 
     /**

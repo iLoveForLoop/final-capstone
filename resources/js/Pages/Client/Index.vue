@@ -1,10 +1,19 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 import QuickBookingStepperModal from '@/Components/QuickBookingStepperModal.vue';
 import ClientNavbar from '@/Components/ClientNavbar.vue'
 import NewServiceCard from '@/Components/Client/NewServiceCard.vue';
+
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from '@/Components/ui/dialog';
+import { Sliders, Database, Filter, Check, Star, X } from 'lucide-vue-next';
 
 
 const eventModal = ref(null)
@@ -20,15 +29,82 @@ defineProps({
 });
 
 const search = ref("")
-const selectedCategory = ref("")
+const selectedCategories = ref([]);
+const selectedPriceRange = ref('');
+const selectedRating = ref('');
+
+// Dialog state
+const showFiltersDialog = ref(false);
+
+// Price ranges
+const priceRanges = [
+    { id: 'under_5000', label: 'Under ₱5,000' },
+    { id: '5000_15000', label: '₱5,000 - ₱15,000' },
+    { id: '15000_30000', label: '₱15,000 - ₱30,000' },
+    { id: '30000_50000', label: '₱30,000 - ₱50,000' },
+    { id: 'over_50000', label: 'Over ₱50,000' }
+];
+
+// Rating filters
+const ratingFilters = [
+    { value: 4, label: '4+ stars' },
+    { value: 3, label: '3+ stars' },
+    { value: 2, label: '2+ stars' },
+    { value: 1, label: '1+ stars' }
+];
+
+// Toggle category selection
+const toggleCategory = (categoryId) => {
+    const index = selectedCategories.value.indexOf(categoryId);
+    if (index > -1) {
+        selectedCategories.value.splice(index, 1);
+    } else {
+        selectedCategories.value.push(categoryId);
+    }
+};
 
 const handleSearch = () => {
-    router.get(route("client.service.index", {
-        categories: selectedCategory.value || null,
-        search: search.value || null
-    }))
+    showFiltersDialog.value = false;
+    router.get('/client/services', {
+        search: search.value || undefined,
+        categories: selectedCategories.value.length > 0 ? selectedCategories.value : undefined,
+        price_range: selectedPriceRange.value || undefined,
+        rating: selectedRating.value || undefined,
+    }, {
+        preserveState: true,
+        preserveScroll: true
+    });
 }
 
+const applyFilters = () => {
+    showFiltersDialog.value = false
+}
+
+const clearFilters = () => {
+    selectedCategories.value = []
+    selectedPriceRange.value = ''
+    selectedRating.value = []
+    showFiltersDialog.value = false
+}
+
+
+// Check for active filters from URL params (not temporary state)
+// const hasActiveFilters = computed(() => {
+//     return !!(search.value ||
+//         (selectedCategories.value && selectedCategories.value.length > 0) ||
+//         selectedPriceRange.value ||
+//         selectedRating.value);
+// });
+
+// Get active filter count
+const activeFilterCount = computed(() => {
+    let count = 0;
+
+    if (selectedCategories.value && selectedCategories.value.length > 0) count++;
+    if (selectedPriceRange.value) count++;
+    if (selectedRating.value) count++;
+    return count;
+});
 
 </script>
 
@@ -63,15 +139,17 @@ const handleSearch = () => {
                             </div>
 
                             <!-- Category Select -->
-                            <div class="w-full sm:w-48">
-                                <select v-model="selectedCategory"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                    <option value="">All Categories</option>
-                                    <option v-for="category in categories" :key="category.id" :value="category.id">
-                                        {{ category.name }}
-                                    </option>
-                                </select>
-                            </div>
+                            <!-- Enhanced Filter Button -->
+                            <button @click="showFiltersDialog = true"
+                                class="relative flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all duration-200 shadow-sm hover:shadow">
+                                <Sliders :size="16" />
+                                <span class="hidden sm:inline">Filters</span>
+                                <!-- Active Filter Count Badge -->
+                                <div v-if="activeFilterCount > 0"
+                                    class="absolute -top-2 -right-2 w-5 h-5 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                                    {{ activeFilterCount }}
+                                </div>
+                            </button>
 
                             <!-- Search Button -->
                             <button @click="handleSearch"
@@ -306,4 +384,135 @@ const handleSearch = () => {
             </div>
         </footer>
     </div>
+
+    <!-- Enhanced Filters Dialog -->
+    <Dialog v-model:open="showFiltersDialog">
+        <DialogContent class="sm:max-w-4xl w-full max-h-[85vh] overflow-hidden flex flex-col">
+            <DialogHeader class="pb-4 border-b border-gray-200">
+                <DialogTitle class="text-xl font-semibold text-gray-900">Advanced Filters</DialogTitle>
+                <DialogDescription class="text-gray-600">
+                    Refine your search to find exactly what you need
+                </DialogDescription>
+            </DialogHeader>
+
+            <div class="flex-1 overflow-y-auto py-6">
+                <!-- Grid layout for filters -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Category Filter -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <Filter :size="16" class="text-blue-600" />
+                            </div>
+                            <h3 class="text-base font-semibold text-gray-900">Service Categories</h3>
+                        </div>
+                        <div class="space-y-3 max-h-64 overflow-y-auto">
+                            <button v-for="category in categories" :key="category.id"
+                                @click="toggleCategory(category.id)" :class="[
+                                    'w-full flex items-center justify-between px-4 py-3 rounded-lg border text-sm transition-all duration-200',
+                                    selectedCategories.includes(category.id)
+                                        ? 'bg-blue-50 border-blue-200 text-blue-700 shadow-sm'
+                                        : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                                ]">
+                                <span class="font-medium">{{ category.name }}</span>
+                                <div :class="[
+                                    'w-5 h-5 rounded border-2 flex items-center justify-center transition-colors',
+                                    selectedCategories.includes(category.id)
+                                        ? 'bg-blue-600 border-blue-600'
+                                        : 'border-gray-300'
+                                ]">
+
+                                    <Check v-if="selectedCategories.includes(category.id)" :size="14"
+                                        class="text-white" />
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Price Range -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                <Database :size="16" class="text-green-600" />
+                            </div>
+                            <h3 class="text-base font-semibold text-gray-900">Budget Range</h3>
+                        </div>
+                        <div class="space-y-3">
+
+
+
+                            <button v-for="range in priceRanges" :key="range.id"
+                                @click="selectedPriceRange = selectedPriceRange === range.id ? '' : range.id" :class="[
+                                    'w-full flex items-center justify-between px-4 py-3 rounded-lg border text-sm transition-all duration-200',
+                                    selectedPriceRange === range.id
+                                        ? 'bg-green-50 border-green-200 text-green-700 shadow-sm'
+                                        : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                                ]">
+                                <span class="font-medium">{{ range.label }}</span>
+                                <div :class="[
+                                    'w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors',
+                                    selectedPriceRange === range.id
+                                        ? 'bg-green-600 border-green-600'
+                                        : 'border-gray-300'
+                                ]">
+                                    <div v-if="selectedPriceRange === range.id" class="w-2 h-2 bg-white rounded-full">
+                                    </div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Rating Filter -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                <Star :size="16" class="text-yellow-600" />
+                            </div>
+                            <h3 class="text-base font-semibold text-gray-900">Minimum Rating</h3>
+                        </div>
+                        <div class="space-y-3">
+                            <button v-for="rating in ratingFilters" :key="rating.value"
+                                @click="selectedRating = selectedRating === rating.value ? '' : rating.value" :class="[
+                                    'w-full flex items-center justify-between px-4 py-3 rounded-lg border text-sm transition-all duration-200',
+                                    selectedRating === rating.value
+                                        ? 'bg-yellow-50 border-yellow-200 text-yellow-700 shadow-sm'
+                                        : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                                ]">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex">
+                                        <Star v-for="i in 5" :key="i" :size="16"
+                                            :class="i <= rating.value ? 'text-yellow-400 fill-current' : 'text-gray-300'" />
+                                    </div>
+                                    <span class="font-medium">{{ rating.value }}+ stars</span>
+                                </div>
+                                <div :class="[
+                                    'w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors',
+                                    selectedRating === rating.value
+                                        ? 'bg-yellow-600 border-yellow-600'
+                                        : 'border-gray-300'
+                                ]">
+                                    <div v-if="selectedRating === rating.value" class="w-2 h-2 bg-white rounded-full">
+                                    </div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+                <button @click="clearFilters"
+                    class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                    <X :size="16" />
+                    Clear All Filters
+                </button>
+                <button @click="applyFilters"
+                    class="flex items-center gap-2 px-6 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm">
+                    <Check :size="16" />
+                    Apply Filters
+                </button>
+            </div>
+        </DialogContent>
+    </Dialog>
 </template>

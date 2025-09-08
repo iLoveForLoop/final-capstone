@@ -112,7 +112,8 @@ class BookingController extends Controller
                 : false;
 
             return [
-                'id' => 'BK' . str_pad($booking->id, 3, '0', STR_PAD_LEFT),
+                // 'id' => 'BK' . str_pad($booking->id, 3, '0', STR_PAD_LEFT),
+                'id' => $booking->id,
                 'client' => $booking->user->name ?? 'N/A',
                 'client_email' => $booking->user->email ?? 'N/A',
                 'event_name' => $booking->event->name ?? 'N/A',

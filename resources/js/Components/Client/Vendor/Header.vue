@@ -9,6 +9,7 @@ import { Label } from '@/Components/ui/label'
 import { Input } from '@/Components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select'
 import { Textarea } from '@/Components/ui/textarea'
+import { router } from '@inertiajs/vue3'
 
 defineProps({
     vendor: {
@@ -73,7 +74,11 @@ const sendMessage = () => {
 }
 
 const goBack = () => {
-    console.log('Navigating back to search')
+    if (window.history.length > 1) {
+        window.history.back()
+    } else {
+        router.visit('/client')
+    }
 }
 
 const toggleFavorite = () => {
@@ -83,7 +88,6 @@ const toggleFavorite = () => {
 const openBookingModal = () => {
     showBookingModal.value = true
 }
-
 
 </script>
 
