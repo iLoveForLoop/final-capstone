@@ -28,6 +28,18 @@ const handleViewDetails = () => {
     router.get(route('client.service.show', props.service.id))
 }
 
+const isPricePackage = () => {
+
+    if (props.service.catering_service) {
+        if (props.service.catering_service.price !== props.service.catering_service.package_price) {
+            return 'per pax'
+        } else {
+            return ''
+        }
+    }
+    return ''
+}
+
 </script>
 
 <template>
@@ -54,7 +66,10 @@ const handleViewDetails = () => {
         <h3 class="font-semibold text-gray-900 mb-2 line-clamp-1">{{ service.name }}</h3>
         <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ service.description }}</p>
         <div class="flex items-center justify-between mb-3">
-            <div class="text-lg font-bold text-green-600">{{ formatPrice(service.price) }}</div>
+            <!-- {{ console.log(isPricePackage()) }} -->
+            <div class="text-lg font-bold text-green-600">{{ formatPrice(service.price) }} <span
+                    class="text-sm text-gray-600">{{ isPricePackage()
+                    }}</span> </div>
             <div class="flex items-center text-sm text-gray-500">
                 <svg class="w-4 h-4 mr-1 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                     <path

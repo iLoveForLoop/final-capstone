@@ -205,7 +205,7 @@ const bookingDetailsModal = ref(null)
                 </div>
 
                 <!-- Stats Cards -->
-                <!-- <div v-if="stats" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div v-if="stats" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <div class="bg-white rounded-lg shadow-sm border p-4">
                         <div class="flex items-center">
                             <div class="flex-1">
@@ -238,7 +238,7 @@ const bookingDetailsModal = ref(null)
                             </div>
                         </div>
                     </div>
-                </div> -->
+                </div>
 
                 <!-- Filters -->
                 <div class="mb-6 bg-white rounded-xl shadow-xs border border-gray-200 p-4">

@@ -105,8 +105,8 @@ onMounted(() => {
                         </span>
                     </NewNavLink>
 
-                    <NewNavLink :href="route('admin.categories.index')"
-                        :active="route().current('admin.categories.index')" :isCollapsed="ui.sidebarCollapsed">
+                    <NewNavLink :href="route('vendor.reviews.index')" :active="route().current('vendor.reviews.index')"
+                        :isCollapsed="ui.sidebarCollapsed">
                         <template #icon>
                             <Star class="h-5 w-5" />
                         </template>

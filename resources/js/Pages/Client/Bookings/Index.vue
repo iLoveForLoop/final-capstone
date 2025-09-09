@@ -5,6 +5,7 @@ import StatsSection from '@/Components/Client/Booking/StatsSection.vue';
 import ClientNavbar from '@/Components/ClientNavbar.vue';
 import { ref, computed } from 'vue';
 
+
 const props = defineProps({
     bookings: {
         type: Object

@@ -140,9 +140,8 @@ class BookingController extends Controller
                 'is_per_pax' => $is_per_pax,
                 'service_image' => $booking->service->getFirstMediaUrl('images'),
                 'vendor' => $booking->service->vendor,
-                'vendor_rating' => $booking->service->vendor->averageRating()
-
-
+                'vendor_rating' => $booking->service->vendor->averageRating(),
+                'can_review' => !$booking->hasReviewFrom(auth()->id())
             ];
         });
 

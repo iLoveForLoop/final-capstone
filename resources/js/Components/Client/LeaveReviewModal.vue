@@ -15,6 +15,7 @@ import { Badge } from '@/Components/ui/badge'
 import { Label } from '@/Components/ui/label'
 import { Textarea } from '@/Components/ui/textarea'
 import { Star, Loader2 } from 'lucide-vue-next'
+import { useToast } from 'vue-toastification'
 
 // Props
 const props = defineProps({
@@ -26,6 +27,8 @@ const props = defineProps({
         type: Object,
     }
 })
+
+const toast = useToast()
 
 // Emits
 const emit = defineEmits(['close', 'submit'])
@@ -82,8 +85,8 @@ const submitReview = async () => {
             onSuccess: () => {
                 emit('submit', reviewData)
 
-                // Replace with your toast system if available
-                alert('Thank you for reviewing this service!')
+                toast.success('Review submitted sucessfully')
+
                 closeModal()
             },
             onError: (errors) => {

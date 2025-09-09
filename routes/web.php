@@ -118,9 +118,11 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'role:vendor'])->gro
         // Export functionality
         Route::get('/export/csv', 'export')->name('export');
 
+
     });
 
-
+    //Review page
+        Route::get('reviews', [ReviewController::class, 'index'])->name('reviews.index');
 
 });
 
@@ -161,6 +163,7 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client'])->gro
 
     //Reviews routes
     Route::post('/review', [ReviewController::class, 'store'])->name('review.store');
+
 
 
 

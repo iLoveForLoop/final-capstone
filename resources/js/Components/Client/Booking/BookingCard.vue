@@ -139,9 +139,14 @@ const serviceData = ref({
                     class="px-4 py-2 text-sm border border-red-300 text-red-700 rounded hover:bg-red-50 transition-colors">
                     Cancel
                 </button>
-                <button @click="isReviewModalOpen = true" v-if="booking.status === 'completed'"
+                <button @click="isReviewModalOpen = true" v-if="booking.status === 'completed' && booking.can_review"
                     class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
                     Leave Review
+                </button>
+                {{ console.log('can review: ', booking.can_review) }}
+                <button @click="isReviewModalOpen = true" v-if="!booking.can_review"
+                    class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                    View Review
                 </button>
             </div>
         </div>

@@ -3,7 +3,7 @@ import BookingModal from '@/Components/Client/BookingModal.vue'
 import ClientNavbar from '@/Components/ClientNavbar.vue'
 import { Link, router } from '@inertiajs/vue3'
 import { ref } from 'vue'
-
+import { useToast } from 'vue-toastification'
 // Reactive data
 
 const props = defineProps({
@@ -17,9 +17,10 @@ console.log(props.service)
 const currentImageIndex = ref(0)
 const selectedDate = ref('')
 const selectedTime = ref('')
-const guestCount = ref(50)
+const guestCount = ref(props.service.minimumGuests ?? 50)
 const activeTab = ref('overview')
 const bookingModal = ref(null)
+const toast = useToast()
 
 
 // Navigation tabs
@@ -51,6 +52,10 @@ const nextImage = () => {
 
 const handleBooking = () => {
     // console.log(selectedDate.value, selectedTime.value)
+    // if (guestCount < props.service.minimumGuests) {
+    //     toast.error('Minimun Guest Requirement Too Low');
+    //     return
+    // }
     bookingModal.value.openModal(selectedDate.value, selectedTime.value)
 }
 
@@ -69,7 +74,7 @@ const goBack = () => {
 </script>
 
 <template>
-    <BookingModal ref="bookingModal" :service="service" :time="selectedTime" :date="selectedDate" />
+    <BookingModal ref="bookingModal" :service="service" :time="selectedTime" :date="selectedDate" :pax="guestCount" />
     <div class="min-h-screen bg-gray-50">
         <!-- <ClientNavbar /> -->
         <!-- Header Navigation -->
@@ -95,8 +100,10 @@ const goBack = () => {
                             <img :src="service.images[currentImageIndex]" :alt="service.name"
                                 class="w-full h-full object-cover">
                             <!-- Image Navigation -->
-                            <div class="absolute inset-0 flex items-center justify-between p-4">
-                                <button @click="previousImage"
+                            <div v-if="service.images.length > 1"
+                                class="absolute inset-0 flex items-center justify-between p-4">
+                                <!-- {{ console.log('Images: ', service.images.length) }} -->
+                                <button v-if="service" @click="previousImage"
                                     class="bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
                                     :disabled="currentImageIndex === 0">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,7 +121,7 @@ const goBack = () => {
                                 </button>
                             </div>
                             <!-- Image Counter -->
-                            <div
+                            <div v-if="service.images.length > 1"
                                 class="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
                                 {{ currentImageIndex + 1 }} / {{ service.images.length }}
                             </div>
@@ -321,7 +328,8 @@ const goBack = () => {
                             <div class="text-center mb-6">
                                 <div class="text-3xl font-bold text-green-600 mb-2">{{ formatPrice(service.price) }}
                                 </div>
-                                <p class="text-gray-600">{{ service.servingSize }} (min. {{ service.minimumGuests }}
+                                <p v-if="service.minimumGuests" class="text-gray-600">{{ service.servingSize }} (min. {{
+                                    service.minimumGuests }}
                                     guests)</p>
                             </div>
 

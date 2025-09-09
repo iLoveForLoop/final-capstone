@@ -12,8 +12,51 @@ class ReviewController extends Controller
      */
     public function index()
     {
-        //
+        $vendor = auth()->user()->vendor;
+
+        if (!$vendor) {
+            abort(403, 'Not a vendor.');
+        }
+
+        $reviews = Review::with(['user.client', 'user.media', 'booking.event', 'booking.service'])
+            ->where('vendor_id', $vendor->id)
+            ->latest()
+            ->get()
+            ->map(function ($review) {
+                return [
+                    'id' => $review->id,
+
+                    'customer' => [
+                        'name'     => $review->user->client->full_name ?? $review->user->name,
+                        'avatar'   => $review->user->getFirstMediaUrl('images') ?? null,
+                        'verified' => true, // you can set logic here if only "paid" bookings are verified
+                    ],
+
+                    'service' => $review->booking?->service?->name ?? 'Unknown Service',
+
+                    'booking' => [
+                        'id'         => 'BK-' . str_pad($review->booking?->id ?? 0, 6, '0', STR_PAD_LEFT),
+                        'date'       => $review->booking?->created_at?->format('Y-m-d'),
+                        'event_date' => $review->booking?->event?->event_date?->format('Y-m-d'),
+                    ],
+
+                    'rating' => $review->rating,
+                    'title'  => $review->title ?? null, // add column if you want titles
+                    'comment' => $review->comment,
+                    'date'   => $review->created_at->format('Y-m-d'),
+                    'status' => 'published', // you can implement moderation if needed
+                    'helpful_votes' => $review->helpful_votes ?? 0, // add this field if you want upvotes
+                    'response' => $review->response,
+
+                    // 'photos' => $review->getMedia('review_photos')->map(fn ($m) => $m->getUrl())->toArray() ?? [],
+                ];
+            });
+
+        return inertia('Vendor/Reviews/Index', [
+            'reviews' => $reviews,
+        ]);
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -46,10 +89,12 @@ class ReviewController extends Controller
             'comment'    => $validated['comment'] ?? null,
         ]);
 
-        return response()->json([
-            'message' => 'Review submitted successfully.',
-            'review'  => $review,
-        ], 201);
+        // return response()->json([
+        //     'message' => 'Review submitted successfully.',
+        //     'review'  => $review,
+        // ], 201);
+
+        return redirect()->back();
     }
 
     /**

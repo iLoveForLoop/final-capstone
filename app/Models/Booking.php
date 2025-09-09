@@ -42,5 +42,11 @@ class Booking extends Model
         return $this->belongsTo(Event::class);
     }
 
+    //check if use already reviewed
+    public function hasReviewFrom($userId)
+    {
+        return $this->review()->where('user_id', $userId)->exists();
+    }
+
 
 }

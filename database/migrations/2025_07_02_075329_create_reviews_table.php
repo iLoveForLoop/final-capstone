@@ -15,6 +15,8 @@ class CreateReviewsTable extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Who gave the review
             $table->tinyInteger('rating')->comment('1 to 5');
             $table->text('comment')->nullable();
+            $table->text('response')->nullable();
+            $table->timestamp('responded_at')->nullable();
             $table->timestamps();
         });
     }

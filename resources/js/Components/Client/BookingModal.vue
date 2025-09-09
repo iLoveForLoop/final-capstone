@@ -13,6 +13,9 @@ const props = defineProps({
     },
     time: {
         type: String
+    },
+    pax: {
+        type: Number
     }
 });
 
@@ -28,7 +31,7 @@ const form = useForm({
     event_date: props.date ?? '',
     event_time: props.time ?? '',
     description: '',
-    pax: '',
+    pax: props.pax ?? 50,
     dishes: {},
     vendors: [props.service]
 });
@@ -640,7 +643,7 @@ defineExpose({
                                         <div class="flex justify-between">
                                             <span class="text-gray-600">Date & Time:</span>
                                             <span class="font-medium">{{ form.event_date }} at {{ form.event_time
-                                                }}</span>
+                                            }}</span>
                                         </div>
                                         <div v-if="form.pax" class="flex justify-between">
                                             <span class="text-gray-600">Number of Guests:</span>
@@ -683,7 +686,7 @@ defineExpose({
                                             <span class="text-lg font-semibold text-gray-900">Total Estimated
                                                 Cost:</span>
                                             <span class="text-2xl font-bold text-blue-600">{{ formatPrice(totalPrice)
-                                                }}</span>
+                                            }}</span>
                                         </div>
                                     </div>
 

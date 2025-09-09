@@ -324,6 +324,7 @@ class ClientController extends Controller
             'images'        => $service->getMedia('images')->map(fn ($media) => $media->getUrl()),
             'specifications'=> $this->specsChecker($service),
             'menuCategories'=> $service->cateringService->dishes ?? null,
+            'minimumGuests' => $service->cateringService->min_pax ?? null,
 
             'vendor' => [
                 'id'                 => $service->vendor->id,
