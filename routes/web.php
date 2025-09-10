@@ -122,7 +122,8 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'role:vendor'])->gro
     });
 
     //Review page
-        Route::get('reviews', [ReviewController::class, 'index'])->name('reviews.index');
+        Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews.index');
+        Route::put('/reviews/{review}/response', [ReviewController::class, 'updateResponse'])->name('reviews.update-response');
 
 });
 

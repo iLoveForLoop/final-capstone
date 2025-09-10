@@ -46,7 +46,10 @@ class ReviewController extends Controller
                     'date'   => $review->created_at->format('Y-m-d'),
                     'status' => 'published', // you can implement moderation if needed
                     'helpful_votes' => $review->helpful_votes ?? 0, // add this field if you want upvotes
-                    'response' => $review->response,
+                    'response' => [
+                        'message' => $review->response ?? null,
+                        'date' => $review->responded_at ?? null
+                    ],
 
                     // 'photos' => $review->getMedia('review_photos')->map(fn ($m) => $m->getUrl())->toArray() ?? [],
                 ];
@@ -56,6 +59,8 @@ class ReviewController extends Controller
             'reviews' => $reviews,
         ]);
     }
+
+
 
 
     /**
@@ -127,5 +132,25 @@ class ReviewController extends Controller
     public function destroy(Review $review)
     {
         //
+    }
+
+    public function updateResponse(Request $request, Review $review){
+        $vendor = auth()->user()->vendor;
+
+        if (!$vendor || $review->vendor_id !== $vendor->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $request->validate([
+            'response' => 'required|string|max:2000',
+        ]);
+
+        $review->update([
+            'response' => $request->response,
+            'responded_at' => now(),
+        ]);
+
+        // dd($review);
+        return back()->with('success', 'Response updated successfully.');
     }
 }

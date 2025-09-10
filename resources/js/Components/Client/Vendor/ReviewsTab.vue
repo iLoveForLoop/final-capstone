@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Progress } from '@/Components/ui/progress';
 
-import { Star } from 'lucide-vue-next';
+import { Flag, MessageCircle, Star } from 'lucide-vue-next';
 
 defineProps({
     vendor: {
@@ -32,7 +32,7 @@ const formatDate = (dateString) => {
                         :class="['text-yellow-400', n <= vendor.rating ? 'opacity-100' : 'opacity-30']" />
                 </div>
                 <p class="text-gray-600 font-medium text-sm md:text-base">{{ vendor.reviewCount
-                    }} total reviews</p>
+                }} total reviews</p>
             </CardContent>
         </Card>
 
@@ -48,10 +48,12 @@ const formatDate = (dateString) => {
 
     <!-- Individual Reviews -->
     <div class="space-y-6">
-        <Card v-for="review in vendor.reviews" :key="review.id" class="review-card">
-            <CardHeader class="px-6 py-5 border-b border-gray-100">
+        <div v-for="review in vendor.reviews" :key="review.id"
+            class="review-card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all hover:shadow-md">
+            <!-- Review Header -->
+            <div class="px-6 py-5 border-b border-gray-100">
                 <div class="flex items-start space-x-4">
-                    <!-- Avatar -->
+                    <!-- Customer Avatar -->
                     <Avatar class="w-12 h-12 flex-shrink-0 ring-2 ring-gray-100">
                         <AvatarImage :src="review.avatar" :alt="review.name" />
                         <AvatarFallback class="bg-indigo-100 text-indigo-700 font-medium text-sm">
@@ -61,11 +63,16 @@ const formatDate = (dateString) => {
 
                     <!-- Review Header Info -->
                     <div class="flex-1 min-w-0">
-                        <CardTitle class="text-base font-semibold text-gray-900 truncate">
-                            {{ review.name }}
-                        </CardTitle>
+                        <div class="flex flex-wrap items-center justify-between">
+                            <h3 class="text-base font-semibold text-gray-900">
+                                {{ review.name }}
+                            </h3>
+                            <span class="text-sm text-gray-500 whitespace-nowrap ml-2">
+                                {{ review.date }}
+                            </span>
+                        </div>
 
-                        <div class="flex items-center justify-between mt-2">
+                        <div class="flex items-center mt-2">
                             <!-- Rating Stars -->
                             <div class="flex items-center space-x-1">
                                 <Star v-for="n in 5" :key="n" :size="16" :class="[
@@ -79,24 +86,80 @@ const formatDate = (dateString) => {
                                 </span>
                             </div>
 
-                            <!-- Date -->
-                            <span class="text-sm text-gray-500 whitespace-nowrap">
-                                {{ review.date }}
+                            <!-- Service Info -->
+                            <span v-if="review.service"
+                                class="ml-3 px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                                {{ review.service }}
                             </span>
                         </div>
                     </div>
                 </div>
-            </CardHeader>
-            <CardContent>
-                <p class="text-gray-700 leading-relaxed text-base md:text-lg mt-3">{{
-                    review.comment
-                    }}</p>
-                <div v-if="review.photos" class="review-photos mt-4">
-                    <img v-for="photo in review.photos" :key="photo" :src="photo" alt="Review photo"
-                        class="review-photo" />
+            </div>
+
+            <!-- Review Content -->
+            <div class="px-6 py-5">
+                <p class="text-gray-700 leading-relaxed text-base">
+                    {{ review.comment }}
+                </p>
+
+                <!-- Review Photos -->
+                <div v-if="review.photos && review.photos.length" class="review-photos mt-4 flex flex-wrap gap-3">
+                    <div v-for="(photo, index) in review.photos" :key="index"
+                        class="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200 cursor-pointer hover:shadow-md transition-shadow group">
+                        <img :src="photo" alt="Review photo" class="w-full h-full object-cover" />
+                        <div
+                            class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200">
+                        </div>
+                    </div>
                 </div>
-            </CardContent>
-        </Card>
+
+                <!-- Vendor Response -->
+                <div v-if="review.response" class="vendor-response mt-6 pt-6 border-t border-gray-100">
+                    <div class="flex items-start space-x-3">
+                        <Avatar class="w-10 h-10 flex-shrink-0 ring-2 ring-white shadow-sm">
+                            <AvatarImage :src="vendor.avatar" :alt="vendor.name" />
+                            <AvatarFallback class="bg-blue-100 text-blue-700 font-medium text-xs">
+                                {{ vendor.name.charAt(0) }}
+                            </AvatarFallback>
+                        </Avatar>
+                        <div class="flex-1">
+                            <div class="flex flex-wrap items-center justify-between">
+                                <div class="flex items-center">
+                                    <h4 class="text-sm font-semibold text-gray-900">Response from {{ vendor.name }}</h4>
+                                    <span
+                                        class="ml-2 text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">Vendor</span>
+                                </div>
+                                <span class="text-xs text-gray-500">{{ review.responded_at }}</span>
+                            </div>
+                            <p class="text-gray-700 mt-2 text-sm bg-blue-50 rounded-lg p-3 border border-blue-100">
+                                {{ review.response }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review Actions -->
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <button
+                        class="text-sm text-gray-600 hover:text-blue-600 transition-colors flex items-center py-1 px-2 rounded-lg hover:bg-gray-100">
+                        <Star :size="14" class="mr-2 text-gray-400" />
+                        <span>Helpful ({{ review.helpful_count || 0 }})</span>
+                    </button>
+                    <button
+                        class="text-sm text-gray-600 hover:text-blue-600 transition-colors flex items-center py-1 px-2 rounded-lg hover:bg-gray-100">
+                        <MessageCircle :size="14" class="mr-2 text-gray-400" />
+                        <span>Comment</span>
+                    </button>
+                </div>
+                <button
+                    class="flex items-center text-sm text-gray-600 hover:text-red-600 transition-colors py-1 px-2 rounded-lg hover:bg-gray-100">
+                    <Flag :size="14" class="mr-1 text-gray-400" />
+                    Report
+                </button>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -127,5 +190,30 @@ const formatDate = (dateString) => {
 
 .review-photo {
     @apply w-20 h-20 md:w-24 md:h-24 rounded-lg object-cover cursor-pointer hover:scale-105 transition-transform duration-200;
+}
+
+.review-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-2px);
+}
+
+/* Animation for vendor response */
+.vendor-response {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 </style>

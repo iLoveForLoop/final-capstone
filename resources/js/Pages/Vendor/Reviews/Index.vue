@@ -2,7 +2,7 @@
 import VendorLayout from '@/Layouts/VendorLayout.vue';
 import { ref, computed } from 'vue';
 import { Star, MessageCircle, Calendar, User, Filter, Search, TrendingUp, Award, Clock, Reply, ChevronDown, ExternalLink, Download, MoreVertical } from 'lucide-vue-next';
-
+import { router } from '@inertiajs/vue3';
 const props = defineProps({
     reviews: {}
 })
@@ -102,14 +102,14 @@ const ratingDistribution = computed(() => {
 });
 
 const pendingResponses = computed(() =>
-    props.reviews.filter(review => !review.response && review.rating <= 3).length
+    props.reviews.filter(review => !review.response.message && review.rating <= 3).length
 );
 
 const filteredReviews = computed(() => {
     return props.reviews.filter(review => {
         const matchesStatus = filterStatus.value === 'all' ||
-            (filterStatus.value === 'pending' && !review.response && review.rating <= 3) ||
-            (filterStatus.value === 'responded' && review.response) ||
+            (filterStatus.value === 'pending' && !review.response.message && review.rating <= 3) ||
+            (filterStatus.value === 'responded' && review.response.message) ||
             (filterStatus.value === 'published' && review.status === 'published');
 
         const matchesRating = filterRating.value === 'all' || review.rating == filterRating.value;
@@ -131,16 +131,33 @@ const openResponseModal = (review) => {
 
 const submitResponse = () => {
     if (selectedReview.value && responseText.value.trim()) {
-        // Here you would make an API call to save the response
-        selectedReview.value.response = {
-            message: responseText.value,
-            date: new Date().toISOString().split('T')[0]
-        };
-        showResponseModal.value = false;
-        responseText.value = '';
-        selectedReview.value = null;
+
+        router.put(route('vendor.reviews.update-response', selectedReview.value.id), {
+            response: responseText.value
+        }, {
+            onSuccess: () => {
+                selectedReview.value.response = {
+                    message: responseText.value,
+                    date: new Date().toISOString().split('T')[0]
+                };
+                showResponseModal.value = false;
+                responseText.value = '';
+                selectedReview.value = null;
+
+                alert('done');
+            }
+        })
+
+
+        // selectedReview.value.response = {
+        //     message: responseText.value,
+        //     date: new Date().toISOString().split('T')[0]
+        // };
+
     }
 };
+
+
 
 const getRatingColor = (rating) => {
     if (rating >= 4) return 'text-green-600 bg-green-50';
@@ -149,18 +166,21 @@ const getRatingColor = (rating) => {
 };
 
 const getStatusBadge = (review) => {
-    if (!review.response && review.rating <= 3) {
+
+    console.log('Response', review.response)
+
+    if (!review.response.message && review.rating <= 3) {
         return 'bg-red-100 text-red-800';
     }
-    if (review.response) {
+    if (review.response.message) {
         return 'bg-green-100 text-green-800';
     }
     return 'bg-blue-100 text-blue-800';
 };
 
 const getStatusText = (review) => {
-    if (!review.response && review.rating <= 3) return 'Needs Response';
-    if (review.response) return 'Responded';
+    if (!review.response.message && review.rating <= 3) return 'Needs Response';
+    if (review.response.message) return 'Responded';
     return 'Published';
 };
 </script>
@@ -191,7 +211,9 @@ const getStatusText = (review) => {
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-gray-600">Overall Rating</p>
-                                <p class="text-2xl font-bold text-gray-900 mt-1">{{ averageRating }}/5</p>
+                                <p v-if="reviews.length + 1 > 1" class="text-2xl font-bold text-gray-900 mt-1">{{
+                                    averageRating }}/5</p>
+                                <p v-else class="text-l font-bold text-gray-900 mt-1">No ratings yet</p>
                             </div>
                             <div class="bg-blue-50 p-3 rounded-lg">
                                 <Star class="h-6 w-6 text-blue-600 fill-current" />
@@ -329,6 +351,7 @@ const getStatusText = (review) => {
                         <div class="space-y-4">
                             <div v-for="review in filteredReviews" :key="review.id"
                                 class="bg-white rounded-xl p-5 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200">
+                                {{ console.log() }}
                                 <!-- Review Header -->
                                 <div class="flex items-start justify-between mb-4">
                                     <div class="flex items-center space-x-3">
@@ -377,7 +400,7 @@ const getStatusText = (review) => {
                                         <div class="flex items-center space-x-1">
                                             <Calendar class="h-4 w-4" />
                                             <span>Event: {{ new Date(review.booking.event_date).toLocaleDateString()
-                                            }}</span>
+                                                }}</span>
                                         </div>
                                         <div class="flex items-center space-x-1">
                                             <span>Booking: {{ review.booking.id }}</span>
@@ -390,7 +413,7 @@ const getStatusText = (review) => {
                                 </div>
 
                                 <!-- Vendor Response -->
-                                <div v-if="review.response"
+                                <div v-if="review.response.message"
                                     class="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500 mb-4">
                                     <div class="flex items-start space-x-3">
                                         <div class="bg-blue-100 p-2 rounded-lg">
@@ -415,11 +438,11 @@ const getStatusText = (review) => {
                                 <div class="flex items-center justify-between pt-4 border-t border-gray-100">
                                     <button @click="openResponseModal(review)" :class="[
                                         'px-4 py-2 rounded-lg transition-colors text-sm font-medium',
-                                        review.response
+                                        review.response.message
                                             ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                             : 'bg-blue-600 text-white hover:bg-blue-700'
                                     ]">
-                                        {{ review.response ? 'Edit Response' : 'Respond to Review' }}
+                                        {{ review.response.message ? 'Edit Response' : 'Respond to Review' }}
                                     </button>
 
                                     <div class="flex items-center space-x-4">
@@ -456,7 +479,7 @@ const getStatusText = (review) => {
                         <!-- Rating Distribution -->
                         <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-200">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Rating Distribution</h3>
-                            <div class="space-y-4">
+                            <div v-if="reviews.length + 1 > 1" class="space-y-4">
                                 <div v-for="rating in [5, 4, 3, 2, 1]" :key="rating" class="flex items-center">
                                     <span class="text-sm font-medium text-gray-600 w-8">{{ rating }}</span>
                                     <Star class="h-4 w-4 text-yellow-400 fill-current mx-2" />
@@ -468,7 +491,9 @@ const getStatusText = (review) => {
                                     <span class="text-sm text-gray-600 w-12 text-right">{{
                                         Math.round((ratingDistribution[rating] / totalReviews) * 100) }}%</span>
                                 </div>
+
                             </div>
+                            <span v-else class="text-sm text-gray-600 w-12 text-right">No ratings yet</span>
                         </div>
 
                         <!-- Quick Stats -->
@@ -526,7 +551,7 @@ const getStatusText = (review) => {
             <div class="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto shadow-xl">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                     <Reply class="h-5 w-5 text-blue-600 mr-2" />
-                    {{ selectedReview?.response ? 'Edit Response' : 'Respond to Review' }}
+                    {{ selectedReview?.response.message ? 'Edit Response' : 'Respond to Review' }}
                 </h3>
 
                 <!-- Original Review -->
@@ -562,7 +587,7 @@ const getStatusText = (review) => {
                     </button>
                     <button @click="submitResponse" :disabled="!responseText.trim()"
                         class="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors font-medium">
-                        {{ selectedReview?.response ? 'Update Response' : 'Post Response' }}
+                        {{ selectedReview?.response.message ? 'Update Response' : 'Post Response' }}
                     </button>
                 </div>
             </div>

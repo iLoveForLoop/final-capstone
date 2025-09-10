@@ -432,6 +432,8 @@ class ClientController extends Controller
                 'date'    => $review->created_at->diffForHumans(),
                 'comment' => $review->comment,
                 'avatar'  => $review->user->getFirstMediaUrl('images') ?? null,
+                'response' => $review->response ?? null,
+                'responded_at' => $review->responded_at ? $review->responded_at->diffForHumans() : null
             ]),
 
             'calendarEvents' => $vendor->bookings()

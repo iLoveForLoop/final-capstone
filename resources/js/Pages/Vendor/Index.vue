@@ -109,6 +109,7 @@ const markNotificationAsRead = async (notificationId) => {
 
 <template>
     <VendorLayout>
+
         <div class="p-6 space-y-6 bg-gray-50 min-h-screen">
             <!-- Header Section -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -425,7 +426,7 @@ const markNotificationAsRead = async (notificationId) => {
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap">
                                             <div class="text-sm font-medium text-gray-900">{{ booking.formatted_amount
-                                                }}</div>
+                                            }}</div>
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap">
                                             <div class="flex items-center">

@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import LeaveReviewModal from '../LeaveReviewModal.vue';
+import ViewReviewModal from '@/Components/ViewReviewModal.vue';
 import { Link } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -35,6 +36,7 @@ const getStatusColor = (status) => {
 };
 
 const isReviewModalOpen = ref(false)
+const viewingReview = ref(false)
 
 const serviceData = ref({
     id: props.booking.service.id,
@@ -52,6 +54,7 @@ const serviceData = ref({
 
 <template>
     <LeaveReviewModal :isOpen="isReviewModalOpen" @close="isReviewModalOpen = false" :serviceData="serviceData" />
+    <ViewReviewModal :isOpen="viewingReview" @close="viewingReview = false" />
     <div class="p-6">
         <!-- Booking Header -->
         <div class="flex items-start justify-between mb-4">
@@ -144,7 +147,7 @@ const serviceData = ref({
                     Leave Review
                 </button>
                 {{ console.log('can review: ', booking.can_review) }}
-                <button @click="isReviewModalOpen = true" v-if="!booking.can_review"
+                <button @click="viewingReview = true" v-if="!booking.can_review"
                     class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
                     View Review
                 </button>

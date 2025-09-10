@@ -8,6 +8,7 @@ import ServiceCreateModal from '@/Components/Vendor/ServiceCreateModal.vue';
 import { ref } from 'vue';
 import CateringServiceCard from '@/Components/Vendor/Catering/CateringServiceCard.vue';
 import PhotographyServiceCard from '@/Components/Vendor/Photograpy/PhotographyServiceCard.vue';
+import MyToaster from '@/Components/MyToaster.vue';
 
 const toast = useToast();
 
@@ -77,6 +78,14 @@ const resetFilters = () => {
 // };
 
 
+const showSuccess = () => {
+    toast.success("Review submitted successfully!asds");
+};
+
+const showError = () => {
+    toast.error("Something went wrong. Please try again.");
+};
+
 
 </script>
 
@@ -86,6 +95,7 @@ const resetFilters = () => {
             <!-- Header Section -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
+                    <button @click="showSuccess">Test</button>
                     <h1 class="text-2xl font-bold text-gray-800">Services Management</h1>
                     <p class="text-gray-500 text-sm mt-1">Manage your services</p>
                 </div>

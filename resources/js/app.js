@@ -1,4 +1,3 @@
-import '../css/app.css';
 import './bootstrap';
 
 import { createInertiaApp } from '@inertiajs/vue3';
@@ -10,6 +9,7 @@ import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 // Import the CSS or use your own!
 import Toast, { POSITION } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
+import '../css/app.css';
 
 //Prime vue
 import 'primeicons/primeicons.css';
@@ -27,6 +27,10 @@ const options = {
     pauseOnHover: true,
     draggable: true,
     hideProgressBar: false,
+
+    // apply our custom classes
+    // toastClassName: 'custom-toast',
+    // bodyClassName: 'custom-toast-body',
 };
 
 createInertiaApp({

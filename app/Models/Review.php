@@ -17,6 +17,8 @@ class Review extends Model
         'user_id',
         'rating',
         'comment',
+        'response',
+        'responded_at'
     ];
     public function booking()
     {
@@ -32,4 +34,9 @@ class Review extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    protected $casts = [
+        'responded_at' => 'datetime',
+    ];
+
 }
