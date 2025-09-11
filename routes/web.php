@@ -9,6 +9,7 @@ use App\Http\Controllers\FavoritesController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PhotographyServiceController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProfileSettingController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ServiceCategoryController;
 use App\Http\Controllers\ServiceController;
@@ -122,8 +123,13 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'role:vendor'])->gro
     });
 
     //Review page
-        Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews.index');
-        Route::put('/reviews/{review}/response', [ReviewController::class, 'updateResponse'])->name('reviews.update-response');
+    Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews.index');
+    Route::put('/reviews/{review}/response', [ReviewController::class, 'updateResponse'])->name('reviews.update-response');
+
+    // Profile
+    Route::get('/profile-setting', [ProfileSettingController::class, 'index'])->name('profile-setting.index');
+
+
 
 });
 

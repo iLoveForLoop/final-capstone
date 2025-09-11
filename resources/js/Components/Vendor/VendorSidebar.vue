@@ -125,8 +125,8 @@ onMounted(() => {
                         </span>
                     </NewNavLink>
 
-                    <NewNavLink :href="route('dashboard')" :active="route().current('dashboard')"
-                        :isCollapsed="ui.sidebarCollapsed">
+                    <NewNavLink :href="route('vendor.profile-setting.index')"
+                        :active="route().current('vendor.profile-setting.index')" :isCollapsed="ui.sidebarCollapsed">
                         <template #icon>
                             <UserCircle class="h-5 w-5" />
                         </template>
