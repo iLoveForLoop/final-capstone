@@ -49,6 +49,18 @@ class Service extends Model implements HasMedia
         return $this->belongsToMany(User::class, 'favorites')->withTimestamps();
     }
 
+    public function isFavoritedBy(?User $user = null): bool
+    {
+        $user = $user ?: auth()->user();
+
+        if (!$user) {
+            return false;
+        }
+
+        return $this->favoritedBy()->where('user_id', $user->id)->exists();
+    }
+
+
     protected $guarded = [];
 
 

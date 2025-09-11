@@ -33,7 +33,7 @@ class BookingController extends Controller
 
         } elseif ($user->hasRole('client')) {
             $query = $user->bookings()
-                ->with(['service.category', 'service.cateringService', 'event', 'service.vendor',]);
+                ->with(['service.category', 'service.cateringService', 'event', 'service.vendor', 'review']);
         } else {
             return back()->with('error', 'Unauthorized.');
         }
@@ -141,7 +141,19 @@ class BookingController extends Controller
                 'service_image' => $booking->service->getFirstMediaUrl('images'),
                 'vendor' => $booking->service->vendor,
                 'vendor_rating' => $booking->service->vendor->averageRating(),
-                'can_review' => !$booking->hasReviewFrom(auth()->id())
+                'can_review' => !$booking->hasReviewFrom(auth()->id()),
+                'review' => $booking->review ? [
+                    'id' => $booking->review->id,
+                    'comment' => $booking->review->comment,
+                    'reviewDate' => $booking->review->created_at,
+                    'serviceName' => $booking->service->name,
+                    'serviceProvider' => $booking->service->vendor->business_name,
+                    'rating' => $booking->review->rating,
+                    'vendorResponse' => [
+                        'message' => $booking->review->response,
+                        'date' => $booking->review->responded_at
+                    ]
+                ] : null
             ];
         });
 

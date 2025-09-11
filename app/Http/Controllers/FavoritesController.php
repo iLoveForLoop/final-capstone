@@ -11,14 +11,14 @@ class FavoritesController extends Controller
     public function store(Service $service)
     {
         auth()->user()->favorites()->syncWithoutDetaching($service->id);
-        return response()->json(['message' => 'Added to favorites']);
+        return redirect()->back();
     }
 
     public function destroy(Service $service)
     {
 
         auth()->user()->favorites()->detach($service->id);
-        return response()->json(['message' => 'Removed from favorites']);
+        return redirect()->back();
     }
 
     public function index()

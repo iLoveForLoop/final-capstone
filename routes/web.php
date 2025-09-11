@@ -165,6 +165,11 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client'])->gro
     //Reviews routes
     Route::post('/review', [ReviewController::class, 'store'])->name('review.store');
 
+    //calling get vendor services
+    Route::get('/vendor/services/{vendor}', [ClientController::class, 'getVendorServices']);
+
+
+
 
 
 

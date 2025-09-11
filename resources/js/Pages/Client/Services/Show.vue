@@ -2,6 +2,8 @@
 import BookingModal from '@/Components/Client/BookingModal.vue'
 import ClientNavbar from '@/Components/ClientNavbar.vue'
 import { Link, router } from '@inertiajs/vue3'
+import { Heart, Share2 } from 'lucide-vue-next'
+import { Toggle } from 'reka-ui'
 import { ref } from 'vue'
 import { useToast } from 'vue-toastification'
 // Reactive data
@@ -51,17 +53,32 @@ const nextImage = () => {
 }
 
 const handleBooking = () => {
-    // console.log(selectedDate.value, selectedTime.value)
-    // if (guestCount < props.service.minimumGuests) {
-    //     toast.error('Minimun Guest Requirement Too Low');
-    //     return
-    // }
     bookingModal.value.openModal(selectedDate.value, selectedTime.value)
 }
 
 const requestQuote = () => {
     alert('Quote request submitted! We will contact you within 24 hours.')
     // Handle quote request logic here
+}
+
+const toggleFavorite = () => {
+    if (props.service.is_favorite) {
+        // Remove from favorites
+        router.delete(route('client.favorites.destroy', props.service.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                props.service.is_favorite = false
+            },
+        })
+    } else {
+        // Add to favorites
+        router.post(route('client.favorites.store', props.service.id), {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                props.service.is_favorite = true
+            },
+        })
+    }
 }
 
 const goBack = () => {
@@ -80,13 +97,12 @@ const goBack = () => {
         <!-- Header Navigation -->
         <div class="bg-[#bad6d8] shadow-sm border-b">
             <div class="max-w-7xl mx-auto px-4 py-3">
-                <Link href="/client/services"
-                    class="flex items-center text-gray-600 hover:text-gray-900 transition-colors">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                </svg>
-                Back to Services
-                </Link>
+                <button @click="goBack" class="flex items-center text-gray-600 hover:text-gray-900 transition-colors">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Back to Services
+                </button>
             </div>
         </div>
 
@@ -183,19 +199,15 @@ const goBack = () => {
                                 </div>
                             </div>
                             <div class="flex space-x-2">
-                                <button
-                                    class="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                    </svg>
+                                <button @click="toggleFavorite"
+                                    class="p-2 border border-gray-300 rounded-lg  transition-colors"
+                                    :class="{ 'bg-red-500 text-white': service.is_favorite }">
+                                    {{ console.log('is fav: ', service.is_favorite) }}
+                                    <Heart class="w-5 h-5" />
                                 </button>
                                 <button
                                     class="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
-                                    </svg>
+                                    <Share2 class="w-5 h-5" />
                                 </button>
                             </div>
                         </div>

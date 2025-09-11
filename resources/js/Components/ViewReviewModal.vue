@@ -9,9 +9,7 @@ import {
     DialogTitle
 } from '@/Components/ui/dialog'
 import { Button } from '@/Components/ui/button'
-import { Card, CardContent } from '@/Components/ui/card'
 import { Badge } from '@/Components/ui/badge'
-import { Label } from '@/Components/ui/label'
 import { Star, Calendar, User, MessageSquare } from 'lucide-vue-next'
 
 // Props
@@ -35,6 +33,14 @@ const props = defineProps({
     isOpen: {
         type: Boolean,
         default: false
+    },
+    showActions: {
+        type: Boolean,
+        default: false
+    },
+    actionText: {
+        type: String,
+        default: 'Take Action'
     }
 })
 
@@ -79,65 +85,72 @@ const getRatingDescription = (rating) => {
 
 <template>
     <Dialog :open="isOpen" @update:open="handleOpenChange">
-        <DialogContent class="sm:max-w-md rounded-lg">
-            <DialogHeader class="pb-3 border-b">
-                <DialogTitle class="text-lg font-semibold text-gray-900">Review Details</DialogTitle>
-                <DialogDescription class="text-sm text-gray-500">
+        <DialogContent class="sm:max-w-2xl rounded-xl">
+            <DialogHeader class="px-6 pt-6 pb-4 border-b border-gray-100">
+                <DialogTitle class="text-xl font-semibold text-gray-900">Review Details</DialogTitle>
+                <DialogDescription class="text-sm text-gray-500 mt-1">
                     {{ review.serviceName }} by {{ review.serviceProvider }}
                 </DialogDescription>
             </DialogHeader>
 
-            <div class="py-4 space-y-5">
+            <div class="px-6 py-4 space-y-6 max-h-[60vh] overflow-y-auto">
                 <!-- Service and Rating Header -->
                 <div class="flex items-start justify-between">
                     <div>
-                        <h3 class="text-base font-medium text-gray-900">{{ review.serviceName }}</h3>
+                        <h3 class="text-lg font-medium text-gray-900">{{ review.serviceName }}</h3>
                         <div class="flex items-center mt-1 text-sm text-gray-500">
-                            <User class="w-4 h-4 mr-1" />
+                            <User class="w-4 h-4 mr-1.5" />
                             <span>{{ review.serviceProvider }}</span>
                         </div>
                     </div>
-                    <Badge variant="secondary" class="px-2 py-1 text-xs">#{{ review.id }}</Badge>
+                    <Badge variant="secondary" class="px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-700">
+                        #{{ review.id }}
+                    </Badge>
                 </div>
 
                 <!-- Rating Display -->
-                <div class="flex items-center">
-                    <div class="flex mr-2">
+                <div class="flex items-center flex-wrap gap-2">
+                    <div class="flex">
                         <Star v-for="star in 5" :key="star" :size="18"
                             :class="star <= review.rating ? 'text-amber-500 fill-amber-500' : 'text-gray-300'" />
                     </div>
-                    <span class="text-sm font-medium text-gray-700">{{ review.rating }}/5</span>
-                    <span class="mx-2 text-gray-300">•</span>
-                    <span class="text-sm text-amber-700">{{ getRatingDescription(review.rating) }}</span>
+                    <div class="flex items-center ml-2">
+                        <span class="text-sm font-medium text-gray-700 mr-2">{{ review.rating }}/5</span>
+                        <span class="text-gray-300">•</span>
+                        <span class="text-sm text-amber-700 ml-2">{{ getRatingDescription(review.rating) }}</span>
+                    </div>
                 </div>
 
                 <!-- Review Date -->
                 <div class="flex items-center text-sm text-gray-500">
-                    <Calendar class="w-4 h-4 mr-1" />
+                    <Calendar class="w-4 h-4 mr-1.5" />
                     <span>Reviewed on {{ formatDate(review.reviewDate) }}</span>
                 </div>
 
                 <!-- Review Title -->
-                <div v-if="review.title">
+                <!-- <div v-if="review.title">
                     <h4 class="text-sm font-medium text-gray-700 mb-2">Review Title</h4>
-                    <p class="text-gray-900 font-medium px-3 py-2 bg-gray-50 rounded-lg">{{ review.title }}</p>
-                </div>
+                    <div class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <p class="text-gray-900 font-medium">{{ review.title }}</p>
+                    </div>
+                </div> -->
 
                 <!-- Review Comment -->
                 <div v-if="review.comment">
                     <h4 class="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                        <MessageSquare class="w-4 h-4 mr-1" />
+                        <MessageSquare class="w-4 h-4 mr-1.5" />
                         Customer Feedback
                     </h4>
-                    <div class="px-3 py-2 bg-gray-50 rounded-lg">
+                    <div class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-100">
                         <p class="text-gray-700 leading-relaxed">{{ review.comment }}</p>
                     </div>
                 </div>
 
                 <!-- Vendor Response -->
-                <div v-if="review.vendorResponse" class="pt-3 border-t">
-                    <h4 class="text-sm font-medium text-gray-700 mb-2">Vendor Response</h4>
-                    <div class="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                <!-- {{ console.log('vendor response: ', review.vendorResponse.message) }} -->
+                <div v-if="review.vendorResponse.message" class="pt-4 border-t border-gray-100">
+                    <h4 class="text-sm font-medium text-gray-700 mb-3">Vendor Response</h4>
+                    <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
                         <p class="text-sm text-gray-700 mb-2">{{ review.vendorResponse.message }}</p>
                         <p class="text-xs text-gray-500">Responded on {{ formatDate(review.vendorResponse.date) }}</p>
                     </div>
@@ -145,14 +158,16 @@ const getRatingDescription = (rating) => {
             </div>
 
             <!-- Action Buttons -->
-            <DialogFooter class="pt-4 border-t">
-                <Button variant="outline" @click="closeModal" class="flex-1 sm:flex-none">
-                    Close
-                </Button>
-                <Button v-if="showActions" @click="handleAction"
-                    class="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700">
-                    {{ actionText }}
-                </Button>
+            <DialogFooter class="px-6 py-4 bg-gray-50 rounded-b-xl border-t border-gray-100">
+                <div class="flex w-full gap-3">
+                    <Button variant="outline" @click="closeModal" class="flex-1">
+                        Close
+                    </Button>
+                    <Button v-if="showActions" @click="handleAction"
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+                        {{ actionText }}
+                    </Button>
+                </div>
             </DialogFooter>
         </DialogContent>
     </Dialog>
@@ -163,6 +178,7 @@ const getRatingDescription = (rating) => {
 :deep(.dialog-content) {
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 #f1f5f9;
+    padding: 0;
 }
 
 :deep(.dialog-content)::-webkit-scrollbar {

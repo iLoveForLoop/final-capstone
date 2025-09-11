@@ -247,6 +247,7 @@ class ClientController extends Controller
         'rating' => $service->vendor->averageRating(),
         'is_available' => $service->is_available,
         'catering_service' => $service->cateringService ?? null
+
     ])->toArray();
 
     // Manual pagination
@@ -325,6 +326,7 @@ class ClientController extends Controller
             'specifications'=> $this->specsChecker($service),
             'menuCategories'=> $service->cateringService->dishes ?? null,
             'minimumGuests' => $service->cateringService->min_pax ?? null,
+            'is_favorite' => $service->isFavoritedBy(),
 
             'vendor' => [
                 'id'                 => $service->vendor->id,
@@ -466,5 +468,34 @@ class ClientController extends Controller
 
         return inertia('Client/Search/Index', compact('categories'));
     }
+
+
+    public function getVendorServices(Vendor $vendor)
+    {
+        // dd('hi');
+        $vendor->load(['services.category', 'services.cateringService', 'services.vendor']); // eager load
+
+        $services = $vendor->services->map(function ($service) {
+            return [
+                'id' => $service->id,
+                'name' => $service->name,
+                'description' => $service->description,
+                'price' => $service->price,
+                'image_url' => $service->getFirstMediaUrl('images'),
+                'category_name' => $service->category->name ?? null,
+                'dateAdded' => $service->created_at->format('Y-m-d'),
+                'vendor' => $service->vendor,
+                'rating' => $service->vendor->averageRating(),
+                'is_available' => $service->is_available,
+                'catering_service' => $service->cateringService ?? null,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $services,
+        ]);
+    }
+
 
 }

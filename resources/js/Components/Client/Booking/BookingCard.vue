@@ -50,11 +50,57 @@ const serviceData = ref({
 
 
 
+// const viewReviewData = ref({
+//     id: props.booking.review.id,
+//     rating: props.booking.review.rating,
+//     comment: props.booking.review.comment,
+//     reviewDate: props.booking.review.created_at,
+//     serviceName: props.booking.service.name,
+//     serviceProvider: props.booking.vendor.business_name,
+//     vendorResponse: {
+//         message: props.booking.review.response,
+//         date: props.booking.review.responded_at
+//     }
+// })
+
+// const viewReviewData = ref(null)
+
+
+
+// const reviewChecker = () => {
+//     if (props.booking.review) {
+//         console.log('Review')
+//         viewReviewData.value = {
+//             id: props.booking.review.id,
+//             rating: props.booking.review.rating,
+//             comment: props.booking.review.comment,
+//             reviewDate: props.booking.review.created_at,
+//             serviceName: props.booking.service.name,
+//             serviceProvider: props.booking.vendor.business_name,
+//             vendorResponse: {
+//                 message: props.booking.review.response,
+//                 date: props.booking.review.responded_at
+//             }
+//         }
+
+//         console.log(viewReviewData.value)
+
+//     } else {
+//         console.log(viewReviewData.value)
+//         console.log('No Review')
+//     }
+// }
+
+// reviewChecker()
+
+
+
+
 </script>
 
 <template>
     <LeaveReviewModal :isOpen="isReviewModalOpen" @close="isReviewModalOpen = false" :serviceData="serviceData" />
-    <ViewReviewModal :isOpen="viewingReview" @close="viewingReview = false" />
+    <ViewReviewModal :isOpen="viewingReview" @close="viewingReview = false" :review="booking.review" />
     <div class="p-6">
         <!-- Booking Header -->
         <div class="flex items-start justify-between mb-4">
