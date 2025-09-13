@@ -1,79 +1,181 @@
 <script setup>
 import VendorLayout from '@/Layouts/VendorLayout.vue';
-import { ref, reactive } from 'vue';
+import { ref, reactive, watch } from 'vue';
+import { useForm } from '@inertiajs/vue3';
+import Header from '@/Components/Vendor/Profile/Header.vue';
+import NavigationTabs from '@/Components/Vendor/Profile/NavigationTabs.vue';
+import BasicInfo from '@/Components/Vendor/Profile/BasicInfo.vue';
+import Specialties from '@/Components/Vendor/Profile/Specialties.vue';
+import Portfolio from '@/Components/Vendor/Profile/Portfolio.vue';
+import MediaTab from '@/Components/Vendor/Profile/MediaTab.vue';
 
-// Form data - in real app, this would come from props or API
-const formData = reactive({
-    // Basic Information
-    businessName: 'Elegant Events Co.',
-    contactPerson: 'Sarah Johnson',
-    email: 'sarah@elegantevents.com',
-    phone: '+1 (555) 123-4567',
-    website: 'https://elegantevents.com',
-    profileImage: '', // Added missing profileImage property
-
-    // Business Details
-    businessDescription: 'We specialize in creating unforgettable experiences for weddings, corporate events, and special celebrations. With over 10 years of experience, we bring your vision to life with attention to detail and exceptional service.',
-    yearsOfExperience: '10',
-    teamSize: '15',
-
-    // Location & Service Area
-    businessAddress: '123 Event Plaza, Downtown District, City',
-    serviceRadius: '50',
-
-    // Specialties & Services
-    specialties: ['Wedding Planning', 'Corporate Events', 'Birthday Parties', 'Anniversary Celebrations'],
-    services: ['Full Event Planning', 'Day-of Coordination', 'Venue Decoration', 'Catering Services', 'Photography', 'Entertainment Booking'],
-
-    // Pricing & Packages
-    startingPrice: '500',
-    currency: 'USD',
-    packageTypes: ['Basic', 'Premium', 'Luxury'],
-
-    // Social Media
-    socialMedia: {
-        instagram: '@elegantevents',
-        facebook: 'ElegantEventsCo',
-        twitter: '@elegant_events',
-        linkedin: 'elegant-events-co'
+const props = defineProps({
+    vendor: {
+        type: Object
+    },
+    portfolioImages: {
+        type: Array,
+        default: () => []
+    },
+    showcaseVideos: {
+        type: Array,
+        default: () => []
     }
+})
+
+
+
+// Create a reactive copy of the original vendor data
+const formData = useForm({
+    businessName: props.vendor.business_name ?? '',
+    contactPerson: props.vendor.full_name ?? '',
+    email: props.vendor.user.email ?? '',
+    phone: props.vendor.contact_number ?? '',
+    website: props.vendor.website ?? '',
+    profileImage: props.vendor.avatar ?? null,
+    profileImageFile: null,
+    businessDescription: props.vendor.description ?? '',
+    yearsOfExperience: props.vendor.years_of_experience ?? '',
+    teamSize: props.vendor.team_size ?? '',
+    businessAddress: props.vendor.location ?? '',
+    serviceRadius: props.vendor.service_radius ?? '',
+    specialties: props.vendor.specialties || [],
+    services: props.vendor.services || [],
+    startingPrice: props.vendor.starting_price ?? '',
+    currency: props.vendor.currency ?? 'USD',
+    packageTypes: props.vendor.package_types || [],
+    socialMedia: props.vendor.social_media || {
+        instagram: '',
+        facebook: '',
+        twitter: '',
+        linkedin: ''
+    },
+    portfolioImages: [],
+    showcaseVideos: [],
+    removedImageIds: [],
+    removedVideoIds: [],
+    _method: 'PUT'
 });
 
-// Gallery and Media
-const portfolioImages = ref([
-    'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=300&h=200&fit=crop',
-    'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=300&h=200&fit=crop',
-    'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=300&h=200&fit=crop',
-    'https://images.unsplash.com/photo-1470229538611-16ba8c7ffbd7?w=300&h=200&fit=crop'
-]);
 
-const showcaseVideos = ref([
-    { id: 1, title: 'Wedding Highlight Reel', url: 'https://example.com/video1' },
-    { id: 2, title: 'Corporate Event Setup', url: 'https://example.com/video2' }
-]);
+
+// Gallery and Media - using existing media if available
+const portfolioImages = ref(props.portfolioImages);
+const removedImageIds = ref([]) // for tracking deleted ones
+
+const originalPortfolioImages = [...portfolioImages.value];
+
+const showcaseVideos = ref(props.showcaseVideos);
+
+const originalShowcaseVideos = [...showcaseVideos.value];
 
 // UI State
 const activeTab = ref('basic');
 const isEditing = ref(false);
 const showImageUpload = ref(false);
 const showVideoModal = ref(false);
-const showProfileImageModal = ref(false); // Added missing modal state
+const showProfileImageModal = ref(false);
 const newVideoTitle = ref('');
-const newVideoUrl = ref('');
-const newImageUrl = ref(''); // Added for image upload
+const newVideoFile = ref(null); // Changed from URL to file
+const newVideoPreview = ref(null);
+const newImageFiles = ref([]); // For multiple image uploads
+const newImagePreviews = ref([]);
+
+// Backup of form data for cancel functionality
+let formDataBackup = null;
 
 // Methods
 const toggleEdit = () => {
+    if (!isEditing.value) {
+        // Entering edit mode - create a backup of current form data
+        formDataBackup = {
+            businessName: formData.businessName,
+            contactPerson: formData.contactPerson,
+            email: formData.email,
+            phone: formData.phone,
+            website: formData.website,
+            profileImage: formData.profileImage,
+            businessDescription: formData.businessDescription,
+            yearsOfExperience: formData.yearsOfExperience,
+            teamSize: formData.teamSize,
+            businessAddress: formData.businessAddress,
+            serviceRadius: formData.serviceRadius,
+            specialties: [...formData.specialties],
+            services: [...formData.services],
+            startingPrice: formData.startingPrice,
+            currency: formData.currency,
+            packageTypes: [...formData.packageTypes],
+            socialMedia: { ...formData.socialMedia },
+            portfolioImages: [...portfolioImages.value],
+            showcaseVideos: [...showcaseVideos.value]
+        };
+    } else {
+        // Canceling edit mode - restore from backup
+        if (formDataBackup) {
+            formData.businessName = formDataBackup.businessName;
+            formData.contactPerson = formDataBackup.contactPerson;
+            formData.email = formDataBackup.email;
+            formData.phone = formDataBackup.phone;
+            formData.website = formDataBackup.website;
+            formData.profileImage = formDataBackup.profileImage;
+            formData.businessDescription = formDataBackup.businessDescription;
+            formData.yearsOfExperience = formDataBackup.yearsOfExperience;
+            formData.teamSize = formDataBackup.teamSize;
+            formData.businessAddress = formDataBackup.businessAddress;
+            formData.serviceRadius = formDataBackup.serviceRadius;
+            formData.specialties = [...formDataBackup.specialties];
+            formData.services = [...formDataBackup.services];
+            formData.startingPrice = formDataBackup.startingPrice;
+            formData.currency = formDataBackup.currency;
+            formData.packageTypes = [...formDataBackup.packageTypes];
+            formData.socialMedia = { ...formDataBackup.socialMedia };
+
+            // Restore portfolio images and videos
+            portfolioImages.value = [...formDataBackup.portfolioImages];
+            showcaseVideos.value = [...formDataBackup.showcaseVideos];
+
+            // Clear any uploaded files
+            formData.profileImageFile = null;
+            formData.portfolioImages = [];
+            formData.showcaseVideos = [];
+        }
+    }
+
     isEditing.value = !isEditing.value;
 };
 
 const saveChanges = () => {
-    // In real app, make API call to save changes
-    console.log('Saving changes...', formData);
-    isEditing.value = false;
-    // Show success message
-    alert('Changes saved successfully!');
-};
+    const submitData = new FormData()
+
+    // Append all scalar fields
+    Object.keys(formData).forEach((key) => {
+        if (!['portfolioImages', 'showcaseVideos', 'socialMedia'].includes(key)) {
+            if (formData[key] !== null && formData[key] !== undefined) {
+                submitData.append(key, formData[key])
+            }
+        }
+    })
+
+    // Social media as JSON
+    submitData.append('socialMedia', JSON.stringify(formData.socialMedia))
+
+    // Append new images
+    formData.portfolioImages.forEach((file, index) => {
+        submitData.append(`portfolioImages[${index}]`, file)
+    })
+
+    // Append removed ids
+    formData.removedImageIds.forEach((id, index) => {
+        submitData.append(`removedImageIds[${index}]`, id)
+    })
+
+    // Submit to backend
+    formData.post(route('vendor.profile-setting.update'), {
+        data: submitData,
+    })
+
+    isEditing.value = false
+}
 
 const addSpecialty = () => {
     const newSpecialty = prompt('Enter new specialty:');
@@ -97,33 +199,119 @@ const removeService = (index) => {
     formData.services.splice(index, 1);
 };
 
+const handleVideoFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        // Check if file is a video
+        if (!file.type.includes('video/')) {
+            alert('Please select a video file.');
+            return;
+        }
+
+        newVideoFile.value = file;
+
+        // Create preview
+        newVideoPreview.value = URL.createObjectURL(file);
+    }
+};
+
 const addVideo = () => {
-    if (newVideoTitle.value && newVideoUrl.value) {
+    if (newVideoTitle.value && newVideoFile.value) {
+        // Add to form data for submission
+        formData.showcaseVideos.push({
+            title: newVideoTitle.value,
+            file: newVideoFile.value
+        });
+
+        // Add to UI list
         showcaseVideos.value.push({
             id: Date.now(),
             title: newVideoTitle.value,
-            url: newVideoUrl.value
+            url: newVideoPreview.value,
+            file: newVideoFile.value
         });
+
         newVideoTitle.value = '';
-        newVideoUrl.value = '';
+        newVideoFile.value = null;
+        newVideoPreview.value = null;
         showVideoModal.value = false;
     } else {
-        alert('Please fill in both title and URL fields.');
+        alert('Please fill in both title and select a video file.');
     }
 };
 
 const removeVideo = (id) => {
-    showcaseVideos.value = showcaseVideos.value.filter(video => video.id !== id);
+
+
+    const index = showcaseVideos.value.findIndex(video => video.id === id);
+    if (index !== -1) {
+        showcaseVideos.value.splice(index, 1);
+        // Also remove from formData if it exists there
+        if (formData.showcaseVideos.length > index) {
+            formData.showcaseVideos.splice(index, 1);
+        }
+    }
+};
+
+const handleImageFilesUpload = (event) => {
+    const files = Array.from(event.target.files);
+
+    // Filter only image files
+    const imageFiles = files.filter(file => file.type.includes('image/'));
+
+    if (imageFiles.length === 0) {
+        alert('Please select valid image files.');
+        return;
+    }
+
+    // Add to form data
+    imageFiles.forEach(file => {
+        formData.portfolioImages.push(file);
+    });
+
+    // Create previews
+    imageFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            portfolioImages.value.push({ url: e.target.result });
+            newImagePreviews.value.push(e.target.result);
+        };
+        reader.readAsDataURL(file);
+    });
+
+    showImageUpload.value = false;
 };
 
 const removeImage = (index) => {
-    portfolioImages.value.splice(index, 1);
-};
+    const image = portfolioImages.value[index]
 
-// Added missing methods for profile image handling
+    // If it's an existing image (from backend, has id)
+    if (image.id) {
+        formData.removedImageIds.push(image.id)
+    }
+
+    // console.log(formData.removedImageIds)
+
+    // Remove from UI preview
+    portfolioImages.value.splice(index, 1)
+
+    // Also remove from new uploads if it was added there
+    if (formData.portfolioImages.length > index) {
+        formData.portfolioImages.splice(index, 1)
+    }
+}
+
 const handleProfileImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
+        // Check if file is an image
+        if (!file.type.includes('image/')) {
+            alert('Please select an image file.');
+            return;
+        }
+
+        formData.profileImageFile = file;
+
         const reader = new FileReader();
         reader.onload = (e) => {
             formData.profileImage = e.target.result;
@@ -133,27 +321,9 @@ const handleProfileImageUpload = (event) => {
 };
 
 const removeProfileImage = () => {
-    formData.profileImage = '';
+    formData.profileImage = originalData.profileImage;
+    formData.profileImageFile = null;
     showProfileImageModal.value = false;
-};
-
-// Added method for adding portfolio images
-const addPortfolioImage = () => {
-    if (newImageUrl.value.trim()) {
-        portfolioImages.value.push(newImageUrl.value);
-        newImageUrl.value = '';
-        showImageUpload.value = false;
-    } else {
-        alert('Please enter a valid image URL');
-    }
-};
-
-// Added method to handle URL upload for portfolio images
-const handlePortfolioImageUrlUpload = () => {
-    const url = prompt('Enter image URL:');
-    if (url && url.trim()) {
-        portfolioImages.value.push(url.trim());
-    }
 };
 </script>
 
@@ -163,324 +333,41 @@ const handlePortfolioImageUrlUpload = () => {
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 <!-- Header -->
-                <div class="bg-white rounded-lg shadow-sm mb-8 p-6">
-                    <div class="flex justify-between items-start">
-                        <div class="flex items-start space-x-6">
-                            <!-- Profile/Business Image -->
-                            <div class="relative">
-                                <div
-                                    class="w-24 h-24 rounded-full overflow-hidden bg-gray-200 border-4 border-white shadow-lg">
-                                    <img v-if="formData.profileImage" :src="formData.profileImage"
-                                        alt="Business Logo/Profile" class="w-full h-full object-cover" />
-                                    <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
-                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                                            </path>
-                                        </svg>
-                                    </div>
-                                </div>
-                                <!-- Edit Profile Image Button -->
-                                <button v-if="isEditing" @click="showProfileImageModal = true"
-                                    class="absolute -bottom-2 -right-2 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors shadow-lg">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
-                                        </path>
-                                    </svg>
-                                </button>
-                            </div>
+                <Header :formData="formData" :vendor="vendor" :isEditing="isEditing"
+                    @show-profile-modal="showProfileImageModal = true" @toggle-edit="toggleEdit"
+                    @save-changes="saveChanges" />
 
-                            <div>
-                                <h1 class="text-3xl font-bold text-gray-900">{{ formData.businessName }}</h1>
-                                <p class="text-gray-600 mt-1">{{ formData.contactPerson }}</p>
-                                <p class="text-gray-500 mt-2">Manage your business information and showcase your
-                                    services</p>
-                            </div>
-                        </div>
-                        <div class="flex space-x-3">
-                            <button @click="toggleEdit"
-                                :class="isEditing ? 'bg-gray-600 hover:bg-gray-700' : 'bg-blue-600 hover:bg-blue-700'"
-                                class="px-4 py-2 text-white rounded-lg font-medium transition-colors">
-                                {{ isEditing ? 'Cancel' : 'Edit Profile' }}
-                            </button>
-                            <button v-if="isEditing" @click="saveChanges"
-                                class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors">
-                                Save Changes
-                            </button>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Navigation Tabs -->
-                <div class="bg-white rounded-lg shadow-sm mb-8">
-                    <div class="border-b border-gray-200">
-                        <nav class="flex space-x-8 px-6">
-                            <button v-for="tab in [
-                                { id: 'basic', label: 'Basic Info' },
-                                { id: 'services', label: 'Services & Specialties' },
-                                { id: 'portfolio', label: 'Portfolio' },
-                                { id: 'media', label: 'Media' },
-                                { id: 'pricing', label: 'Pricing' }
-                            ]" :key="tab.id" @click="activeTab = tab.id"
-                                :class="activeTab === tab.id ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                                class="py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-                                {{ tab.label }}
-                            </button>
-                        </nav>
-                    </div>
-                </div>
+                <NavigationTabs v-model:activeTab="activeTab" />
 
                 <!-- Tab Content -->
                 <div class="bg-white rounded-lg shadow-sm">
 
                     <!-- Basic Information Tab -->
                     <div v-show="activeTab === 'basic'" class="p-8">
-                        <h2 class="text-2xl font-semibold mb-6">Basic Information</h2>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Business Name -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Business Name *</label>
-                                <input v-model="formData.businessName" :disabled="!isEditing"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-                                    type="text" />
-                            </div>
-
-                            <!-- Contact Person -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Contact Person *</label>
-                                <input v-model="formData.contactPerson" :disabled="!isEditing"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-                                    type="text" />
-                            </div>
-
-                            <!-- Email -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
-                                <input v-model="formData.email" :disabled="!isEditing"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-                                    type="email" />
-                            </div>
-
-                            <!-- Phone -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
-                                <input v-model="formData.phone" :disabled="!isEditing"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-                                    type="tel" />
-                            </div>
-
-                            <!-- Website -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Website</label>
-                                <input v-model="formData.website" :disabled="!isEditing"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-                                    type="url" />
-                            </div>
-
-                            <!-- Years of Experience -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Years of Experience</label>
-                                <input v-model="formData.yearsOfExperience" :disabled="!isEditing"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-                                    type="number" />
-                            </div>
-                        </div>
-
-                        <!-- Business Description -->
-                        <div class="mt-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Business Description</label>
-                            <textarea v-model="formData.businessDescription" :disabled="!isEditing" rows="4"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-                                placeholder="Tell potential clients about your business..."></textarea>
-                        </div>
-
-                        <!-- Business Address -->
-                        <div class="mt-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Business Address</label>
-                            <textarea v-model="formData.businessAddress" :disabled="!isEditing" rows="2"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"></textarea>
-                        </div>
-
-                        <!-- Social Media Links -->
-                        <div class="mt-8">
-                            <h3 class="text-lg font-medium mb-4">Social Media</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div v-for="(value, platform) in formData.socialMedia" :key="platform">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2 capitalize">{{ platform
-                                    }}</label>
-                                    <input v-model="formData.socialMedia[platform]" :disabled="!isEditing"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-                                        type="text" />
-                                </div>
-                            </div>
-                        </div>
+                        <BasicInfo :formData="formData" :isEditing="isEditing" />
                     </div>
 
                     <!-- Services & Specialties Tab -->
                     <div v-show="activeTab === 'services'" class="p-8">
-                        <h2 class="text-2xl font-semibold mb-6">Services & Specialties</h2>
+                        <Specialties :formData="formData" :isEditing="isEditing" @add-specialty="addSpecialty"
+                            @remove-specialty="removeSpecialty" />
 
-                        <!-- Specialties Section -->
-                        <div class="mb-8">
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-lg font-medium">Event Specialties</h3>
-                                <button v-if="isEditing" @click="addSpecialty"
-                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                                    Add Specialty
-                                </button>
-                            </div>
-                            <div class="flex flex-wrap gap-3">
-                                <div v-for="(specialty, index) in formData.specialties" :key="index"
-                                    class="flex items-center bg-blue-100 text-blue-800 px-4 py-2 rounded-full">
-                                    <span>{{ specialty }}</span>
-                                    <button v-if="isEditing" @click="removeSpecialty(index)"
-                                        class="ml-2 text-blue-600 hover:text-red-600 transition-colors">
-                                        ×
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Services Section -->
-                        <div>
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-lg font-medium">Services Offered</h3>
-                                <button v-if="isEditing" @click="addService"
-                                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                                    Add Service
-                                </button>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                <div v-for="(service, index) in formData.services" :key="index"
-                                    class="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
-                                    <span>{{ service }}</span>
-                                    <button v-if="isEditing" @click="removeService(index)"
-                                        class="text-gray-400 hover:text-red-600 transition-colors">
-                                        ×
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Portfolio Tab -->
                     <div v-show="activeTab === 'portfolio'" class="p-8">
-                        <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-2xl font-semibold">Portfolio Gallery</h2>
-                            <button v-if="isEditing" @click="handlePortfolioImageUrlUpload"
-                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                                Upload Images
-                            </button>
-                        </div>
+                        <Portfolio v-model:portfolioImages="portfolioImages" :isEditing="isEditing"
+                            @show-image-upload="showImageUpload = true" @remove-image="removeImage" />
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            <div v-for="(image, index) in portfolioImages" :key="index" class="relative group">
-                                <img :src="image" :alt="`Portfolio image ${index + 1}`"
-                                    class="w-full h-48 object-cover rounded-lg shadow-sm" />
-                                <div v-if="isEditing"
-                                    class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                                    <button @click="removeImage(index)"
-                                        class="bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                                            </path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Upload placeholder -->
-                            <div v-if="isEditing" @click="handlePortfolioImageUrlUpload"
-                                class="border-2 border-dashed border-gray-300 rounded-lg h-48 flex flex-col items-center justify-center text-gray-500 hover:border-blue-400 transition-colors cursor-pointer">
-                                <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                <span class="font-medium">Add Image</span>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Media Tab -->
                     <div v-show="activeTab === 'media'" class="p-8">
-                        <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-2xl font-semibold">Showcase Videos</h2>
-                            <button v-if="isEditing" @click="showVideoModal = true"
-                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                                Add Video
-                            </button>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div v-for="video in showcaseVideos" :key="video.id" class="bg-gray-50 rounded-lg p-6">
-                                <div class="flex justify-between items-start mb-3">
-                                    <h3 class="font-medium text-lg">{{ video.title }}</h3>
-                                    <button v-if="isEditing" @click="removeVideo(video.id)"
-                                        class="text-gray-400 hover:text-red-600 transition-colors">
-                                        ×
-                                    </button>
-                                </div>
-                                <div class="bg-gray-200 rounded-lg h-32 flex items-center justify-center mb-3">
-                                    <svg class="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd"
-                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
-                                            clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
-                                <p class="text-sm text-gray-600 truncate">{{ video.url }}</p>
-                            </div>
-                        </div>
+                        <MediaTab :isEditing="isEditing" v-model:showcaseVideos="showcaseVideos"
+                            @show-video-modal="showVideoModal = true" @remove-video="removeVideo" />
                     </div>
-
-                    <!-- Pricing Tab -->
-                    <div v-show="activeTab === 'pricing'" class="p-8">
-                        <h2 class="text-2xl font-semibold mb-6">Pricing Information</h2>
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Starting Price</label>
-                                <div class="relative">
-                                    <span
-                                        class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-                                    <input v-model="formData.startingPrice" :disabled="!isEditing"
-                                        class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-                                        type="number" />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Currency</label>
-                                <select v-model="formData.currency" :disabled="!isEditing"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500">
-                                    <option value="USD">USD ($)</option>
-                                    <option value="EUR">EUR (€)</option>
-                                    <option value="GBP">GBP (£)</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Service Radius
-                                    (miles)</label>
-                                <input v-model="formData.serviceRadius" :disabled="!isEditing"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-                                    type="number" />
-                            </div>
-                        </div>
-
-                        <div class="mt-8">
-                            <h3 class="text-lg font-medium mb-4">Package Types</h3>
-                            <div class="flex flex-wrap gap-3">
-                                <div v-for="(packageType, index) in formData.packageTypes" :key="index"
-                                    class="bg-green-100 text-green-800 px-4 py-2 rounded-full">
-                                    {{ packageType }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
 
                 <!-- Video Modal -->
@@ -496,20 +383,49 @@ const handlePortfolioImageUrlUpload = () => {
                                     type="text" placeholder="Enter video title" />
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Video URL</label>
-                                <input v-model="newVideoUrl"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    type="url" placeholder="Enter video URL" />
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Video File</label>
+                                <input type="file" @change="handleVideoFileUpload" accept="video/*"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                                <p class="text-xs text-gray-500 mt-1">Supported formats: MP4, MOV, AVI, etc.</p>
+                            </div>
+
+                            <!-- Video Preview -->
+                            <div v-if="newVideoPreview" class="mt-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Preview</label>
+                                <video :src="newVideoPreview" class="w-full h-32 object-cover rounded-lg"
+                                    controls></video>
                             </div>
                         </div>
                         <div class="flex justify-end space-x-3 mt-6">
-                            <button @click="showVideoModal = false"
+                            <button @click="showVideoModal = false; newVideoPreview = null; newVideoFile = null;"
                                 class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                                 Cancel
                             </button>
                             <button @click="addVideo"
                                 class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                                 Add Video
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image Upload Modal -->
+                <div v-if="showImageUpload"
+                    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                        <h3 class="text-lg font-semibold mb-4">Upload Portfolio Images</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Select Images</label>
+                                <input type="file" @change="handleImageFilesUpload" accept="image/*" multiple
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                                <p class="text-xs text-gray-500 mt-1">You can select multiple images</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-end space-x-3 mt-6">
+                            <button @click="showImageUpload = false"
+                                class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                Cancel
                             </button>
                         </div>
                     </div>

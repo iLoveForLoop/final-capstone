@@ -412,9 +412,9 @@ class ClientController extends Controller
             'address' => $vendor->location,
             'serviceRadius' => 20, // ??,
             'description' => $vendor->description,
-            'specialties' => ["Test", "Test", "Test", "Test", "Test", "Test"], // ??,
-            'videoUrl' => "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4", // ??,
-            'gallery' => $vendor->getMedia('images')->map(fn ($media) => [
+            'specialties' => $vendor->specialties, // ??,
+            'videoUrl' => $vendor->getFirstMediaUrl('showcaseVideos') ?? null, // ??,
+            'gallery' => $vendor->getMedia('portfolioImages')->map(fn ($media) => [
                 'url' => $media->getUrl()
             ]) ?? [],
 

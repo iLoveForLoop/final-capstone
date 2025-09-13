@@ -128,6 +128,16 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'role:vendor'])->gro
 
     // Profile
     Route::get('/profile-setting', [ProfileSettingController::class, 'index'])->name('profile-setting.index');
+    Route::put('/profile-setting', [ProfileSettingController::class, 'update'])->name('profile-setting.update');
+    Route::get('/profile-setting/portfolio', [ProfileSettingController::class, 'getVendorPortfolio']);
+
+
+
+    //Message
+    Route::get('/messages', function (){
+
+        return inertia('Vendor/Messages/Index');
+    })->name('messages.index');
 
 
 

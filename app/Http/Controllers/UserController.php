@@ -217,6 +217,7 @@ class UserController extends Controller
             'description' => $request->description,
             'contact_number' => $request->contact_number,
             'location' => $request->location,
+            'full_name' => $request->full_name
         ];
 
         $user->vendor()->updateOrCreate([], $vendorData);

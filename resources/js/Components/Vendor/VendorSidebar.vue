@@ -115,8 +115,8 @@ onMounted(() => {
                         </span>
                     </NewNavLink>
 
-                    <NewNavLink :href="route('dashboard')" :active="route().current('dashboard')"
-                        :isCollapsed="ui.sidebarCollapsed">
+                    <NewNavLink :href="route('vendor.messages.index')"
+                        :active="route().current('vendor.messages.index')" :isCollapsed="ui.sidebarCollapsed">
                         <template #icon>
                             <MessageSquare class="h-5 w-5" />
                         </template>

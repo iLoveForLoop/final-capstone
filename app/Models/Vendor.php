@@ -91,6 +91,9 @@ class Vendor extends Model implements HasMedia
         return $this->unreadNotifications()->count();
     }
 
+    protected $casts = [
+        'specialties' => 'array'
+    ];
 
     protected $guarded = [];
 }

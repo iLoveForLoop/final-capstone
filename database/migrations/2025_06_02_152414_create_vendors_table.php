@@ -17,7 +17,16 @@ class CreateVendorsTable extends Migration
             $table->text('description')->nullable();
             $table->string('location');
             $table->string('contact_number');
-            $table->string('profile_image')->nullable(); // optional profile photo
+
+
+            // Social Media
+            $table->string('instagram')->nullable();
+            $table->string('facebook')->nullable();
+            $table->string('twitter')->nullable();
+
+            $table->json('specialties')->nullable();
+
+
             $table->timestamps();
         });
     }

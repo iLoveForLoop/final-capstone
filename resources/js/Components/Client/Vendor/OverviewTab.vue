@@ -123,11 +123,10 @@ const nextImage = () => {
                 <CardContent class="space-y-6">
                     <p class="text-gray-700 leading-relaxed text-base md:text-lg">{{
                         vendor.description }}</p>
-
                     <div>
                         <h3 class="text-xl md:text-2xl font-semibold text-gray-900 mb-6">
                             Specialties & Services</h3>
-                        <div class="flex flex-wrap gap-3">
+                        <div class="flex flex-col flex-wrap gap-3">
                             <div v-for="specialty in vendor.specialties" :key="specialty"
                                 class="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-full transition-colors duration-200">
                                 <div class="w-2 h-2 bg-indigo-600 rounded-full"></div>
@@ -145,10 +144,9 @@ const nextImage = () => {
                     <CardTitle>Showcase Video</CardTitle>
                 </CardHeader>
                 <CardContent>
+
                     <div class="video-container">
-                        <video :src="vendor.videoUrl" controls
-                            poster="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=400&fit=crop"
-                            class="w-full rounded-2xl shadow-lg">
+                        <video :src="vendor.videoUrl" controls class="w-full rounded-2xl shadow-lg">
                         </video>
                     </div>
                 </CardContent>
