@@ -1,6 +1,6 @@
 <script setup>
 import VendorLayout from '@/Layouts/VendorLayout.vue';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import {
     Search,
     Send,
@@ -19,160 +19,243 @@ import {
     FileText,
     Mic
 } from 'lucide-vue-next';
-import { usePage } from '@inertiajs/vue3';
+import { usePage, router } from '@inertiajs/vue3';
 
 // Get data from Inertia page props
 const page = usePage();
 const conversations = ref(page.props.conversations || []);
 const selectedConversation = ref(null);
+const messages = ref([]);
 const messageText = ref('');
 const searchQuery = ref('');
+const isLoading = ref(false);
+const isTyping = ref(false);
+const echoChannel = ref(null);
 
-// Default data for UI purposes (will be replaced by backend data)
-const defaultConversations = [
-    {
-        id: 1,
-        clientName: 'Sarah Johnson',
-        clientAvatar: null,
-        lastMessage: 'Thank you for the beautiful wedding setup! Everything was perfect.',
-        timestamp: '2 min ago',
-        unreadCount: 0,
-        isOnline: true,
-        eventType: 'Wedding',
-        eventDate: '2024-03-15',
-        isStarred: true
-    },
-    {
-        id: 2,
-        clientName: 'Michael Chen',
-        clientAvatar: null,
-        lastMessage: 'Can we discuss the catering options for the corporate event?',
-        timestamp: '1 hour ago',
-        unreadCount: 3,
-        isOnline: false,
-        eventType: 'Corporate Event',
-        eventDate: '2024-04-20',
-        isStarred: false
-    },
-    {
-        id: 3,
-        clientName: 'Emma Rodriguez',
-        clientAvatar: null,
-        lastMessage: 'I love the birthday party theme you suggested!',
-        timestamp: '3 hours ago',
-        unreadCount: 1,
-        isOnline: true,
-        eventType: 'Birthday Party',
-        eventDate: '2024-03-28',
-        isStarred: false
-    },
-    {
-        id: 4,
-        clientName: 'David Thompson',
-        clientAvatar: null,
-        lastMessage: 'What time should we arrive for the setup?',
-        timestamp: 'Yesterday',
-        unreadCount: 0,
-        isOnline: false,
-        eventType: 'Anniversary',
-        eventDate: '2024-04-05',
-        isStarred: true
-    }
-];
+// Current user
+const user = computed(() => page.props.auth?.user);
 
-const defaultMessages = [
-    {
-        id: 1,
-        senderId: 2,
-        senderName: 'Michael Chen',
-        content: 'Hi! I wanted to discuss the catering options for our upcoming corporate event.',
-        timestamp: '10:30 AM',
-        isRead: true,
-        isOwn: false
-    },
-    {
-        id: 2,
-        senderId: 1,
-        senderName: 'You',
-        content: 'Hello Michael! I\'d be happy to help you with the catering options. What type of cuisine are you looking for?',
-        timestamp: '10:35 AM',
-        isRead: true,
-        isOwn: true
-    },
-    {
-        id: 3,
-        senderId: 2,
-        senderName: 'Michael Chen',
-        content: 'We\'re thinking something international - maybe a mix of Asian and Mediterranean dishes. The event is for about 150 people.',
-        timestamp: '10:40 AM',
-        isRead: true,
-        isOwn: false
-    },
-    {
-        id: 4,
-        senderId: 1,
-        senderName: 'You',
-        content: 'Perfect! I can arrange a beautiful spread with both Asian and Mediterranean options. Would you like me to send you our premium catering menu with pricing?',
-        timestamp: '10:45 AM',
-        isRead: true,
-        isOwn: true
-    },
-    {
-        id: 5,
-        senderId: 2,
-        senderName: 'Michael Chen',
-        content: 'That would be great! Also, can we discuss the setup timeline?',
-        timestamp: '11:20 AM',
-        isRead: false,
-        isOwn: false
-    }
-];
+// Process conversations data to match frontend format
+const processedConversations = computed(() => {
+    return conversations.value.map(conv => {
+        // Get the other participant (not the current user)
+        const otherParticipant = conv.participants?.find(p => p.id !== user.value?.id);
+        const clientName = conv.title || otherParticipant?.name || 'Unknown';
 
-// Use provided data or fall back to defaults
-if (conversations.value.length === 0) {
-    conversations.value = defaultConversations;
-}
-
-const messages = ref(page.props.messages || defaultMessages);
+        return {
+            id: conv.id,
+            clientName,
+            clientAvatar: null, // You can add avatar logic here
+            lastMessage: conv.last_message?.content || 'No messages yet',
+            timestamp: formatTimestamp(conv.last_message?.created_at),
+            unreadCount: conv.unread_count || 0,
+            isOnline: false, // You can implement online status
+            eventType: conv.event?.title || conv.type || 'General',
+            eventDate: conv.event?.date,
+            isStarred: false, // You can add starring logic
+            originalData: conv
+        };
+    });
+});
 
 const filteredConversations = computed(() => {
-    if (!searchQuery.value) return conversations.value;
-    return conversations.value.filter(conv =>
+    if (!searchQuery.value) return processedConversations.value;
+    return processedConversations.value.filter(conv =>
         conv.clientName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
         conv.eventType.toLowerCase().includes(searchQuery.value.toLowerCase())
     );
 });
 
-const selectConversation = (conversation) => {
+const selectConversation = async (conversation) => {
+    if (selectedConversation.value?.id === conversation.id) return;
+
     selectedConversation.value = conversation;
-    // In a real app, you would fetch messages for this conversation
+    isLoading.value = true;
+
+    try {
+        // Load messages for this conversation
+        const response = await axios.get(`/conversations/${conversation.id}/messages`);
+        messages.value = response.data.messages.map(msg => ({
+            id: msg.id,
+            senderId: msg.user.id,
+            senderName: msg.user.name,
+            content: msg.content,
+            timestamp: formatTime(msg.created_at),
+            isRead: msg.is_read,
+            isOwn: msg.is_own,
+            attachments: msg.attachments,
+            type: msg.type
+        }));
+
+        // Subscribe to conversation channel for real-time updates
+        subscribeToConversation(conversation.id);
+
+        // Scroll to bottom
+        await nextTick();
+        scrollToBottom();
+
+    } catch (error) {
+        console.error('Failed to load messages:', error);
+        // Handle error - maybe show a toast notification
+    } finally {
+        isLoading.value = false;
+    }
 };
 
-const sendMessage = () => {
-    if (!messageText.value.trim()) return;
+const subscribeToConversation = (conversationId) => {
+    // Leave previous channel if exists
+    if (echoChannel.value) {
+        window.Echo.leave(`conversation.${echoChannel.value}`);
+    }
 
-    // In a real app, you would send this to the backend via Inertia
-    messages.value.push({
-        id: messages.value.length + 1,
-        senderId: 1,
-        senderName: 'You',
-        content: messageText.value,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    // Subscribe to new conversation channel
+    echoChannel.value = conversationId;
+    window.Echo.private(`conversation.${conversationId}`)
+        .listen('MessageSent', (e) => {
+            // Add new message to the list
+            messages.value.push({
+                id: e.message.id,
+                senderId: e.message.user.id,
+                senderName: e.message.user.name,
+                content: e.message.content,
+                timestamp: formatTime(e.message.created_at),
+                isRead: e.message.is_read,
+                isOwn: e.message.is_own,
+                attachments: e.message.attachments,
+                type: e.message.type
+            });
+
+            // Update conversation's last message
+            updateConversationLastMessage(conversationId, e.message);
+
+            // Scroll to bottom
+            nextTick(() => scrollToBottom());
+        })
+        .listenForWhisper('typing', (e) => {
+            if (e.user.id !== user.value.id) {
+                isTyping.value = true;
+                setTimeout(() => isTyping.value = false, 3000);
+            }
+        });
+};
+
+const updateConversationLastMessage = (conversationId, message) => {
+    const convIndex = conversations.value.findIndex(c => c.id === conversationId);
+    if (convIndex !== -1) {
+        conversations.value[convIndex].last_message = message;
+        conversations.value[convIndex].last_message_at = message.created_at;
+    }
+};
+
+const sendMessage = async () => {
+    if (!messageText.value.trim() || !selectedConversation.value) return;
+
+    const messageContent = messageText.value.trim();
+    const tempId = Date.now();
+
+    // Add optimistic message
+    const optimisticMessage = {
+        id: tempId,
+        senderId: user.value.id,
+        senderName: user.value.name,
+        content: messageContent,
+        timestamp: formatTime(new Date()),
         isRead: true,
-        isOwn: true
-    });
+        isOwn: true,
+        sending: true
+    };
 
+    messages.value.push(optimisticMessage);
     messageText.value = '';
+
+    // Scroll to bottom
+    await nextTick();
+    scrollToBottom();
+
+    try {
+        const response = await axios.post(`/conversations/${selectedConversation.value.id}/messages`, {
+            content: messageContent,
+            type: 'text'
+        });
+
+        // Replace optimistic message with real one
+        const messageIndex = messages.value.findIndex(m => m.id === tempId);
+        if (messageIndex !== -1) {
+            messages.value[messageIndex] = {
+                id: response.data.message.id,
+                senderId: response.data.message.user.id,
+                senderName: response.data.message.user.name,
+                content: response.data.message.content,
+                timestamp: formatTime(response.data.message.created_at),
+                isRead: true,
+                isOwn: true
+            };
+        }
+
+    } catch (error) {
+        console.error('Failed to send message:', error);
+        // Remove optimistic message on error
+        const messageIndex = messages.value.findIndex(m => m.id === tempId);
+        if (messageIndex !== -1) {
+            messages.value.splice(messageIndex, 1);
+        }
+        // Handle error - maybe show error message
+    }
+};
+
+const handleTyping = () => {
+    if (selectedConversation.value && echoChannel.value) {
+        window.Echo.private(`conversation.${selectedConversation.value.id}`)
+            .whisper('typing', {
+                user: user.value
+            });
+    }
 };
 
 const getInitials = (name) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
 };
 
-// Set default selected conversation if none is selected
+const formatTimestamp = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)} min ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)} hour ago`;
+    if (diff < 604800000) return `${Math.floor(diff / 86400000)} day ago`;
+    return date.toLocaleDateString();
+};
+
+const formatTime = (timestamp) => {
+    if (!timestamp) return '';
+    return new Date(timestamp).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+};
+
+const scrollToBottom = () => {
+    const messagesContainer = document.querySelector('.messages-container');
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+};
+
+// Initialize
 onMounted(() => {
-    if (!selectedConversation.value && conversations.value.length > 0) {
-        selectedConversation.value = conversations.value[1];
+    // Set default selected conversation if none is selected and conversations exist
+    if (!selectedConversation.value && processedConversations.value.length > 0) {
+        selectConversation(processedConversations.value[0]);
+    }
+});
+
+// Cleanup
+onUnmounted(() => {
+    if (echoChannel.value) {
+        window.Echo.leave(`conversation.${echoChannel.value}`);
     }
 });
 </script>
@@ -217,28 +300,12 @@ onMounted(() => {
 
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center justify-between mb-1">
-                                    <div class="flex items-center space-x-2">
-                                        <h3 class="text-sm font-semibold text-gray-900 truncate">
-                                            {{ conversation.clientName }}
-                                        </h3>
-                                        <button class="opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Star :class="[
-                                                'h-4 w-4 transition-colors',
-                                                conversation.isStarred ? 'text-yellow-400 fill-current' : 'text-gray-300'
-                                            ]" />
-                                        </button>
-                                    </div>
-                                    <span class="text-xs text-gray-500 whitespace-nowrap">{{ conversation.timestamp
-                                        }}</span>
-                                </div>
-
-                                <div class="flex items-center space-x-2 mb-2">
-                                    <div class="flex items-center text-xs text-gray-500">
-                                        <Calendar class="h-3 w-3 mr-1" />
-                                        <span>{{ conversation.eventType }}</span>
-                                    </div>
-                                    <span class="text-xs text-gray-400">•</span>
-                                    <span class="text-xs text-gray-500">{{ conversation.eventDate }}</span>
+                                    <h3 class="text-sm font-semibold text-gray-900 truncate">
+                                        {{ conversation.clientName }}
+                                    </h3>
+                                    <span class="text-xs text-gray-500 whitespace-nowrap">
+                                        {{ conversation.timestamp }}
+                                    </span>
                                 </div>
 
                                 <div class="flex items-center justify-between">
@@ -267,18 +334,13 @@ onMounted(() => {
                             <div>
                                 <h3 class="font-semibold text-gray-900">{{ selectedConversation.clientName }}</h3>
                                 <div class="flex items-center space-x-4 text-sm text-gray-500 mt-1">
-                                    <div class="flex items-center space-x-1">
-                                        <Calendar class="h-3 w-3" />
-                                        <span>{{ selectedConversation.eventType }}</span>
-                                    </div>
-                                    <div class="flex items-center space-x-1">
-                                        <MapPin class="h-3 w-3" />
-                                        <span>{{ selectedConversation.eventDate }}</span>
-                                    </div>
                                     <div v-if="selectedConversation.isOnline"
                                         class="flex items-center space-x-1 text-green-500">
                                         <div class="w-2 h-2 bg-green-500 rounded-full"></div>
                                         <span class="text-xs">Online</span>
+                                    </div>
+                                    <div v-if="isTyping" class="text-blue-500 text-xs">
+                                        Typing...
                                     </div>
                                 </div>
                             </div>
@@ -302,13 +364,19 @@ onMounted(() => {
                 </div>
 
                 <!-- Messages Area -->
-                <div class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
-                    <div v-for="message in messages" :key="message.id" :class="[
+                <div class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50 messages-container">
+                    <!-- Loading state -->
+                    <div v-if="isLoading" class="flex justify-center items-center h-full">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                    </div>
+
+                    <!-- Messages -->
+                    <div v-else v-for="message in messages" :key="message.id" :class="[
                         'flex',
                         message.isOwn ? 'justify-end' : 'justify-start'
                     ]">
                         <div :class="[
-                            'max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-sm',
+                            'max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-sm relative',
                             message.isOwn
                                 ? 'bg-blue-500 text-white rounded-br-md'
                                 : 'bg-white border border-gray-200 text-gray-900 rounded-bl-md'
@@ -321,8 +389,11 @@ onMounted(() => {
                                 ]">
                                     {{ message.timestamp }}
                                 </span>
-                                <div v-if="message.isOwn" class="ml-2">
-                                    <CheckCheck v-if="message.isRead" class="h-3 w-3 text-blue-200" />
+                                <div v-if="message.isOwn" class="ml-2 flex items-center space-x-1">
+                                    <div v-if="message.sending"
+                                        class="w-3 h-3 border border-blue-200 border-t-transparent rounded-full animate-spin">
+                                    </div>
+                                    <CheckCheck v-else-if="message.isRead" class="h-3 w-3 text-blue-200" />
                                     <Check v-else class="h-3 w-3 text-blue-200" />
                                 </div>
                             </div>
@@ -336,29 +407,17 @@ onMounted(() => {
                         <div class="flex">
                             <button
                                 class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                                <Paperclip class="h-5 w-5" />
-                            </button>
-                            <button
-                                class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                 <Image class="h-5 w-5" />
-                            </button>
-                            <button
-                                class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                                <FileText class="h-5 w-5" />
                             </button>
                         </div>
 
                         <div class="flex-1 relative">
                             <textarea v-model="messageText" @keydown.enter.exact.prevent="sendMessage"
-                                placeholder="Type your message..." rows="1"
+                                @input="handleTyping" placeholder="Type your message..." rows="1"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent max-h-32 transition-colors"></textarea>
                         </div>
 
                         <div class="flex">
-                            <button
-                                class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors mr-1">
-                                <Mic class="h-5 w-5" />
-                            </button>
                             <button @click="sendMessage" :disabled="!messageText.trim()" :class="[
                                 'p-3 rounded-xl transition-colors shadow-sm',
                                 messageText.trim()
@@ -379,7 +438,8 @@ onMounted(() => {
                         <User class="h-8 w-8 text-gray-400" />
                     </div>
                     <h3 class="text-lg font-semibold text-gray-900 mb-2">No conversation selected</h3>
-                    <p class="text-gray-500">Choose a conversation from the sidebar to start messaging with your clients
+                    <p class="text-gray-500">
+                        Choose a conversation from the sidebar to start messaging with your clients
                     </p>
                 </div>
             </div>

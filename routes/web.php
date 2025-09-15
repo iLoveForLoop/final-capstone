@@ -6,6 +6,7 @@ use App\Http\Controllers\CateringServiceController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DishController;
 use App\Http\Controllers\FavoritesController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PhotographyServiceController;
 use App\Http\Controllers\ProfileController;
@@ -134,13 +135,17 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'role:vendor'])->gro
 
 
     //Message
-    Route::get('/messages', function (){
-
-        return inertia('Vendor/Messages/Index');
-    })->name('messages.index');
+    Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
 
 
 
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/conversations', [MessageController::class, 'getConversations']);
+    Route::get('/conversations/{conversation}/messages', [MessageController::class, 'getMessages']);
+    Route::post('/conversations/{conversation}/messages', [MessageController::class, 'store']);
+    Route::post('/conversations', [MessageController::class, 'createConversation']);
 });
 
 
