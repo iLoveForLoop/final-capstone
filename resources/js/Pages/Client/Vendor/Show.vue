@@ -10,6 +10,7 @@ import OverviewTab from '@/Components/Client/Vendor/OverviewTab.vue'
 import ReviewsTab from '@/Components/Client/Vendor/ReviewsTab.vue'
 import LocationTab from '@/Components/Client/Vendor/LocationTab.vue'
 import ServicesTab from '@/Components/Client/Vendor/ServicesTab.vue'
+import ClientNavbar from '@/Components/ClientNavbar.vue'
 
 defineProps({
     vendor: {
@@ -133,6 +134,7 @@ onMounted(() => {
 </script>
 
 <template>
+    <ClientNavbar />
     <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <!-- Enhanced Header Section -->
         <Header :vendor="vendor" />

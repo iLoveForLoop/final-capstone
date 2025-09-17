@@ -76,7 +76,11 @@ notifications.value = sampleNotifications.value
 
 // Count unread items
 const unreadNotifications = computed(() => notifications.value.filter(n => !n.read).length)
-const unreadMessages = computed(() => conversations.value.reduce((total, conv) => total + (conv.unread_count || 0), 0))
+const unreadMessages = computed(() => {
+    console.log('computed running');
+
+    return conversations.value.reduce((total, conv) => total + (conv.unread_count || 0), 0)
+})
 
 // Load conversations from backend
 const loadConversations = async () => {
@@ -93,10 +97,9 @@ const loadConversations = async () => {
     }
 }
 
-// Load messages for a specific conversation
+
 // Load messages for a specific conversation
 const loadChatMessages = async (conversationId) => {
-    console.log('click a message');
 
     try {
         const response = await axios.get(`/conversations/${conversationId}/messages`)
@@ -170,6 +173,8 @@ const subscribeToConversation = (conversationId) => {
     window.Echo.private(`conversation.${conversationId}`)
         .listen('.MessageSent', (e) => {
             // Find the open chat and add the new message
+
+
             const chat = openChats.value.find(c => c.conversationId === conversationId)
             if (chat) {
                 chat.chatMessages.push({
@@ -356,6 +361,8 @@ onUnmounted(() => {
         }
     })
 })
+
+
 </script>
 
 <template>
@@ -366,10 +373,10 @@ onUnmounted(() => {
                 <div class="flex items-center justify-between h-16">
                     <!-- Logo -->
                     <Link href="/" class="flex items-center space-x-2 group flex-shrink-0">
-                    <div
+                    <!-- <div
                         class="w-9 h-9 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-md">
                         <span class="text-white font-bold text-sm">E</span>
-                    </div>
+                    </div> -->
                     <span
                         class="text-xl font-bold text-gray-900 group-hover:text-purple-700 transition-colors duration-300">
                         Eventory

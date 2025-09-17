@@ -1,4 +1,3 @@
-
 <?php
 
 use Illuminate\Support\Facades\Broadcast;
@@ -14,6 +13,8 @@ Broadcast::channel('conversation.{conversationId}', function ($user, $conversati
 Broadcast::channel('user.{userId}', function ($user, $userId) {
     return (int) $user->id === (int) $userId ? $user : null;
 });
+
+Broadcast::channel('users.{id}', fn ($user, $id) => (int) $user->id === (int) $id);
 
 // Channel for online presence (optional)
 Broadcast::channel('messaging', function ($user) {
