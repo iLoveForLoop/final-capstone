@@ -19,11 +19,11 @@ import {
     FileText,
     Mic
 } from 'lucide-vue-next';
-import { usePage, router } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
+import axios from 'axios';
 
-// Get data from Inertia page props
-const page = usePage();
-const conversations = ref(page.props.conversations || []);
+// Conversations state (no longer from Inertia props)
+const conversations = ref([]);
 const selectedConversation = ref(null);
 const messages = ref([]);
 const messageText = ref('');
@@ -31,14 +31,25 @@ const searchQuery = ref('');
 const isLoading = ref(false);
 const isTyping = ref(false);
 const echoChannel = ref(null);
+const messagesContainer = ref(null);
 
-// Current user
+// Current user (still from Inertia auth props)
+const page = usePage();
 const user = computed(() => page.props.auth?.user);
+
+// Fetch conversations from API
+const fetchConversations = async () => {
+    try {
+        const response = await axios.get('/conversations');
+        conversations.value = response.data.conversations;
+    } catch (error) {
+        console.error('Failed to fetch conversations:', error);
+    }
+};
 
 // Process conversations data to match frontend format
 const processedConversations = computed(() => {
     return conversations.value.map(conv => {
-        // Get the other participant (not the current user)
         const otherParticipant = conv.participants?.find(p => p.id !== user.value?.id);
         const clientName = conv.title || otherParticipant?.name || 'Unknown';
 
@@ -49,10 +60,10 @@ const processedConversations = computed(() => {
             lastMessage: conv.last_message?.content || 'No messages yet',
             timestamp: formatTimestamp(conv.last_message?.created_at),
             unreadCount: conv.unread_count || 0,
-            isOnline: false, // You can implement online status
+            isOnline: false,
             eventType: conv.event?.title || conv.type || 'General',
             eventDate: conv.event?.date,
-            isStarred: false, // You can add starring logic
+            isStarred: false,
             originalData: conv
         };
     });
@@ -73,9 +84,14 @@ const selectConversation = async (conversation) => {
     isLoading.value = true;
 
     try {
-        // Load messages for this conversation
         const response = await axios.get(`/conversations/${conversation.id}/messages`);
-        messages.value = response.data.messages.map(msg => ({
+
+        // Sort messages by creation time (oldest first, newest last)
+        const sortedMessages = response.data.messages.sort((a, b) =>
+            new Date(a.created_at) - new Date(b.created_at)
+        );
+
+        messages.value = sortedMessages.map(msg => ({
             id: msg.id,
             senderId: msg.user.id,
             senderName: msg.user.name,
@@ -87,32 +103,28 @@ const selectConversation = async (conversation) => {
             type: msg.type
         }));
 
-        // Subscribe to conversation channel for real-time updates
         subscribeToConversation(conversation.id);
 
-        // Scroll to bottom
-        await nextTick();
-        scrollToBottom();
-
+        nextTick(() => {
+            setTimeout(() => {
+                scrollToBottom();
+            }, 50); // Small delay to ensure DOM is fully rendered
+        });
     } catch (error) {
         console.error('Failed to load messages:', error);
-        // Handle error - maybe show a toast notification
     } finally {
         isLoading.value = false;
     }
 };
 
 const subscribeToConversation = (conversationId) => {
-    // Leave previous channel if exists
     if (echoChannel.value) {
         window.Echo.leave(`conversation.${echoChannel.value}`);
     }
 
-    // Subscribe to new conversation channel
     echoChannel.value = conversationId;
     window.Echo.private(`conversation.${conversationId}`)
-        .listen('MessageSent', (e) => {
-            // Add new message to the list
+        .listen('.MessageSent', (e) => {
             messages.value.push({
                 id: e.message.id,
                 senderId: e.message.user.id,
@@ -125,11 +137,8 @@ const subscribeToConversation = (conversationId) => {
                 type: e.message.type
             });
 
-            // Update conversation's last message
             updateConversationLastMessage(conversationId, e.message);
-
-            // Scroll to bottom
-            nextTick(() => scrollToBottom());
+            scrollToBottom();
         })
         .listenForWhisper('typing', (e) => {
             if (e.user.id !== user.value.id) {
@@ -153,7 +162,6 @@ const sendMessage = async () => {
     const messageContent = messageText.value.trim();
     const tempId = Date.now();
 
-    // Add optimistic message
     const optimisticMessage = {
         id: tempId,
         senderId: user.value.id,
@@ -168,8 +176,6 @@ const sendMessage = async () => {
     messages.value.push(optimisticMessage);
     messageText.value = '';
 
-    // Scroll to bottom
-    await nextTick();
     scrollToBottom();
 
     try {
@@ -178,7 +184,6 @@ const sendMessage = async () => {
             type: 'text'
         });
 
-        // Replace optimistic message with real one
         const messageIndex = messages.value.findIndex(m => m.id === tempId);
         if (messageIndex !== -1) {
             messages.value[messageIndex] = {
@@ -194,21 +199,17 @@ const sendMessage = async () => {
 
     } catch (error) {
         console.error('Failed to send message:', error);
-        // Remove optimistic message on error
         const messageIndex = messages.value.findIndex(m => m.id === tempId);
         if (messageIndex !== -1) {
             messages.value.splice(messageIndex, 1);
         }
-        // Handle error - maybe show error message
     }
 };
 
 const handleTyping = () => {
     if (selectedConversation.value && echoChannel.value) {
         window.Echo.private(`conversation.${selectedConversation.value.id}`)
-            .whisper('typing', {
-                user: user.value
-            });
+            .whisper('typing', { user: user.value });
     }
 };
 
@@ -238,15 +239,16 @@ const formatTime = (timestamp) => {
 };
 
 const scrollToBottom = () => {
-    const messagesContainer = document.querySelector('.messages-container');
-    if (messagesContainer) {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
+    nextTick(() => {
+        if (messagesContainer.value) {
+            messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+        }
+    });
 };
 
 // Initialize
-onMounted(() => {
-    // Set default selected conversation if none is selected and conversations exist
+onMounted(async () => {
+    await fetchConversations();
     if (!selectedConversation.value && processedConversations.value.length > 0) {
         selectConversation(processedConversations.value[0]);
     }
@@ -260,8 +262,9 @@ onUnmounted(() => {
 });
 </script>
 
+
 <template>
-    <VendorLayout title="Messages">
+    <VendorLayout>
         <div class="flex h-[calc(100vh-4rem)] bg-gray-50">
             <!-- Conversations Sidebar -->
             <div class="w-80 bg-white border-r border-gray-200 flex flex-col shadow-sm">
@@ -364,7 +367,7 @@ onUnmounted(() => {
                 </div>
 
                 <!-- Messages Area -->
-                <div class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50 messages-container">
+                <div ref="messagesContainer" class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50 messages-container">
                     <!-- Loading state -->
                     <div v-if="isLoading" class="flex justify-center items-center h-full">
                         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>

@@ -40,7 +40,8 @@ class MessageSent implements ShouldBroadcastNow
                 'attachments' => $this->message->attachments,
                 'user' => $this->message->user,
                 'created_at' => $this->message->created_at,
-                'is_own' => false
+                'is_own' => false,
+                'is_read' => false
             ]
         ];
     }

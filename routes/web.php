@@ -141,6 +141,7 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'role:vendor'])->gro
 
 });
 
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/conversations', [MessageController::class, 'getConversations']);
     Route::get('/conversations/{conversation}/messages', [MessageController::class, 'getMessages']);
