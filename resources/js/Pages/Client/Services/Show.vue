@@ -6,6 +6,7 @@ import { Heart, Share2 } from 'lucide-vue-next'
 import { Toggle } from 'reka-ui'
 import { ref } from 'vue'
 import { useToast } from 'vue-toastification'
+import emitter from '@/utils/eventBus'
 // Reactive data
 
 const props = defineProps({
@@ -56,9 +57,11 @@ const handleBooking = () => {
     bookingModal.value.openModal(selectedDate.value, selectedTime.value)
 }
 
-const requestQuote = () => {
-    alert('Quote request submitted! We will contact you within 24 hours.')
-    // Handle quote request logic here
+const chatVendor = () => {
+
+    // console.log(props.service.vendor.)
+    emitter.emit('chat-vendor', props.service.vendor.user_id)
+
 }
 
 const toggleFavorite = () => {
@@ -388,7 +391,7 @@ const goBack = () => {
                                     Book Now
                                 </button>
 
-                                <button type="button" @click="requestQuote"
+                                <button type="button" @click="chatVendor"
                                     class="w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors font-medium">
                                     Chat Vendor
                                 </button>

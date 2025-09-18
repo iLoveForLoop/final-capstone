@@ -297,6 +297,7 @@ class ClientController extends Controller
 
     public function serviceShow(Service $service)
     {
+        // dd('hi');
         $service->load([
         'category',
         'vendor.user',
@@ -393,9 +394,9 @@ class ClientController extends Controller
     public function showVendor(Vendor $vendor) {
 
         $vendor->load(['services', 'reviews', 'serviceCategories', 'user', 'bookings.event']);
-
         $vendorData = [
             'id' => $vendor->id,
+            'user_id' => $vendor->user->id,
             'name' => $vendor->business_name,
             'categories' => $vendor->serviceCategories->pluck('name'),
             'rating' => $vendor->averageRating(),

@@ -1,16 +1,16 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { usePage } from '@inertiajs/vue3';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue';
 import MyDropdown from './MyDropdown.vue';
-
-// Import Lucide icons
 import {
     Bell, MessageSquare, Menu, X, Home, Calendar, Heart,
     LogOut, Settings, User, Search, ChevronDown, CheckCircle, Send
 } from 'lucide-vue-next';
+import emitter from '@/utils/eventBus';
+import axios from 'axios';
 
 const page = usePage()
 const isDropdownShowing = ref(false)
@@ -123,6 +123,8 @@ const loadChatMessages = async (conversationId) => {
 
 // Chat window functions
 const openChatWindow = async (message) => {
+
+    console.log('message: ', message)
     // Mark conversation as read (update unread count)
     const conversation = conversations.value.find(c => c.id === message.id)
     if (conversation) {
@@ -340,7 +342,45 @@ onMounted(() => {
     document.addEventListener('click', closeDrawers)
     loadConversations()
 
+    emitter.on('chat-vendor', async (payload) => {
 
+
+        const newConversationData = {
+            participants: [
+                Number(page.props.auth.user.id),
+                Number(payload)
+            ]
+        }
+
+        console.log(newConversationData);
+
+        try {
+            const res = await axios.post(route('conversation.create', newConversationData))
+            const conv = res.data
+
+            const message = {
+                id: conv.id,
+                sender: conv.title,
+                avatar: getInitials(conv.title),
+                message: conv.last_message?.content || 'No messages yet',
+                time: formatTimestamp(conv.last_message?.created_at),
+                read: conv.unread_count === 0,
+                online: false, // You can implement online status later
+                chatMessages: [] // Will be loaded when chat is opened
+            }
+
+            openChatWindow(message)
+
+        } catch (error) {
+            console.log('Error creating conversation: ', error.message);
+
+        }
+
+
+
+
+
+    })
 
     // Refresh conversations periodically (optional)
     const interval = setInterval(loadConversations, 30000) // Every 30 seconds
@@ -360,6 +400,8 @@ onUnmounted(() => {
             window.Echo.leave(`conversation.${chat.conversationId}`)
         }
     })
+
+    emitter.off('chat-vendor')
 })
 
 
@@ -530,7 +572,7 @@ onUnmounted(() => {
                                                 <div class="flex-1 min-w-0">
                                                     <div class="flex items-center justify-between">
                                                         <p class="font-medium text-gray-900 truncate">{{ message.sender
-                                                        }}</p>
+                                                            }}</p>
                                                         <div class="flex items-center space-x-1">
                                                             <span v-if="!message.read"
                                                                 class="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></span>

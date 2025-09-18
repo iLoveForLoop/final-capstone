@@ -12,7 +12,8 @@ import LocationTab from '@/Components/Client/Vendor/LocationTab.vue'
 import ServicesTab from '@/Components/Client/Vendor/ServicesTab.vue'
 import ClientNavbar from '@/Components/ClientNavbar.vue'
 
-defineProps({
+
+const props = defineProps({
     vendor: {
         type: {
             Object
@@ -128,8 +129,9 @@ const activeTab = ref('overview')
 // Methods
 
 
+
 onMounted(() => {
-    // Initialize calendar API if needed
+
 })
 </script>
 

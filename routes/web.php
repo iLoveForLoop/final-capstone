@@ -146,7 +146,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/conversations', [MessageController::class, 'getConversations']);
     Route::get('/conversations/{conversation}/messages', [MessageController::class, 'getMessages']);
     Route::post('/conversations/{conversation}/messages', [MessageController::class, 'store']);
-    Route::post('/conversations', [MessageController::class, 'createConversation']);
+    Route::post('/conversations', [MessageController::class, 'createConversation'])->name('conversation.create');
 });
 
 

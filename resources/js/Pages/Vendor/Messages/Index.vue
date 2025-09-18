@@ -125,6 +125,8 @@ const subscribeToConversation = (conversationId) => {
     echoChannel.value = conversationId;
     window.Echo.private(`conversation.${conversationId}`)
         .listen('.MessageSent', (e) => {
+            console.log('listening');
+
             messages.value.push({
                 id: e.message.id,
                 senderId: e.message.user.id,

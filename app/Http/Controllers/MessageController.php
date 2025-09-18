@@ -186,7 +186,10 @@ class MessageController extends Controller
         ]);
 
         $user = auth()->user();
-        $participants = array_unique(array_merge($request->participants, [$user->id]));
+        $participants = array_map(
+            'intval',
+            array_unique(array_merge($request->participants, [$user->id]))
+        );
 
         // Check if conversation already exists for these participants
         $existingConversation = Conversation::where('type', $request->type ?? 'direct')
@@ -199,7 +202,16 @@ class MessageController extends Controller
             ->first();
 
         if ($existingConversation) {
-            return redirect()->route('messages.show', $existingConversation);
+            return response()->json([
+                'id' => $existingConversation->id,
+                'title' => $existingConversation->getDisplayName($user->id),
+                'type' => $existingConversation->type,
+                'event' => $existingConversation->event,
+                'last_message' => $existingConversation->lastMessage,
+                'unread_count' => $existingConversation->getUnreadCountForUser($user->id),
+                'participants' => $existingConversation->users()->get(['id', 'name', 'email']),
+                'already_exists' => true
+            ]);
         }
 
         $conversation = Conversation::create([
@@ -210,7 +222,16 @@ class MessageController extends Controller
             'last_message_at' => now()
         ]);
 
-        return redirect()->route('messages.show', $conversation);
+        return response()->json([
+            'id' => $conversation->id,
+            'title' => $conversation->getDisplayName($user->id),
+            'type' => $conversation->type,
+            'event' => $conversation->event,
+            'last_message' => $conversation->lastMessage,
+            'unread_count' => $conversation->getUnreadCountForUser($user->id),
+            'participants' => $conversation->users()->get(['id', 'name', 'email']),
+            'already_exists' => false
+        ]);
     }
 
     // API route to get conversations for AJAX calls

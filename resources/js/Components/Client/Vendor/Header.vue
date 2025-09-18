@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/Components/ui/textarea'
 import { router } from '@inertiajs/vue3'
 
-defineProps({
+const props = defineProps({
     vendor: {
         type: Object,
     },
@@ -30,6 +30,7 @@ import {
     Check,
     Mail,
 } from 'lucide-vue-next'
+import emitter from '@/utils/eventBus'
 
 const bookingForm = ref({
     date: '',
@@ -87,6 +88,12 @@ const toggleFavorite = () => {
 
 const openBookingModal = () => {
     showBookingModal.value = true
+}
+
+const chatVendor = () => {
+    // console.log(props.vendor.user_id)
+    emitter.emit('chat-vendor', props.vendor.user_id)
+
 }
 
 </script>
@@ -178,7 +185,7 @@ const openBookingModal = () => {
                         Book Now
                     </Button>
                     <div class="flex gap-3">
-                        <Button @click="sendMessage" variant="ghost"
+                        <Button @click="chatVendor" variant="ghost"
                             class="bg-white flex-1 border-white text-slate-900 hover:bg-white/90 hover:text-slate-900">
                             <MessageCircle class="h-4 w-4 mr-2" />
                             Message
