@@ -26,6 +26,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', [WelcomeController::class, 'index']);
+//OPEN SERVICES PAGE
+Route::get('/services', [ClientController::class, 'services'])->name('service.index');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');

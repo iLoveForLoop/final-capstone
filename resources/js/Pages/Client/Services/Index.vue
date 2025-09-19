@@ -86,13 +86,9 @@ const handleSort = () => {
     applyFilters();
 };
 
-// Debounced search
-let searchTimeout;
+// Handle search button click
 const handleSearch = () => {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        applyFilters();
-    }, 500);
+    applyFilters();
 };
 
 const clearFilters = () => {
@@ -137,28 +133,25 @@ console.log(props.filters.categories)
     <div class="min-h-screen bg-gray-50">
         <ClientNavbar />
 
-        <!-- Header Section -->
-        <!-- <div class="bg-white border-b border-gray-200">
-            <div class="max-w-7xl mx-auto px-6 py-8">
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">Services</h1>
-                <p class="text-gray-600">Find the perfect service for your event</p>
-            </div>
-        </div> -->
-
         <!-- Enhanced Filters Section -->
         <div class="bg-white border-b border-gray-100 shadow-sm">
-            <div class="max-w-7xl mx-auto px-6 py-6">
+            <div class=" max-w-7xl mx-auto px-6 py-6">
                 <!-- Main Filter Row -->
                 <div class="flex flex-col lg:flex-row lg:items-center gap-4 mb-6">
-                    <!-- Search with Icon -->
-                    <div class="flex-1 lg:max-w-md">
-                        <div class="relative">
+                    <!-- Search with Icon and Button -->
+                    <div class="flex-1 flex gap-2 ">
+                        <div class="relative flex-1">
                             <Search :size="18"
                                 class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                            <input v-model="searchQuery" @input="handleSearch" type="text"
+                            <input v-model="searchQuery" type="text"
                                 placeholder="Search services, categories, vendors..."
                                 class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all duration-200 text-sm placeholder-gray-500">
                         </div>
+                        <button @click="handleSearch"
+                            class="px-5 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all duration-200 flex items-center justify-center shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            <span class="hidden sm:inline">Search</span>
+                            <Search :size="16" class="sm:ml-2" />
+                        </button>
                     </div>
 
                     <!-- Filter Controls -->

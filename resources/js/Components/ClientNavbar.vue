@@ -414,203 +414,209 @@ onUnmounted(() => {
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16">
                     <!-- Logo -->
-                    <Link href="/" class="flex items-center space-x-2 group flex-shrink-0">
-                    <!-- <div
-                        class="w-9 h-9 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-md">
-                        <span class="text-white font-bold text-sm">E</span>
-                    </div> -->
-                    <span
-                        class="text-xl font-bold text-gray-900 group-hover:text-purple-700 transition-colors duration-300">
-                        Eventory
-                    </span>
-                    </Link>
-
-                    <!-- Desktop Navigation -->
-                    <div class="hidden lg:flex items-center space-x-1">
-                        <!-- Navigation Links -->
-                        <Link href="/client"
-                            class="px-4 py-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium flex items-center"
-                            :class="{ 'text-gray-900 bg-gray-50': page.url === '/client' }">
-                        <Home :size="16" class="mr-1.5" />
-                        <span>Home</span>
+                    <div class="flex-1 flex justify-start">
+                        <Link href="/" class="flex items-center space-x-2 group flex-shrink-0">
+                        <span
+                            class="text-xl font-bold text-gray-900 group-hover:text-purple-700 transition-colors duration-300">
+                            Eventory
+                        </span>
                         </Link>
+                    </div>
 
-                        <Link href="/client/services"
-                            class="px-4 py-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium flex items-center"
-                            :class="{ 'text-gray-900 bg-gray-50': page.url.startsWith('/client/services') }">
-                        <Search :size="16" class="mr-1.5" />
-                        <span>Services</span>
-                        </Link>
+                    <!-- Desktop Navigation - Always Centered -->
+                    <div class="hidden lg:flex flex-1 justify-center">
+                        <div class="flex items-center space-x-1">
+                            <!-- Core Navigation Links (Always visible) -->
+                            <Link :href="page.props.auth.user ? '/client' : '/'"
+                                class="px-4 py-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium flex items-center"
+                                :class="{ 'text-gray-900 bg-gray-50': (page.url === '/client' || page.url === '/') }">
+                            <Home :size="16" class="mr-1.5" />
+                            <span>Home</span>
+                            </Link>
 
-                        <!-- Conditional Links -->
-                        <template v-if="page.props.auth.user">
-                            <Link href="/client/bookings"
+                            <Link :href="page.props.auth.user ? '/client/services' : '/services'"
                                 class="px-4 py-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium flex items-center"
-                                :class="{ 'text-gray-900 bg-gray-50': page.url.startsWith('/client/bookings') }">
-                            <Calendar :size="16" class="mr-1.5" />
-                            <span>Bookings</span>
+                                :class="{ 'text-gray-900 bg-gray-50': (page.url.startsWith('/client/services') || page.url.startsWith('/services')) }">
+                            <Search :size="16" class="mr-1.5" />
+                            <span>Services</span>
                             </Link>
-                            <Link href="/client/events"
-                                class="px-4 py-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium flex items-center"
-                                :class="{ 'text-gray-900 bg-gray-50': page.url.startsWith('/client/events') }">
-                            <Calendar :size="16" class="mr-1.5" />
-                            <span>Events</span>
-                            </Link>
-                            <Link href="/client/favorites"
-                                class="px-4 py-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium flex items-center"
-                                :class="{ 'text-gray-900 bg-gray-50': page.url.startsWith('/client/favorites') }">
-                            <Heart :size="16" class="mr-1.5" />
-                            <span>Favorites</span>
-                            </Link>
-                        </template>
+
+
+                            <!-- Conditional Links -->
+                            <template v-if="page.props.auth.user">
+                                <Link href="/client/bookings"
+                                    class="px-4 py-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium flex items-center"
+                                    :class="{ 'text-gray-900 bg-gray-50': page.url.startsWith('/client/bookings') }">
+                                <Calendar :size="16" class="mr-1.5" />
+                                <span>Bookings</span>
+                                </Link>
+                                <Link href="/client/events"
+                                    class="px-4 py-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium flex items-center"
+                                    :class="{ 'text-gray-900 bg-gray-50': page.url.startsWith('/client/events') }">
+                                <Calendar :size="16" class="mr-1.5" />
+                                <span>Events</span>
+                                </Link>
+                                <Link href="/client/favorites"
+                                    class="px-4 py-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium flex items-center"
+                                    :class="{ 'text-gray-900 bg-gray-50': page.url.startsWith('/client/favorites') }">
+                                <Heart :size="16" class="mr-1.5" />
+                                <span>Favorites</span>
+                                </Link>
+                            </template>
+                        </div>
                     </div>
 
                     <!-- Right Side Actions -->
-                    <div class="hidden lg:flex items-center space-x-2">
-                        <template v-if="page.props.auth.user">
-                            <!-- Notifications -->
-                            <div class="drawer-container relative">
-                                <button @click="isNotificationsOpen = !isNotificationsOpen"
-                                    class="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200">
-                                    <Bell :size="20" />
-                                    <span v-if="unreadNotifications > 0"
-                                        class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-                                        {{ unreadNotifications > 9 ? '9+' : unreadNotifications }}
-                                    </span>
-                                </button>
+                    <div class="flex-1 flex justify-end">
+                        <div class="hidden lg:flex items-center space-x-2">
+                            <template v-if="page.props.auth.user">
+                                <!-- Notifications -->
+                                <div class="drawer-container relative">
+                                    <button @click="isNotificationsOpen = !isNotificationsOpen"
+                                        class="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200">
+                                        <Bell :size="20" />
+                                        <span v-if="unreadNotifications > 0"
+                                            class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                                            {{ unreadNotifications > 9 ? '9+' : unreadNotifications }}
+                                        </span>
+                                    </button>
 
-                                <!-- Notifications Drawer -->
-                                <div v-if="isNotificationsOpen"
-                                    class="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50">
-                                    <div class="p-4 border-b border-gray-100 bg-gray-50">
-                                        <div class="flex items-center justify-between">
-                                            <h3 class="font-semibold text-gray-900">Notifications</h3>
-                                            <button v-if="unreadNotifications > 0"
-                                                class="text-xs text-purple-600 hover:text-purple-800 font-medium">
-                                                Mark all read
-                                            </button>
+                                    <!-- Notifications Drawer -->
+                                    <div v-if="isNotificationsOpen"
+                                        class="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50">
+                                        <div class="p-4 border-b border-gray-100 bg-gray-50">
+                                            <div class="flex items-center justify-between">
+                                                <h3 class="font-semibold text-gray-900">Notifications</h3>
+                                                <button v-if="unreadNotifications > 0"
+                                                    class="text-xs text-purple-600 hover:text-purple-800 font-medium">
+                                                    Mark all read
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="max-h-96 overflow-y-auto">
-                                        <div v-for="notification in notifications" :key="notification.id"
-                                            @click="markNotificationRead(notification.id)"
-                                            class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-150"
-                                            :class="{ 'bg-purple-50/50': !notification.read }">
-                                            <div class="flex items-start space-x-3">
-                                                <component :is="getIconComponent(notification.icon)" :size="18"
-                                                    class="mt-0.5 text-purple-600 flex-shrink-0" />
-                                                <div class="flex-1 min-w-0">
-                                                    <div class="flex items-center justify-between">
-                                                        <p class="font-medium text-gray-900 truncate">{{
-                                                            notification.title }}</p>
-                                                        <span v-if="!notification.read"
-                                                            class="w-2 h-2 bg-purple-600 rounded-full flex-shrink-0"></span>
+                                        <div class="max-h-96 overflow-y-auto">
+                                            <div v-for="notification in notifications" :key="notification.id"
+                                                @click="markNotificationRead(notification.id)"
+                                                class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+                                                :class="{ 'bg-purple-50/50': !notification.read }">
+                                                <div class="flex items-start space-x-3">
+                                                    <component :is="getIconComponent(notification.icon)" :size="18"
+                                                        class="mt-0.5 text-purple-600 flex-shrink-0" />
+                                                    <div class="flex-1 min-w-0">
+                                                        <div class="flex items-center justify-between">
+                                                            <p class="font-medium text-gray-900 truncate">{{
+                                                                notification.title }}</p>
+                                                            <span v-if="!notification.read"
+                                                                class="w-2 h-2 bg-purple-600 rounded-full flex-shrink-0"></span>
+                                                        </div>
+                                                        <p class="text-sm text-gray-600 mt-1">{{ notification.message }}
+                                                        </p>
+                                                        <p class="text-xs text-gray-400 mt-2">{{ notification.time }}
+                                                        </p>
                                                     </div>
-                                                    <p class="text-sm text-gray-600 mt-1">{{ notification.message }}</p>
-                                                    <p class="text-xs text-gray-400 mt-2">{{ notification.time }}</p>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="p-4 border-t border-gray-100 bg-gray-50">
-                                        <Link href="/notifications"
-                                            class="block text-center text-purple-600 hover:text-purple-800 font-medium text-sm">
-                                        View all notifications
-                                        </Link>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Messages -->
-                            <div class="drawer-container relative">
-                                <button @click="isMessagesOpen = !isMessagesOpen"
-                                    class="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200">
-                                    <MessageSquare :size="20" />
-                                    <span v-if="unreadMessages > 0"
-                                        class="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-                                        {{ unreadMessages > 9 ? '9+' : unreadMessages }}
-                                    </span>
-                                </button>
-
-                                <!-- Messages Drawer -->
-                                <div v-if="isMessagesOpen"
-                                    class="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50">
-                                    <div class="p-4 border-b border-gray-100 bg-gray-50">
-                                        <div class="flex items-center justify-between">
-                                            <h3 class="font-semibold text-gray-900">Messages</h3>
-                                            <Link href="/messages"
-                                                class="text-xs text-purple-600 hover:text-purple-800 font-medium">
-                                            View all
+                                        <div class="p-4 border-t border-gray-100 bg-gray-50">
+                                            <Link href="/notifications"
+                                                class="block text-center text-purple-600 hover:text-purple-800 font-medium text-sm">
+                                            View all notifications
                                             </Link>
                                         </div>
                                     </div>
-                                    <div class="max-h-96 overflow-y-auto">
-                                        <div v-if="isLoading" class="p-8 text-center">
-                                            <div
-                                                class="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500 mx-auto">
+                                </div>
+
+                                <!-- Messages -->
+                                <div class="drawer-container relative">
+                                    <button @click="isMessagesOpen = !isMessagesOpen"
+                                        class="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200">
+                                        <MessageSquare :size="20" />
+                                        <span v-if="unreadMessages > 0"
+                                            class="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                                            {{ unreadMessages > 9 ? '9+' : unreadMessages }}
+                                        </span>
+                                    </button>
+
+                                    <!-- Messages Drawer -->
+                                    <div v-if="isMessagesOpen"
+                                        class="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50">
+                                        <div class="p-4 border-b border-gray-100 bg-gray-50">
+                                            <div class="flex items-center justify-between">
+                                                <h3 class="font-semibold text-gray-900">Messages</h3>
+                                                <Link href="/messages"
+                                                    class="text-xs text-purple-600 hover:text-purple-800 font-medium">
+                                                View all
+                                                </Link>
                                             </div>
-                                            <p class="text-sm text-gray-500 mt-2">Loading conversations...</p>
                                         </div>
-                                        <div v-else-if="processedMessages.length === 0" class="p-8 text-center">
-                                            <MessageSquare :size="24" class="mx-auto text-gray-400 mb-2" />
-                                            <p class="text-sm text-gray-500">No conversations yet</p>
-                                        </div>
-                                        <div v-else v-for="message in processedMessages" :key="message.id"
-                                            @click="openChatWindow(message)"
-                                            class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-150"
-                                            :class="{ 'bg-blue-50/50': !message.read }">
-                                            <div class="flex items-start space-x-3">
-                                                <div class="relative">
-                                                    <div
-                                                        class="w-9 h-9 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-xs flex-shrink-0">
-                                                        {{ message.avatar }}
-                                                    </div>
-                                                    <div v-if="message.online"
-                                                        class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white rounded-full">
-                                                    </div>
+                                        <div class="max-h-96 overflow-y-auto">
+                                            <div v-if="isLoading" class="p-8 text-center">
+                                                <div
+                                                    class="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500 mx-auto">
                                                 </div>
-                                                <div class="flex-1 min-w-0">
-                                                    <div class="flex items-center justify-between">
-                                                        <p class="font-medium text-gray-900 truncate">{{ message.sender
-                                                            }}</p>
-                                                        <div class="flex items-center space-x-1">
-                                                            <span v-if="!message.read"
-                                                                class="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></span>
-                                                            <span class="text-xs text-gray-400 whitespace-nowrap">{{
-                                                                message.time }}</span>
+                                                <p class="text-sm text-gray-500 mt-2">Loading conversations...</p>
+                                            </div>
+                                            <div v-else-if="processedMessages.length === 0" class="p-8 text-center">
+                                                <MessageSquare :size="24" class="mx-auto text-gray-400 mb-2" />
+                                                <p class="text-sm text-gray-500">No conversations yet</p>
+                                            </div>
+                                            <div v-else v-for="message in processedMessages" :key="message.id"
+                                                @click="openChatWindow(message)"
+                                                class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+                                                :class="{ 'bg-blue-50/50': !message.read }">
+                                                <div class="flex items-start space-x-3">
+                                                    <div class="relative">
+                                                        <div
+                                                            class="w-9 h-9 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-xs flex-shrink-0">
+                                                            {{ message.avatar }}
+                                                        </div>
+                                                        <div v-if="message.online"
+                                                            class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white rounded-full">
                                                         </div>
                                                     </div>
-                                                    <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{
-                                                        message.message }}</p>
+                                                    <div class="flex-1 min-w-0">
+                                                        <div class="flex items-center justify-between">
+                                                            <p class="font-medium text-gray-900 truncate">{{
+                                                                message.sender
+                                                            }}</p>
+                                                            <div class="flex items-center space-x-1">
+                                                                <span v-if="!message.read"
+                                                                    class="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></span>
+                                                                <span class="text-xs text-gray-400 whitespace-nowrap">{{
+                                                                    message.time }}</span>
+                                                            </div>
+                                                        </div>
+                                                        <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{
+                                                            message.message }}</p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="p-4 border-t border-gray-100 bg-gray-50">
-                                        <Link href="/messages"
-                                            class="block text-center text-purple-600 hover:text-purple-800 font-medium text-sm">
-                                        Open Messages
-                                        </Link>
+                                        <div class="p-4 border-t border-gray-100 bg-gray-50">
+                                            <Link href="/messages"
+                                                class="block text-center text-purple-600 hover:text-purple-800 font-medium text-sm">
+                                            Open Messages
+                                            </Link>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- User Dropdown -->
-                            <MyDropdown />
-                        </template>
+                                <!-- User Dropdown -->
+                                <MyDropdown />
+                            </template>
 
-                        <template v-else>
-                            <!-- Login Button -->
-                            <Link href="/login"
-                                class="px-4 py-2 text-gray-600 hover:text-gray-900 transition-all duration-200 font-medium">
-                            Log In
-                            </Link>
-                            <!-- Get Started Button -->
-                            <Link href="/register"
-                                class="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-500 hover:to-indigo-500 transition-all duration-300 font-semibold shadow-md hover:shadow-lg">
-                            Get Started
-                            </Link>
-                        </template>
+                            <template v-else>
+                                <!-- Login Button -->
+                                <Link href="/login"
+                                    class="px-4 py-2 text-gray-600 hover:text-gray-900 transition-all duration-200 font-medium">
+                                Log In
+                                </Link>
+                                <!-- Get Started Button -->
+                                <Link href="/register"
+                                    class="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-500 hover:to-indigo-500 transition-all duration-300 font-semibold shadow-md hover:shadow-lg">
+                                Get Started
+                                </Link>
+                            </template>
+                        </div>
                     </div>
 
                     <!-- Mobile Menu Button -->
@@ -626,16 +632,17 @@ onUnmounted(() => {
                 <!-- Mobile Menu -->
                 <div v-if="isMobileMenuOpen" class="lg:hidden pb-4 border-t border-gray-200 pt-4">
                     <div class="flex flex-col space-y-1">
-                        <Link href="/client" @click="isMobileMenuOpen = false"
+                        <Link :href="page.props.auth.user ? '/client' : '/'" @click="isMobileMenuOpen = false"
                             class="flex items-center px-4 py-3 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium"
-                            :class="{ 'text-gray-900 bg-gray-50': page.url === '/client' }">
+                            :class="{ 'text-gray-900 bg-gray-50': (page.url === '/client' || page.url === '/') }">
                         <Home :size="18" class="mr-3" />
                         <span>Home</span>
                         </Link>
 
-                        <Link href="/client/services" @click="isMobileMenuOpen = false"
+                        <Link :href="page.props.auth.user ? '/client/services' : '/services'"
+                            @click="isMobileMenuOpen = false"
                             class="flex items-center px-4 py-3 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium"
-                            :class="{ 'text-gray-900 bg-gray-50': page.url.startsWith('/client/services') }">
+                            :class="{ 'text-gray-900 bg-gray-50': (page.url.startsWith('/client/services') || page.url.startsWith('/services')) }">
                         <Search :size="18" class="mr-3" />
                         <span>Services</span>
                         </Link>

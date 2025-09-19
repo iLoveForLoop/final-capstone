@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 
 import QuickBookingStepperModal from '@/Components/QuickBookingStepperModal.vue';
 import ClientNavbar from '@/Components/ClientNavbar.vue'
@@ -13,7 +13,26 @@ import {
     DialogTitle,
     DialogDescription,
 } from '@/Components/ui/dialog';
-import { Sliders, Database, Filter, Check, Star, X } from 'lucide-vue-next';
+import {
+    Sliders,
+    Database,
+    Filter,
+    Check,
+    Star,
+    X,
+    Search,
+    Calendar,
+    Users,
+    Heart,
+    ArrowRight,
+    ChefHat,
+    Camera,
+    Music,
+    Mic2,
+    Sparkles,
+    Shirt,
+    Car
+} from 'lucide-vue-next';
 
 
 const eventModal = ref(null)
@@ -35,6 +54,27 @@ const selectedRating = ref('');
 
 // Dialog state
 const showFiltersDialog = ref(false);
+
+// Animation state
+const animatedElements = ref([]);
+
+// Initialize animation observer
+onMounted(() => {
+    animatedElements.value = document.querySelectorAll('.reveal-animation');
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animated');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    animatedElements.value.forEach(element => {
+        observer.observe(element);
+    });
+});
 
 // Price ranges
 const priceRanges = [
@@ -77,13 +117,14 @@ const handleSearch = () => {
 }
 
 const applyFilters = () => {
+    // handleSearch();
     showFiltersDialog.value = false
 }
 
 const clearFilters = () => {
     selectedCategories.value = []
     selectedPriceRange.value = ''
-    selectedRating.value = []
+    selectedRating.value = ''
     showFiltersDialog.value = false
 }
 
@@ -112,61 +153,86 @@ const activeFilterCount = computed(() => {
 
     <Head title="Home" />
 
-    <div class="min-h-screen bg-gray-50">
+    <div class="min-h-screen bg-gradient-to-br from-gray-300 via-white to-gray-500 relative overflow-hidden">
+        <!-- Enhanced animated background -->
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+            <div
+                class="absolute -top-40 -right-32 w-80 h-80 bg-blue-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000">
+            </div>
+            <div
+                class="absolute top-60 -left-20 w-80 h-80 bg-purple-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000">
+            </div>
+            <div
+                class="absolute -bottom-20 left-40 w-80 h-80 bg-teal-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob">
+            </div>
+        </div>
+
+        <div class="absolute inset-0">
+            <div
+                class="absolute top-1/4 left-3/4 w-52 h-52 bg-teal-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000">
+            </div>
+            <!-- <div class="absolute animate-float-delayed top-1/3 right-1/3 w-5 h-5 bg-purple-300 rounded-full opacity-80">
+            </div>
+            <div class="absolute animate-float-slow top-2/3 left-1/5 w-10 h-10 bg-pink-400 rounded-full opacity-40">
+            </div>
+            <div class="absolute animate-float top-1/2 right-1/4 w-6 h-6 bg-blue-300 rounded-full opacity-70"></div>
+            <div
+                class="absolute animate-float-delayed bottom-1/4 left-2/3 w-5 h-5 bg-purple-400 rounded-full opacity-50">
+            </div> -->
+        </div>
+
         <QuickBookingStepperModal ref="eventModal" :categories="categories" />
 
         <!-- Navigation -->
-        <ClientNavbar />
+        <ClientNavbar class="relative z-20" />
 
         <!-- Hero Section -->
-        <section class="bg-white border-b border-gray-200">
-            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-                <div class="text-center max-w-3xl mx-auto">
-                    <h1 class="text-4xl font-semibold text-gray-900 mb-4">
-                        Find the right vendors for your event
+        <section class="relative z-10">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+                <div class="text-center max-w-3xl mx-auto reveal-animation">
+                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+                        Find the Perfect Vendors for Your <span class="text-blue-600">Event</span>
                     </h1>
-                    <p class="text-lg text-gray-600 mb-12">
+                    <p class="text-lg md:text-xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed">
                         Connect with verified professionals and manage your bookings in one place
                     </p>
 
                     <!-- Search Bar -->
-                    <div class="bg-white border border-gray-300 rounded-lg p-4 max-w-2xl mx-auto mb-8">
+                    <div
+                        class="bg-white/80 backdrop-blur-sm border border-gray-200/60 rounded-xl p-4 max-w-2xl mx-auto mb-10 shadow-lg reveal-animation animation-delay-100">
                         <div class="flex flex-col sm:flex-row gap-3">
                             <!-- Search Input -->
-                            <div class="flex-1">
+                            <div class="flex-1 relative">
+                                <Search class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                                    :size="20" />
                                 <input v-model="search" type="text" placeholder="Search vendors or services..."
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all duration-300 shadow-sm">
                             </div>
 
-                            <!-- Category Select -->
-                            <!-- Enhanced Filter Button -->
+                            <!-- Filter Button -->
                             <button @click="showFiltersDialog = true"
-                                class="relative flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all duration-200 shadow-sm hover:shadow">
-                                <Sliders :size="16" />
+                                class="relative flex items-center gap-2 px-5 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all duration-300 shadow-sm hover:shadow-md reveal-animation animation-delay-200">
+                                <Sliders :size="18" />
                                 <span class="hidden sm:inline">Filters</span>
                                 <!-- Active Filter Count Badge -->
                                 <div v-if="activeFilterCount > 0"
-                                    class="absolute -top-2 -right-2 w-5 h-5 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                                    class="absolute -top-2 -right-2 w-6 h-6 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center font-medium shadow-md">
                                     {{ activeFilterCount }}
                                 </div>
                             </button>
 
                             <!-- Search Button -->
                             <button @click="handleSearch"
-                                class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium">
+                                class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg reveal-animation animation-delay-300">
                                 Search
                             </button>
                         </div>
                     </div>
 
-
                     <!-- CTA Button -->
                     <button @click="eventModal.open()"
-                        class="inline-flex items-center px-6 py-3 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors font-medium">
-                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
+                        class="inline-flex items-center px-6 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-all duration-300 font-medium shadow-md hover:shadow-lg reveal-animation animation-delay-400">
+                        <Calendar class="h-5 w-5 mr-2" />
                         Start Planning
                     </button>
                 </div>
@@ -174,42 +240,53 @@ const activeFilterCount = computed(() => {
         </section>
 
         <!-- Quick Stats -->
-        <section class="py-12 bg-white">
+        <section class="py-16 relative z-10">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="text-center">
-                        <div class="text-2xl font-semibold text-gray-900 mb-1">3</div>
-                        <div class="text-sm text-gray-600">Active Bookings</div>
+                    <div
+                        class="text-center bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 reveal-animation">
+                        <div class="text-3xl font-bold text-blue-600 mb-2">3</div>
+                        <div class="text-sm text-gray-600 font-medium flex items-center justify-center">
+                            <Calendar class="h-4 w-4 mr-1" /> Active Bookings
+                        </div>
                     </div>
-                    <div class="text-center">
-                        <div class="text-2xl font-semibold text-gray-900 mb-1">12</div>
-                        <div class="text-sm text-gray-600">Completed Events</div>
+                    <div
+                        class="text-center bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 reveal-animation animation-delay-100">
+                        <div class="text-3xl font-bold text-blue-600 mb-2">12</div>
+                        <div class="text-sm text-gray-600 font-medium flex items-center justify-center">
+                            <Users class="h-4 w-4 mr-1" /> Completed Events
+                        </div>
                     </div>
-                    <div class="text-center">
-                        <div class="text-2xl font-semibold text-gray-900 mb-1">8</div>
-                        <div class="text-sm text-gray-600">Saved Vendors</div>
+                    <div
+                        class="text-center bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 reveal-animation animation-delay-200">
+                        <div class="text-3xl font-bold text-blue-600 mb-2">8</div>
+                        <div class="text-sm text-gray-600 font-medium flex items-center justify-center">
+                            <Heart class="h-4 w-4 mr-1" /> Saved Vendors
+                        </div>
                     </div>
-
                 </div>
             </div>
         </section>
 
         <!-- Featured Services -->
-        <section class="py-16 bg-gray-50">
+        <section class="py-16 relative z-10">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center mb-8">
+                <div class="flex justify-between items-center mb-10 reveal-animation">
                     <div>
-                        <h2 class="text-2xl font-semibold text-gray-900">Featured Services</h2>
-                        <p class="text-gray-600 mt-1">Top-rated vendors in your area</p>
+                        <h2 class="text-3xl font-bold text-gray-900">Featured Services</h2>
+                        <p class="text-gray-600 mt-2">Top-rated vendors in your area</p>
                     </div>
-                    <Link href="/services" class="text-blue-600 hover:text-blue-700 font-medium">
-                    View All →
+                    <Link href="/services"
+                        class="text-blue-600 hover:text-blue-700 font-medium flex items-center group">
+                    View All
+                    <ArrowRight class="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
                     </Link>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div v-for="service in services.data" :key="service.id"
-                        class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div v-for="(service, index) in services.data" :key="service.id"
+                        class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 reveal-animation"
+                        :class="`animation-delay-${(index % 3) * 100}`">
                         <NewServiceCard :service="service" />
                     </div>
                 </div>
@@ -217,166 +294,177 @@ const activeFilterCount = computed(() => {
         </section>
 
         <!-- Categories -->
-        <section class="py-16 bg-white">
+        <section class="py-16 relative z-10">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center mb-12">
-                    <h2 class="text-2xl font-semibold text-gray-900 mb-2">Browse Categories</h2>
-                    <p class="text-gray-600">Find vendors by service type</p>
+                <div class="text-center mb-14 reveal-animation">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-3">Browse Categories</h2>
+                    <p class="text-gray-600 text-lg">Find vendors by service type</p>
                 </div>
 
                 <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     <Link href="/categories/catering"
-                        class="group p-6 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
-                    <div class="w-12 h-12 bg-blue-50 rounded-lg mb-4 flex items-center justify-center">
-                        <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.293 2.293c-.63.63-.184 1.707.707 1.707H19M7 13v4a2 2 0 002 2h4a2 2 0 002-2v-4m-6 0a2 2 0 012-2h2a2 2 0 012 2">
-                            </path>
-                        </svg>
+                        class="group p-8 bg-white border border-gray-100 rounded-2xl hover:border-blue-100 hover:shadow-lg transition-all duration-300 reveal-animation">
+                    <div
+                        class="w-14 h-14 bg-blue-50 rounded-xl mb-5 flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-300">
+                        <ChefHat class="h-7 w-7 text-blue-600" />
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">Catering Services</h3>
-                    <p class="text-gray-600 text-sm">Professional food and beverage services</p>
+                    <h3
+                        class="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
+                        Catering Services</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">Professional food and beverage services</p>
                     </Link>
 
                     <Link href="/categories/photography"
-                        class="group p-6 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
-                    <div class="w-12 h-12 bg-blue-50 rounded-lg mb-4 flex items-center justify-center">
-                        <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
-                            </path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
+                        class="group p-8 bg-white border border-gray-100 rounded-2xl hover:border-blue-100 hover:shadow-lg transition-all duration-300 reveal-animation animation-delay-100">
+                    <div
+                        class="w-14 h-14 bg-blue-50 rounded-xl mb-5 flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-300">
+                        <Camera class="h-7 w-7 text-blue-600" />
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">Photography</h3>
-                    <p class="text-gray-600 text-sm">Professional event photographers</p>
+                    <h3
+                        class="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
+                        Photography</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">Professional event photographers</p>
                     </Link>
 
                     <Link href="/categories/sound-systems"
-                        class="group p-6 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
-                    <div class="w-12 h-12 bg-blue-50 rounded-lg mb-4 flex items-center justify-center">
-                        <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M12 8l-4 4H5a1 1 0 00-1 1v2a1 1 0 001 1h3l4 4V8z">
-                            </path>
-                        </svg>
+                        class="group p-8 bg-white border border-gray-100 rounded-2xl hover:border-blue-100 hover:shadow-lg transition-all duration-300 reveal-animation animation-delay-200">
+                    <div
+                        class="w-14 h-14 bg-blue-50 rounded-xl mb-5 flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-300">
+                        <Music class="h-7 w-7 text-blue-600" />
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">Sound Systems</h3>
-                    <p class="text-gray-600 text-sm">Audio equipment and technical support</p>
+                    <h3
+                        class="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
+                        Sound Systems</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">Audio equipment and technical support</p>
                     </Link>
 
                     <Link href="/categories/entertainers"
-                        class="group p-6 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
-                    <div class="w-12 h-12 bg-blue-50 rounded-lg mb-4 flex items-center justify-center">
-                        <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3">
-                            </path>
-                        </svg>
+                        class="group p-8 bg-white border border-gray-100 rounded-2xl hover:border-blue-100 hover:shadow-lg transition-all duration-300 reveal-animation animation-delay-300">
+                    <div
+                        class="w-14 h-14 bg-blue-50 rounded-xl mb-5 flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-300">
+                        <Mic2 class="h-7 w-7 text-blue-600" />
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">Entertainment</h3>
-                    <p class="text-gray-600 text-sm">Bands, DJs, and performers</p>
+                    <h3
+                        class="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
+                        Entertainment</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">Bands, DJs, and performers</p>
                     </Link>
 
                     <Link href="/categories/makeup"
-                        class="group p-6 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
-                    <div class="w-12 h-12 bg-blue-50 rounded-lg mb-4 flex items-center justify-center">
-                        <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z">
-                            </path>
-                        </svg>
+                        class="group p-8 bg-white border border-gray-100 rounded-2xl hover:border-blue-100 hover:shadow-lg transition-all duration-300 reveal-animation animation-delay-400">
+                    <div
+                        class="w-14 h-14 bg-blue-50 rounded-xl mb-5 flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-300">
+                        <Sparkles class="h-7 w-7 text-blue-600" />
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">Makeup Artists</h3>
-                    <p class="text-gray-600 text-sm">Professional beauty services</p>
+                    <h3
+                        class="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
+                        Makeup Artists</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">Professional beauty services</p>
                     </Link>
 
                     <Link href="/categories/attire"
-                        class="group p-6 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
-                    <div class="w-12 h-12 bg-blue-50 rounded-lg mb-4 flex items-center justify-center">
-                        <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                        </svg>
+                        class="group p-8 bg-white border border-gray-100 rounded-2xl hover:border-blue-100 hover:shadow-lg transition-all duration-300 reveal-animation animation-delay-500">
+                    <div
+                        class="w-14 h-14 bg-blue-50 rounded-xl mb-5 flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-300">
+                        <Shirt class="h-7 w-7 text-blue-600" />
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">Attire Rentals</h3>
-                    <p class="text-gray-600 text-sm">Formal wear and costume rentals</p>
+                    <h3
+                        class="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
+                        Attire Rentals</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">Formal wear and costume rentals</p>
                     </Link>
                 </div>
             </div>
         </section>
 
         <!-- Footer -->
-        <footer class="bg-gray-900 text-white py-12">
+        <footer class="bg-gradient-to-b from-gray-900 to-gray-800 text-white py-16 relative z-10">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="grid md:grid-cols-4 gap-8">
-                    <div>
-                        <div class="text-xl font-semibold mb-4">Eventory</div>
+                <div class="grid md:grid-cols-4 gap-10">
+                    <div class="reveal-animation">
+                        <div class="text-2xl font-bold mb-5">Eventory</div>
                         <p class="text-gray-400 text-sm leading-relaxed">
                             Connecting event planners with trusted local vendors.
                         </p>
                     </div>
 
-                    <div>
-                        <h3 class="font-medium mb-4">Platform</h3>
-                        <ul class="space-y-2 text-sm">
+                    <div class="reveal-animation animation-delay-100">
+                        <h3 class="font-semibold mb-5 text-lg">Platform</h3>
+                        <ul class="space-y-3 text-sm">
                             <li>
-                                <Link href="/dashboard" class="text-gray-400 hover:text-white">Dashboard</Link>
+                                <Link href="/dashboard"
+                                    class="text-gray-400 hover:text-white transition-colors duration-300">Dashboard
+                                </Link>
                             </li>
                             <li>
-                                <Link href="/bookings" class="text-gray-400 hover:text-white">My Bookings</Link>
+                                <Link href="/bookings"
+                                    class="text-gray-400 hover:text-white transition-colors duration-300">My Bookings
+                                </Link>
                             </li>
                             <li>
-                                <Link href="/services" class="text-gray-400 hover:text-white">Browse Services</Link>
+                                <Link href="/services"
+                                    class="text-gray-400 hover:text-white transition-colors duration-300">Browse
+                                Services</Link>
                             </li>
                             <li>
-                                <Link href="/vendors" class="text-gray-400 hover:text-white">Find Vendors</Link>
+                                <Link href="/vendors"
+                                    class="text-gray-400 hover:text-white transition-colors duration-300">Find Vendors
+                                </Link>
                             </li>
                         </ul>
                     </div>
 
-                    <div>
-                        <h3 class="font-medium mb-4">Categories</h3>
-                        <ul class="space-y-2 text-sm">
+                    <div class="reveal-animation animation-delay-200">
+                        <h3 class="font-semibold mb-5 text-lg">Categories</h3>
+                        <ul class="space-y-3 text-sm">
                             <li>
-                                <Link href="/categories/catering" class="text-gray-400 hover:text-white">Catering</Link>
-                            </li>
-                            <li>
-                                <Link href="/categories/photography" class="text-gray-400 hover:text-white">Photography
+                                <Link href="/categories/catering"
+                                    class="text-gray-400 hover:text-white transition-colors duration-300">Catering
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/categories/sound-systems" class="text-gray-400 hover:text-white">Audio &
+                                <Link href="/categories/photography"
+                                    class="text-gray-400 hover:text-white transition-colors duration-300">Photography
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/categories/sound-systems"
+                                    class="text-gray-400 hover:text-white transition-colors duration-300">Audio &
                                 Sound</Link>
                             </li>
                             <li>
-                                <Link href="/categories/entertainers" class="text-gray-400 hover:text-white">
+                                <Link href="/categories/entertainers"
+                                    class="text-gray-400 hover:text-white transition-colors duration-300">
                                 Entertainment</Link>
                             </li>
                         </ul>
                     </div>
 
-                    <div>
-                        <h3 class="font-medium mb-4">Support</h3>
-                        <ul class="space-y-2 text-sm">
+                    <div class="reveal-animation animation-delay-300">
+                        <h3 class="font-semibold mb-5 text-lg">Support</h3>
+                        <ul class="space-y-3 text-sm">
                             <li>
-                                <Link href="/help" class="text-gray-400 hover:text-white">Help Center</Link>
+                                <Link href="/help"
+                                    class="text-gray-400 hover:text-white transition-colors duration-300">Help Center
+                                </Link>
                             </li>
                             <li>
-                                <Link href="/contact" class="text-gray-400 hover:text-white">Contact</Link>
+                                <Link href="/contact"
+                                    class="text-gray-400 hover:text-white transition-colors duration-300">Contact</Link>
                             </li>
                             <li>
-                                <Link href="/about" class="text-gray-400 hover:text-white">About</Link>
+                                <Link href="/about"
+                                    class="text-gray-400 hover:text-white transition-colors duration-300">About</Link>
                             </li>
                             <li>
-                                <Link href="/privacy" class="text-gray-400 hover:text-white">Privacy</Link>
+                                <Link href="/privacy"
+                                    class="text-gray-400 hover:text-white transition-colors duration-300">Privacy</Link>
                             </li>
                         </ul>
                     </div>
                 </div>
 
-                <div class="border-t border-gray-800 mt-8 pt-8">
+                <div class="border-t border-gray-800 mt-12 pt-8 reveal-animation">
                     <p class="text-gray-400 text-sm text-center">
                         © 2024 Eventory. All rights reserved. | Capstone Project
                     </p>
@@ -387,10 +475,10 @@ const activeFilterCount = computed(() => {
 
     <!-- Enhanced Filters Dialog -->
     <Dialog v-model:open="showFiltersDialog">
-        <DialogContent class="sm:max-w-4xl w-full max-h-[85vh] overflow-hidden flex flex-col">
+        <DialogContent class="sm:max-w-4xl w-full max-h-[85vh] overflow-hidden flex flex-col rounded-2xl">
             <DialogHeader class="pb-4 border-b border-gray-200">
-                <DialogTitle class="text-xl font-semibold text-gray-900">Advanced Filters</DialogTitle>
-                <DialogDescription class="text-gray-600">
+                <DialogTitle class="text-2xl font-bold text-gray-900">Advanced Filters</DialogTitle>
+                <DialogDescription class="text-gray-600 mt-1">
                     Refine your search to find exactly what you need
                 </DialogDescription>
             </DialogHeader>
@@ -400,16 +488,16 @@ const activeFilterCount = computed(() => {
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <!-- Category Filter -->
                     <div>
-                        <div class="flex items-center gap-2 mb-4">
-                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <Filter :size="16" class="text-blue-600" />
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <Filter :size="18" class="text-blue-600" />
                             </div>
-                            <h3 class="text-base font-semibold text-gray-900">Service Categories</h3>
+                            <h3 class="text-lg font-semibold text-gray-900">Service Categories</h3>
                         </div>
-                        <div class="space-y-3 max-h-64 overflow-y-auto">
+                        <div class="space-y-3 max-h-64 overflow-y-auto pr-2">
                             <button v-for="category in categories" :key="category.id"
                                 @click="toggleCategory(category.id)" :class="[
-                                    'w-full flex items-center justify-between px-4 py-3 rounded-lg border text-sm transition-all duration-200',
+                                    'w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm transition-all duration-200',
                                     selectedCategories.includes(category.id)
                                         ? 'bg-blue-50 border-blue-200 text-blue-700 shadow-sm'
                                         : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
@@ -431,19 +519,16 @@ const activeFilterCount = computed(() => {
 
                     <!-- Price Range -->
                     <div>
-                        <div class="flex items-center gap-2 mb-4">
-                            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                                <Database :size="16" class="text-green-600" />
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                                <Database :size="18" class="text-green-600" />
                             </div>
-                            <h3 class="text-base font-semibold text-gray-900">Budget Range</h3>
+                            <h3 class="text-lg font-semibold text-gray-900">Budget Range</h3>
                         </div>
                         <div class="space-y-3">
-
-
-
                             <button v-for="range in priceRanges" :key="range.id"
                                 @click="selectedPriceRange = selectedPriceRange === range.id ? '' : range.id" :class="[
-                                    'w-full flex items-center justify-between px-4 py-3 rounded-lg border text-sm transition-all duration-200',
+                                    'w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm transition-all duration-200',
                                     selectedPriceRange === range.id
                                         ? 'bg-green-50 border-green-200 text-green-700 shadow-sm'
                                         : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
@@ -464,16 +549,16 @@ const activeFilterCount = computed(() => {
 
                     <!-- Rating Filter -->
                     <div>
-                        <div class="flex items-center gap-2 mb-4">
-                            <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                                <Star :size="16" class="text-yellow-600" />
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center">
+                                <Star :size="18" class="text-yellow-600" />
                             </div>
-                            <h3 class="text-base font-semibold text-gray-900">Minimum Rating</h3>
+                            <h3 class="text-lg font-semibold text-gray-900">Minimum Rating</h3>
                         </div>
                         <div class="space-y-3">
                             <button v-for="rating in ratingFilters" :key="rating.value"
                                 @click="selectedRating = selectedRating === rating.value ? '' : rating.value" :class="[
-                                    'w-full flex items-center justify-between px-4 py-3 rounded-lg border text-sm transition-all duration-200',
+                                    'w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm transition-all duration-200',
                                     selectedRating === rating.value
                                         ? 'bg-yellow-50 border-yellow-200 text-yellow-700 shadow-sm'
                                         : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
@@ -503,16 +588,135 @@ const activeFilterCount = computed(() => {
             <!-- Footer -->
             <div class="flex items-center justify-between pt-6 border-t border-gray-200">
                 <button @click="clearFilters"
-                    class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                    class="flex items-center gap-2 px-5 py-3 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all duration-300 font-medium">
                     <X :size="16" />
                     Clear All Filters
                 </button>
                 <button @click="applyFilters"
-                    class="flex items-center gap-2 px-6 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm">
+                    class="flex items-center gap-2 px-6 py-3 text-sm bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg">
                     <Check :size="16" />
                     Apply Filters
                 </button>
             </div>
         </DialogContent>
     </Dialog>
+
+
 </template>
+
+<style>
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.2;
+    }
+
+    50% {
+        transform: translateY(-20px) scale(1.05);
+        opacity: 0.25;
+    }
+}
+
+@keyframes reveal {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-float {
+    animation: float 8s ease-in-out infinite;
+}
+
+.animation-delay-2000 {
+    animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+    animation-delay: 4s;
+}
+
+.reveal-animation {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal-animation.animated {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.animation-delay-100 {
+    transition-delay: 100ms;
+}
+
+.animation-delay-200 {
+    transition-delay: 200ms;
+}
+
+.animation-delay-300 {
+    transition-delay: 300ms;
+}
+
+.animation-delay-400 {
+    transition-delay: 400ms;
+}
+
+.animation-delay-500 {
+    transition-delay: 500ms;
+}
+
+
+/* BLOB */
+@keyframes blob {
+    0% {
+        transform: translate(0px, 0px) scale(1);
+    }
+
+    33% {
+        transform: translate(30px, -50px) scale(1.1);
+    }
+
+    66% {
+        transform: translate(-20px, 20px) scale(0.9);
+    }
+
+    100% {
+        transform: translate(0px, 0px) scale(1);
+    }
+}
+
+.animate-blob {
+    animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+    animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+    animation-delay: 4s;
+}
+
+.animate-float {
+    animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+    animation: float-delayed 8s ease-in-out infinite;
+    animation-delay: 2s;
+}
+
+.animate-float-slow {
+    animation: float-slow 10s ease-in-out infinite;
+    animation-delay: 1s;
+}
+</style>
