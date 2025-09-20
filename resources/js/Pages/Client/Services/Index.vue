@@ -130,8 +130,9 @@ console.log(props.filters.categories)
 
 
 <template>
+    <ClientNavbar />
     <div class="min-h-screen bg-gray-50">
-        <ClientNavbar />
+
 
         <!-- Enhanced Filters Section -->
         <div class="bg-white border-b border-gray-100 shadow-sm">

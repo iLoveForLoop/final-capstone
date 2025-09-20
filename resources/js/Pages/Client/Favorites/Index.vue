@@ -95,8 +95,9 @@ const formatPrice = (price) => {
 </script>
 
 <template>
+    <ClientNavbar />
     <div class="min-h-screen bg-gray-50">
-        <ClientNavbar />
+
         <!-- Header Section -->
         <div class="bg-white border-b border-gray-200">
             <div class="max-w-7xl mx-auto px-6 py-8">

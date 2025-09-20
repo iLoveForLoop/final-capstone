@@ -27,7 +27,7 @@ use Inertia\Inertia;
 
 Route::get('/', [WelcomeController::class, 'index']);
 //OPEN SERVICES PAGE
-Route::get('/services', [ClientController::class, 'services'])->name('service.index');
+Route::get('/services', [WelcomeController::class, 'servicesPage'])->name('service.index');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
@@ -149,6 +149,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/conversations/{conversation}/messages', [MessageController::class, 'getMessages']);
     Route::post('/conversations/{conversation}/messages', [MessageController::class, 'store']);
     Route::post('/conversations', [MessageController::class, 'createConversation'])->name('conversation.create');
+    Route::post('/conversations/{conversation}/mark-as-read', [MessageController::class, 'markAsRead']);
+
 });
 
 

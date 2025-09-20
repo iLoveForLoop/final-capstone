@@ -259,4 +259,27 @@ class MessageController extends Controller
             'conversations' => $conversations
         ]);
     }
+
+    // ConversationController.php
+    public function markAsRead(Conversation $conversation)
+    {
+        $user = auth()->user();
+
+        if (!$conversation->hasParticipant($user->id)) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $conversation->messages()
+            ->where('user_id', '!=', $user->id)
+            ->whereDoesntHave('reads', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->get()
+            ->each(function ($message) use ($user) {
+                $message->markAsReadBy($user->id);
+            });
+
+        return response()->json(['success' => true]);
+    }
+
 }

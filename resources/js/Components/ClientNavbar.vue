@@ -77,7 +77,8 @@ notifications.value = sampleNotifications.value
 // Count unread items
 const unreadNotifications = computed(() => notifications.value.filter(n => !n.read).length)
 const unreadMessages = computed(() => {
-    console.log('computed running');
+
+    // if ()
 
     return conversations.value.reduce((total, conv) => total + (conv.unread_count || 0), 0)
 })
@@ -124,7 +125,7 @@ const loadChatMessages = async (conversationId) => {
 // Chat window functions
 const openChatWindow = async (message) => {
 
-    console.log('message: ', message)
+    // console.log('message: ', message)
     // Mark conversation as read (update unread count)
     const conversation = conversations.value.find(c => c.id === message.id)
     if (conversation) {
@@ -173,12 +174,11 @@ const subscribeToConversation = (conversationId) => {
 
 
     window.Echo.private(`conversation.${conversationId}`)
-        .listen('.MessageSent', (e) => {
-            // Find the open chat and add the new message
-
-
+        .listen('.MessageSent', async (e) => {
             const chat = openChats.value.find(c => c.conversationId === conversationId)
+
             if (chat) {
+                // Add the new message
                 chat.chatMessages.push({
                     id: e.message.id,
                     text: e.message.content,
@@ -186,17 +186,26 @@ const subscribeToConversation = (conversationId) => {
                     time: formatTime(e.message.created_at)
                 })
 
-                // Scroll to bottom
                 nextTick(() => scrollChatToBottom())
-            }
 
-            // Update the conversation in the list
-            const conversation = conversations.value.find(c => c.id === conversationId)
-            if (conversation && !e.message.is_own) {
-                conversation.last_message = e.message
-                conversation.unread_count = (conversation.unread_count || 0) + 1
+                // If the user is looking at this chat and message is NOT their own
+                if (!e.message.is_own) {
+                    await axios.post(`/conversations/${conversationId}/mark-as-read`)
+                    const conversation = conversations.value.find(c => c.id === conversationId)
+                    if (conversation) {
+                        conversation.unread_count = 0
+                    }
+                }
+            } else {
+                // Chat window is closed → increase unread
+                const conversation = conversations.value.find(c => c.id === conversationId)
+                if (conversation && !e.message.is_own) {
+                    conversation.last_message = e.message
+                    conversation.unread_count = (conversation.unread_count || 0) + 1
+                }
             }
         })
+
 }
 
 const closeChatWindow = (chatId) => {
@@ -352,7 +361,7 @@ onMounted(() => {
             ]
         }
 
-        console.log(newConversationData);
+        // console.log(newConversationData);
 
         try {
             const res = await axios.post(route('conversation.create', newConversationData))
@@ -577,7 +586,7 @@ onUnmounted(() => {
                                                         <div class="flex items-center justify-between">
                                                             <p class="font-medium text-gray-900 truncate">{{
                                                                 message.sender
-                                                            }}</p>
+                                                                }}</p>
                                                             <div class="flex items-center space-x-1">
                                                                 <span v-if="!message.read"
                                                                     class="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></span>
