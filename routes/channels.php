@@ -20,3 +20,16 @@ Broadcast::channel('users.{id}', fn ($user, $id) => (int) $user->id === (int) $i
 Broadcast::channel('messaging', function ($user) {
     return ['id' => $user->id, 'name' => $user->name];
 });
+
+
+
+//FOR NOTIFICATIONS
+Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
+    return (int) $user->id === (int) $id;
+});
+
+// Add this channel for vendor notifications
+Broadcast::channel('vendor.{vendorId}', function ($user, $vendorId) {
+    // Check if the authenticated user owns the vendor account
+    return $user->vendor && (int) $user->vendor->id === (int) $vendorId;
+});

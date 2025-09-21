@@ -5,6 +5,7 @@ import { router } from '@inertiajs/vue3'
 import { ChevronDown, Search, Filter, Calendar, Eye, Check, X, CircleCheck, Download } from 'lucide-vue-next'
 import axios from 'axios'
 import BookingDetailsModal from '@/Components/BookingDetailsModal.vue'
+import { useNotificationStore } from '@/store/notification'
 
 const props = defineProps({
     bookings: {
@@ -165,14 +166,19 @@ const isLoading = (bookingId, action) => {
     return loadingActions.value[bookingId] === action
 }
 
-onBeforeUnmount(async () => {
-    try {
-        console.log('test')
-        await axios.post(route('vendor.notifications.readAll'))
-    } catch (error) {
-        console.log(error.message)
-    }
+const notificationStore = useNotificationStore()
 
+onMounted(async () => {
+    try {
+        await axios.post('/vendor/bookings/notifications/mark-read')
+        notificationStore.notifications.forEach(n => {
+            if (n.type === 'booking_received') {
+                notificationStore.markAsRead(n.id)
+            }
+        })
+    } catch (error) {
+        console.error('Failed to mark booking notifications as read:', error)
+    }
 })
 
 const bookingDetailsModal = ref(null)

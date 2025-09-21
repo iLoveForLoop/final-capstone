@@ -94,10 +94,15 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'role:vendor'])->gro
     //Photography
     Route::resource('photography-services', PhotographyServiceController::class);
 
-    //notifications
+    //notifications from booking controller
     Route::post('/notifications/{notification}/read', [VendorController::class, 'markNotificationAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [VendorController::class, 'markAllNotificationsAsRead'])->name('notifications.readAll');
     Route::get('/notifications', [VendorController::class, 'getNotificationsList'])->name('notifications.list');
+
+    // notifications from notificatons controller
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/mark-read', [NotificationController::class, 'markAllRead']);
+    Route::post('/bookings/notifications/mark-read', [NotificationController::class, 'markBookingRead']);
 
     //bookings
     // Route::resource('bookings', BookingController::class);
@@ -144,6 +149,7 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'role:vendor'])->gro
 });
 
 
+// CONVERSATION AND MESSAGING
 Route::middleware(['auth'])->group(function () {
     Route::get('/conversations', [MessageController::class, 'getConversations']);
     Route::get('/conversations/{conversation}/messages', [MessageController::class, 'getMessages']);

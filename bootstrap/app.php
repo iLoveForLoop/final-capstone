@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // ✅ Move all aliases here inside same block
         $middleware->alias([
+            'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,

@@ -57,9 +57,15 @@ onUnmounted(() => {
             @click="toggleDropdown" @blur="handleBlur" ref="dropdownButton">
             <!-- Avatar -->
             <div
-                class="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white text-sm font-medium">
-                {{ getInitials(page.props.auth.user.name) }}
+                class="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white text-sm font-medium overflow-hidden">
+                <template v-if="page.props.auth.avatar">
+                    <img :src="page.props.auth.avatar" alt="User Avatar" class="w-full h-full object-cover" />
+                </template>
+                <template v-else>
+                    {{ getInitials(page.props.auth.user.name) }}
+                </template>
             </div>
+
 
             <!-- Chevron icon -->
             <!-- <svg class="w-4 h-4 text-gray-500 transition-transform duration-150"

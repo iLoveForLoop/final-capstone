@@ -8,6 +8,20 @@ import VendorLayout from '@/Layouts/VendorLayout.vue'
 import { computed, ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 import { Link } from '@inertiajs/vue3';
+import { useUIStore } from '@/store/ui'
+import { useNotifications } from '@/Composables/useNotifications' // Add this import
+
+const ui = ref(useUIStore())
+
+// Use the notification composable
+const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    getNotificationIcon,
+    getNotificationColor
+} = useNotifications()
 
 const props = defineProps({
     stats: {
@@ -73,15 +87,14 @@ const isChartDataValid = computed(() => {
         Array.isArray(props.chartData.bookings.bookings)
 })
 
-
-//NOTIFICATIONS
+// NOTIFICATIONS - Updated to use composable
 const getNotificationIconClass = (notification) => {
     const baseClass = 'h-10 w-10 rounded-full flex items-center justify-center';
     const colorClass = notification.read ? 'bg-gray-100 text-gray-400' : `bg-${notification.color}-100 text-${notification.color}-600`;
     return `${baseClass} ${colorClass}`;
 };
 
-const getNotificationIcon = (type) => {
+const getNotificationIconSVG = (type) => {
     const icons = {
         'calendar-plus': `<path d="M8 2v4" /><path d="M16 2v4" /><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M3 10h18" /><path d="M10 16h4" /><path d="M12 14v4" />`,
         'check-circle': `<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />`,
@@ -96,10 +109,14 @@ const getNotificationIcon = (type) => {
     return icons[type] || icons['bell'];
 };
 
+// Updated notification click handler using composable
 const markNotificationAsRead = async (notificationId) => {
     try {
+        // Mark as read locally using composable
+        markAsRead(notificationId)
+
+        // Also mark as read on server
         await router.post(route('vendor.notifications.read', { notification: notificationId }));
-        // Optionally refresh or update the notification status locally
     } catch (error) {
         console.error('Error marking notification as read:', error);
     }
@@ -329,19 +346,22 @@ const markNotificationAsRead = async (notificationId) => {
                         </ul>
                     </div>
 
-                    <!-- Notifications -->
+                    <!-- Notifications - Updated to use composable data -->
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
                         <div class="flex justify-between items-center mb-5">
                             <h2 class="text-lg font-semibold text-gray-800">
                                 Notifications
-                                <span v-if="unreadNotificationCount > 0"
+                                <!-- Use composable unreadCount instead of prop -->
+                                <span v-if="unreadCount > 0"
                                     class="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                                    {{ unreadNotificationCount }}
+                                    {{ unreadCount }}
                                 </span>
                             </h2>
-                            <a href="#" class="text-sm text-indigo-600 hover:underline">View All</a>
+                            <button @click="ui.toggleVendorNotificationOpen"
+                                class="text-sm text-indigo-600 hover:underline"> View All</button>
                         </div>
                         <ul class="space-y-4">
+                            <!-- Use composable notifications instead of prop -->
                             <li v-for="notification in notifications" :key="notification.id"
                                 class="flex items-start cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
                                 @click="notification.read ? null : markNotificationAsRead(notification.id)">
@@ -350,7 +370,7 @@ const markNotificationAsRead = async (notificationId) => {
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                             stroke-linecap="round" stroke-linejoin="round"
-                                            v-html="getNotificationIcon(notification.icon)">
+                                            v-html="getNotificationIconSVG(notification.icon)">
                                         </svg>
                                     </div>
                                 </div>
@@ -426,7 +446,7 @@ const markNotificationAsRead = async (notificationId) => {
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap">
                                             <div class="text-sm font-medium text-gray-900">{{ booking.formatted_amount
-                                            }}</div>
+                                                }}</div>
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap">
                                             <div class="flex items-center">

@@ -4,6 +4,7 @@ export const useUIStore = defineStore('ui', {
     state: () => ({
         sidebarCollapsed: false,
         isEventCalendarView: false,
+        isVendorNotificationOpen: false,
     }),
 
     actions: {
@@ -11,8 +12,11 @@ export const useUIStore = defineStore('ui', {
             this.sidebarCollapsed = !this.sidebarCollapsed;
         },
         toggleEventCalendarView() {
-            console.log('event');
             this.isEventCalendarView = !this.isEventCalendarView;
+        },
+        toggleVendorNotificationOpen() {
+            console.log('event');
+            this.isVendorNotificationOpen = !this.isVendorNotificationOpen;
         },
     },
 

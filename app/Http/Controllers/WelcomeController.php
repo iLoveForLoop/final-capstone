@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\RedirectHelper;
 use App\Models\Service;
 use App\Models\ServiceCategory;
 use Illuminate\Http\Request;
@@ -11,6 +12,11 @@ use Illuminate\Support\Facades\Route;
 class WelcomeController extends Controller
 {
     public function index(){
+
+        if (auth()->check()) {
+            return RedirectHelper::redirectBasedOnRole(auth()->user());
+        }
+
         $query = Service::with(['category', 'vendor', 'cateringService']);
         $categories = ServiceCategory::all();
 

@@ -34,6 +34,7 @@ class HandleInertiaRequests extends Middleware
 
         $user = Auth::user();
         $hasCatering = false;
+        $avatar = null;
 
 
 
@@ -46,6 +47,8 @@ class HandleInertiaRequests extends Middleware
                     fn($category) => strtolower($category->name) == 'catering'
                 )
                 : false;
+
+            $avatar = $user->getFirstMediaUrl('images');
         }
 
 
@@ -54,7 +57,9 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
-                'hasCatering' => $hasCatering
+                'avatar' => $avatar,
+                'hasCatering' => $hasCatering,
+                'routeName' => \Route::currentRouteName()
 
             ],
             'flash' => [

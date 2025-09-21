@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Notification;
 use App\Models\Vendor;
 use App\Models\Booking;
+use App\Events\NotificationCreated;
 
 class NotificationService
 {
@@ -14,7 +15,7 @@ class NotificationService
         $client = $booking->user;
         $service = $booking->service;
 
-        return Notification::createForVendor(
+        $notification = Notification::createForVendor(
             $vendor->id,
             Notification::TYPE_BOOKING_RECEIVED,
             'New Booking Received',
@@ -28,6 +29,11 @@ class NotificationService
             'high',
             "/vendor/bookings/{$booking->id}"
         );
+
+        // Broadcast the notification
+        broadcast(new NotificationCreated($notification));
+
+        return $notification;
     }
 
     public function createBookingCompletedNotification($booking)
@@ -36,7 +42,7 @@ class NotificationService
         $client = $booking->user;
         $service = $booking->service;
 
-        return Notification::createForVendor(
+        $notification = Notification::createForVendor(
             $vendor->id,
             Notification::TYPE_BOOKING_COMPLETED,
             'Booking Completed',
@@ -50,6 +56,11 @@ class NotificationService
             'normal',
             "/vendor/bookings/{$booking->id}"
         );
+
+        // Broadcast the notification
+        broadcast(new NotificationCreated($notification));
+
+        return $notification;
     }
 
     public function createBookingConfirmedNotification($booking)
@@ -58,7 +69,7 @@ class NotificationService
         $client = $booking->user;
         $service = $booking->service;
 
-        return Notification::createForVendor(
+        $notification = Notification::createForVendor(
             $vendor->id,
             Notification::TYPE_BOOKING_CONFIRMED,
             'Booking Confirmed',
@@ -72,6 +83,11 @@ class NotificationService
             'normal',
             "/vendor/bookings/{$booking->id}"
         );
+
+        // Broadcast the notification
+        broadcast(new NotificationCreated($notification));
+
+        return $notification;
     }
 
     public function createBookingCancelledNotification($booking)
@@ -80,7 +96,7 @@ class NotificationService
         $client = $booking->user;
         $service = $booking->service;
 
-        return Notification::createForVendor(
+        $notification = Notification::createForVendor(
             $vendor->id,
             Notification::TYPE_BOOKING_CANCELLED,
             'Booking Cancelled',
@@ -93,11 +109,16 @@ class NotificationService
             'high',
             "/vendor/bookings/{$booking->id}"
         );
+
+        // Broadcast the notification
+        broadcast(new NotificationCreated($notification));
+
+        return $notification;
     }
 
     public function createServiceUpdatedNotification($service, $vendor)
     {
-        return Notification::createForVendor(
+        $notification = Notification::createForVendor(
             $vendor->id,
             Notification::TYPE_SERVICE_UPDATED,
             'Service Updated',
@@ -109,6 +130,11 @@ class NotificationService
             'low',
             "/vendor/services/{$service->id}/edit"
         );
+
+        // Broadcast the notification
+        broadcast(new NotificationCreated($notification));
+
+        return $notification;
     }
 
     public function createPaymentReceivedNotification($booking, $amount)
@@ -116,7 +142,7 @@ class NotificationService
         $vendor = $booking->service->vendor;
         $client = $booking->user;
 
-        return Notification::createForVendor(
+        $notification = Notification::createForVendor(
             $vendor->id,
             Notification::TYPE_PAYMENT_RECEIVED,
             'Payment Received',
@@ -129,6 +155,11 @@ class NotificationService
             'normal',
             "/vendor/payments"
         );
+
+        // Broadcast the notification
+        broadcast(new NotificationCreated($notification));
+
+        return $notification;
     }
 
     public function createReviewReceivedNotification($review, $vendor)
@@ -136,7 +167,7 @@ class NotificationService
         $client = $review->user;
         $rating = $review->rating;
 
-        return Notification::createForVendor(
+        $notification = Notification::createForVendor(
             $vendor->id,
             Notification::TYPE_REVIEW_RECEIVED,
             'New Review Received',
@@ -149,11 +180,16 @@ class NotificationService
             'normal',
             "/vendor/reviews"
         );
+
+        // Broadcast the notification
+        broadcast(new NotificationCreated($notification));
+
+        return $notification;
     }
 
     public function createSystemAlertNotification($vendor, $title, $message, $priority = 'normal')
     {
-        return Notification::createForVendor(
+        $notification = Notification::createForVendor(
             $vendor->id,
             Notification::TYPE_SYSTEM_ALERT,
             $title,
@@ -161,6 +197,11 @@ class NotificationService
             null,
             $priority
         );
+
+        // Broadcast the notification
+        broadcast(new NotificationCreated($notification));
+
+        return $notification;
     }
 
     public function getNotificationsForVendor($vendorId, $limit = 10, $unreadOnly = false)
@@ -199,4 +240,7 @@ class NotificationService
     {
         return Notification::where('created_at', '<', now()->subDays($days))->delete();
     }
+
+
+
 }

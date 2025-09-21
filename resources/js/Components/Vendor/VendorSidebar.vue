@@ -15,27 +15,45 @@ import {
     BadgeCheck
 } from 'lucide-vue-next';
 import { useUIStore } from '@/store/ui';
+import { useNotifications } from '@/Composables/useNotifications'; // Add this import
 import NewNavLink from '../NewNavLink.vue';
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import axios from 'axios';
+import { storeToRefs } from 'pinia';
+import { useNotificationStore } from '@/store/notification';
 
 const ui = ref(useUIStore())
 
-const unreadNotificationCount = ref(null)
+// Use the notification composable to get booking-specific unread count
+// const { bookingUnreadCount } = useNotifications()
 
-const fetchUnreadNotifications = async () => {
+// Keep your existing method as fallback for initial load
+// const unreadNotificationCount = ref(null)
 
-    try {
-        const response = await axios.get(`/api/vendor-bookings-notifications`)
-        unreadNotificationCount.value = response.data.success ? response.data.data : []
+// const fetchUnreadNotifications = async () => {
+//     try {
+//         const response = await axios.get(`/api/vendor-bookings-notifications`)
+//         unreadNotificationCount.value = response.data.success ? response.data.data : 0
+//     } catch (error) {
+//         console.log(error.response?.data?.message || 'Network error occurred')
+//     }
+// }
 
-    } catch (error) {
-        console.log(error.response?.data?.message || 'Network error occurred')
-    }
-}
+// onMounted(() => {
+//     fetchUnreadNotifications()
+// })
+
+const notificationStore = useNotificationStore()
+const { bookingUnreadCount } = storeToRefs(notificationStore)
 
 onMounted(() => {
-    fetchUnreadNotifications()
+    notificationStore.initializeNotifications()
+    notificationStore.listenForNotifications()
+    notificationStore.requestNotificationPermission()
+})
+
+onUnmounted(() => {
+    notificationStore.cleanup()
 })
 
 </script>
@@ -95,7 +113,8 @@ onMounted(() => {
                         </span>
                     </NewNavLink>
 
-                    <NewNavLink :href="route('vendor.bookings.index')" :notificationCount="unreadNotificationCount"
+                    <!-- Updated to use booking-specific real-time count -->
+                    <NewNavLink :href="route('vendor.bookings.index')" :notificationCount="bookingUnreadCount"
                         :active="route().current('vendor.bookings.index')" :isCollapsed="ui.sidebarCollapsed">
                         <template #icon>
                             <BookUser class="h-5 w-5" />
