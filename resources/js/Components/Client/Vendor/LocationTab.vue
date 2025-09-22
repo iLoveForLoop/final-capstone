@@ -2,6 +2,7 @@
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Clock, Globe, Info, MapPin, Navigation, Truck, Wrench } from 'lucide-vue-next';
+import VendorLocationMap from './VendorLocationMap.vue';
 
 
 defineProps({
@@ -13,18 +14,20 @@ defineProps({
 
 <template>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+
         <!-- Map Placeholder -->
         <Card class="map-container">
             <CardContent class="pt-6">
                 <div class="map-placeholder">
-                    <MapPin :size="64" class="text-indigo-300 mb-4 md:mb-6" />
+                    <!-- <MapPin :size="64" class="text-indigo-300 mb-4 md:mb-6" />
                     <h3 class="text-xl md:text-2xl font-bold text-gray-800 mb-3">Interactive Map
                     </h3>
                     <p class="text-gray-600 text-base md:text-lg">{{ vendor.address }}</p>
                     <Button class="mt-4 md:mt-6 bg-white">
                         <Navigation :size="18" class="mr-2" />
                         Get Directions
-                    </Button>
+                    </Button> -->
+                    <VendorLocationMap />
                 </div>
             </CardContent>
         </Card>
