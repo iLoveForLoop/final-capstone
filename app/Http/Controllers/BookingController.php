@@ -33,7 +33,7 @@ class BookingController extends Controller
 
         } elseif ($user->hasRole('client')) {
             $query = $user->bookings()
-                ->with(['service.category', 'service.cateringService', 'event', 'service.vendor', 'review']);
+                ->with(['service.category', 'service.cateringService', 'event', 'service.vendor', 'review', 'service.vendor.user']);
         } else {
             return back()->with('error', 'Unauthorized.');
         }
@@ -112,7 +112,7 @@ class BookingController extends Controller
                 : false;
 
             return [
-                // 'id' => 'BK' . str_pad($booking->id, 3, '0', STR_PAD_LEFT),
+                'f_id' => 'BK' . str_pad($booking->id, 3, '0', STR_PAD_LEFT),
                 'id' => $booking->id,
                 'client' => $booking->user->name ?? 'N/A',
                 'client_email' => $booking->user->email ?? 'N/A',
@@ -140,6 +140,7 @@ class BookingController extends Controller
                 'is_per_pax' => $is_per_pax,
                 'service_image' => $booking->service->getFirstMediaUrl('images'),
                 'vendor' => $booking->service->vendor,
+                'vendor_avatar' => $booking->service->vendor->getFirstMediaUrl('images'),
                 'vendor_rating' => $booking->service->vendor->averageRating(),
                 'can_review' => !$booking->hasReviewFrom(auth()->id()),
                 'review' => $booking->review ? [
@@ -208,6 +209,7 @@ class BookingController extends Controller
      */
     public function decline(Request $request, $id)
     {
+        // dd($request->reason);
         $request->validate([
             'reason' => 'nullable|string|max:500'
         ]);

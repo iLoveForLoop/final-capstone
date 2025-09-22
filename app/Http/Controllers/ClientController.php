@@ -500,4 +500,28 @@ class ClientController extends Controller
     }
 
 
+    public function cancelBooking(Request $request, $id)
+    {
+        $request->validate([
+            'reason' => 'nullable|string|max:500'
+        ]);
+
+        $user = auth()->user();
+
+        $booking = $user->bookings()
+            ->where('id', $id)
+            ->where('status', 'pending')
+            ->firstOrFail();
+
+        $booking->update([
+            'status' => 'cancelled'
+        ]);
+
+        // Optional: Send notification to user
+        // $this->sendBookingCancellationNotification($booking, $request->get('reason'));
+
+        return back()->with('success', 'Booking has been cancelled.');
+    }
+
+
 }

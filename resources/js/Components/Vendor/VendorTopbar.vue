@@ -10,7 +10,8 @@ import {
     Settings,
     CreditCard,
     Star,
-    AlertCircle
+    AlertCircle,
+    Loader2
 } from 'lucide-vue-next'
 import MyDropdown from '../MyDropdown.vue'
 import { useUIStore } from '@/store/ui'
@@ -40,24 +41,32 @@ function handleClickOutside(event) {
     }
 }
 
+// Get notification store - no initialization needed since it's done at layout level
 const notificationStore = useNotificationStore()
-const { notifications, unreadCount, bookingUnreadCount } = storeToRefs(notificationStore)
+const {
+    notifications,
+    unreadCount,
+    bookingUnreadCount,
+    recentNotifications,
+    isLoading,
+    error,
+    hasUnreadNotifications
+} = storeToRefs(notificationStore)
 
 onMounted(() => {
     handleScreenChange(lgQuery)
     lgQuery.addEventListener('change', handleScreenChange)
     document.addEventListener('click', handleClickOutside)
 
-    notificationStore.initializeNotifications()
-    notificationStore.fetchAllNotifications()
-    notificationStore.listenForNotifications()
-    notificationStore.requestNotificationPermission()
+    // No notification initialization needed here - it's handled at layout level
 })
 
 onBeforeUnmount(() => {
     lgQuery.removeEventListener('change', handleScreenChange)
     document.removeEventListener('click', handleClickOutside)
-    notificationStore.cleanup()
+
+    // Don't cleanup the store here since it's shared across components
+    // The layout component handles cleanup
 })
 
 // Get notification icon SVG content
@@ -94,24 +103,38 @@ function getNotificationIconClass(notification) {
     return `${baseClasses} ${colorClasses[notification.type] || 'bg-gray-100 text-gray-500'}`;
 }
 
-function markNotificationAsRead(id) {
+async function markNotificationAsRead(id) {
     const notification = notifications.value.find(n => n.id === id);
-    if (notification && !notification.read) {
-        notificationStore.markAsRead(id);
+    if (!notification || notification.read) return;
 
+    try {
+        await notificationStore.markAsRead(id);
+
+        // Navigate to action URL if available
         if (notification.action_url) {
             window.location.href = notification.action_url;
         }
+    } catch (err) {
+        console.error('Failed to mark notification as read:', err);
     }
 }
 
-function markAllAsRead() {
-    notificationStore.markAllAsReadBackend()
+async function markAllAsRead() {
+    try {
+        await notificationStore.markAllAsReadBackend()
+    } catch (err) {
+        console.error('Failed to mark all as read:', err);
+    }
 }
 
-function removeNotification(id, event) {
+async function removeNotification(id, event) {
     event.stopPropagation()
-    notificationStore.removeNotification(id)
+
+    try {
+        await notificationStore.removeNotification(id)
+    } catch (err) {
+        console.error('Failed to remove notification:', err);
+    }
 }
 
 function openNotificationDrawer() {
@@ -124,7 +147,22 @@ function toggleNotificationDropdown(event) {
     showNotificationDropdown.value = !showNotificationDropdown.value
 }
 
-const routeName = page.props?.auth.routeName || null
+async function refreshNotifications() {
+    try {
+        await notificationStore.fetchAllNotifications()
+    } catch (err) {
+        console.error('Failed to refresh notifications:', err)
+    }
+}
+
+// Safe route name access
+const routeName = computed(() => {
+    try {
+        return page.props?.auth?.routeName || page.props?.routeName || null
+    } catch (err) {
+        return null
+    }
+})
 
 const titles = {
     'vendor.index': 'Vendor Dashboard',
@@ -137,12 +175,7 @@ const titles = {
 }
 
 const title = computed(() => {
-    return titles[routeName] || 'Dashboard'
-})
-
-// Get recent notifications for dropdown (limit to 5)
-const recentNotifications = computed(() => {
-    return notifications.value.slice(0, 5)
+    return titles[routeName.value] || 'Dashboard'
 })
 </script>
 
@@ -163,10 +196,14 @@ const recentNotifications = computed(() => {
                     <!-- Notification Bell -->
                     <div class="relative" id="notification-dropdown">
                         <button id="notification-bell" @click="toggleNotificationDropdown"
-                            class="relative p-2 text-gray-300 hover:bg-gray-800 hover:text-white rounded-full focus:outline-none transition-all duration-200">
-                            <Bell class="w-6 h-6" />
+                            class="relative p-2 text-gray-300 hover:bg-gray-800 hover:text-white rounded-full focus:outline-none transition-all duration-200"
+                            :disabled="isLoading">
+                            <!-- Loading state -->
+                            <Loader2 v-if="isLoading" class="w-6 h-6 animate-spin" />
+                            <Bell v-else class="w-6 h-6" />
+
                             <!-- Badge -->
-                            <span v-if="unreadCount > 0"
+                            <span v-if="hasUnreadNotifications"
                                 class="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-600 rounded-full">
                                 {{ unreadCount > 9 ? '9+' : unreadCount }}
                             </span>
@@ -183,16 +220,39 @@ const recentNotifications = computed(() => {
                                 class="absolute right-0 z-50 mt-2 w-96 bg-white rounded-xl shadow-sm border border-gray-100 p-5">
                                 <!-- Header -->
                                 <div class="flex justify-between items-center mb-5">
-                                    <h2 class="text-lg font-semibold text-gray-800">
-                                        Notifications
-                                        <span v-if="unreadCount > 0"
-                                            class="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                                    <div class="flex items-center space-x-3">
+                                        <h2 class="text-lg font-semibold text-gray-800">
+                                            Notifications
+                                        </h2>
+                                        <span v-if="hasUnreadNotifications"
+                                            class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                                             {{ unreadCount }}
                                         </span>
-                                    </h2>
-                                    <button @click="openNotificationDrawer"
-                                        class="text-sm text-indigo-600 hover:underline">
-                                        View All
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <button @click="refreshNotifications"
+                                            class="text-sm text-gray-500 hover:text-gray-700" :disabled="isLoading"
+                                            title="Refresh notifications">
+                                            <Loader2 v-if="isLoading" class="w-4 h-4 animate-spin" />
+                                            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                            </svg>
+                                        </button>
+                                        <button @click="openNotificationDrawer"
+                                            class="text-sm text-indigo-600 hover:underline">
+                                            View All
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Error State -->
+                                <div v-if="error" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                    <p class="text-sm text-red-600">{{ error }}</p>
+                                    <button @click="refreshNotifications"
+                                        class="mt-2 text-xs text-red-800 hover:underline">
+                                        Try again
                                     </button>
                                 </div>
 
@@ -200,7 +260,7 @@ const recentNotifications = computed(() => {
                                 <ul class="space-y-4">
                                     <li v-for="notification in recentNotifications" :key="notification.id"
                                         class="flex items-start cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                                        @click="notification.read ? null : markNotificationAsRead(notification.id)">
+                                        @click="markNotificationAsRead(notification.id)">
                                         <div class="flex-shrink-0 mt-1 mr-3">
                                             <div :class="getNotificationIconClass(notification)">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
@@ -223,16 +283,22 @@ const recentNotifications = computed(() => {
                                             <span class="h-2 w-2 rounded-full bg-blue-500 block"></span>
                                         </div>
                                     </li>
-                                    <li v-if="recentNotifications.length === 0"
+                                    <li v-if="!isLoading && recentNotifications.length === 0"
                                         class="text-center py-4 text-gray-400 text-sm">
                                         No notifications
+                                    </li>
+                                    <li v-if="isLoading && notifications.length === 0"
+                                        class="text-center py-4 text-gray-400 text-sm">
+                                        <Loader2 class="w-5 h-5 animate-spin mx-auto mb-2" />
+                                        Loading notifications...
                                     </li>
                                 </ul>
 
                                 <!-- Footer Actions -->
-                                <div v-if="unreadCount > 0" class="mt-4 pt-4 border-t border-gray-100">
+                                <div v-if="hasUnreadNotifications" class="mt-4 pt-4 border-t border-gray-100">
                                     <button @click="markAllAsRead"
-                                        class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200">
+                                        class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200"
+                                        :disabled="isLoading">
                                         Mark all as read
                                     </button>
                                 </div>
@@ -301,26 +367,48 @@ const recentNotifications = computed(() => {
                 <!-- Header -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 m-4 mb-0">
                     <div class="flex justify-between items-center mb-5">
-                        <h2 class="text-lg font-semibold text-gray-800">
-                            All Notifications
-                            <span v-if="unreadCount > 0"
-                                class="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                        <div class="flex items-center space-x-3">
+                            <h2 class="text-lg font-semibold text-gray-800">
+                                All Notifications
+                            </h2>
+                            <span v-if="hasUnreadNotifications"
+                                class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                                 {{ unreadCount }}
                             </span>
-                        </h2>
-                        <button @click="ui.toggleVendorNotificationOpen"
-                            class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                            <X class="w-5 h-5" />
-                        </button>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button @click="refreshNotifications"
+                                class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                                :disabled="isLoading" title="Refresh notifications">
+                                <Loader2 v-if="isLoading" class="w-5 h-5 animate-spin" />
+                                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                            </button>
+                            <button @click="ui.toggleVendorNotificationOpen"
+                                class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                                <X class="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Action Bar -->
-                    <div v-if="unreadCount > 0" class="border-t border-gray-100 pt-4">
+                    <div v-if="hasUnreadNotifications" class="border-t border-gray-100 pt-4">
                         <button @click="markAllAsRead"
-                            class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200">
+                            class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200"
+                            :disabled="isLoading">
                             Mark all as read
                         </button>
                     </div>
+                </div>
+
+                <!-- Error State -->
+                <div v-if="error" class="mx-4 mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p class="text-sm text-red-600">{{ error }}</p>
+                    <button @click="refreshNotifications" class="mt-2 text-xs text-red-800 hover:underline">
+                        Try again
+                    </button>
                 </div>
 
                 <!-- Notifications List -->
@@ -328,8 +416,8 @@ const recentNotifications = computed(() => {
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
                         <ul class="space-y-4">
                             <li v-for="notification in notifications" :key="notification.id"
-                                class="flex items-start cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                                @click="notification.read ? null : markNotificationAsRead(notification.id)">
+                                class="flex items-start cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors group"
+                                @click="markNotificationAsRead(notification.id)">
                                 <div class="flex-shrink-0 mt-1 mr-3">
                                     <div :class="getNotificationIconClass(notification)">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
@@ -348,11 +436,33 @@ const recentNotifications = computed(() => {
                                     <p class="text-sm text-gray-600 mt-1">{{ notification.text }}</p>
                                     <p class="text-xs text-gray-400 mt-1">{{ notification.time }}</p>
                                 </div>
-                                <div v-if="!notification.read" class="ml-2 mt-1">
-                                    <span class="h-2 w-2 rounded-full bg-blue-500 block"></span>
+
+                                <div class="flex items-center space-x-2">
+                                    <div v-if="!notification.read" class="mt-1">
+                                        <span class="h-2 w-2 rounded-full bg-blue-500 block"></span>
+                                    </div>
+                                    <!-- Optional: Remove button (uncomment if you want this feature) -->
+                                    <!-- <button
+                                        @click="removeNotification(notification.id, $event)"
+                                        class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all duration-200"
+                                        title="Remove notification"
+                                    >
+                                        <X class="w-4 h-4" />
+                                    </button> -->
                                 </div>
                             </li>
-                            <li v-if="notifications.length === 0" class="text-center py-8 text-gray-400 text-sm">
+
+                            <!-- Loading state -->
+                            <li v-if="isLoading && notifications.length === 0"
+                                class="text-center py-8 text-gray-400 text-sm">
+                                <Loader2 class="w-8 h-8 text-gray-300 mx-auto mb-4 animate-spin" />
+                                <p class="font-medium text-gray-900 mb-2">Loading notifications...</p>
+                                <p>Please wait while we fetch your notifications</p>
+                            </li>
+
+                            <!-- Empty state -->
+                            <li v-if="!isLoading && notifications.length === 0"
+                                class="text-center py-8 text-gray-400 text-sm">
                                 <Bell class="w-12 h-12 text-gray-300 mx-auto mb-4" />
                                 <p class="font-medium text-gray-900 mb-2">No notifications</p>
                                 <p>When you receive notifications, they'll appear here</p>
@@ -382,5 +492,22 @@ const recentNotifications = computed(() => {
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
+}
+
+/* Loading animation */
+@keyframes pulse-fade {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.animate-pulse-fade {
+    animation: pulse-fade 2s ease-in-out infinite;
 }
 </style>

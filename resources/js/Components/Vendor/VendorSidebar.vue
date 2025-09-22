@@ -15,47 +15,33 @@ import {
     BadgeCheck
 } from 'lucide-vue-next';
 import { useUIStore } from '@/store/ui';
-import { useNotifications } from '@/Composables/useNotifications'; // Add this import
+import { useNotificationStore } from '@/store/notification';
 import NewNavLink from '../NewNavLink.vue';
 import { onMounted, onUnmounted, ref } from 'vue';
-import axios from 'axios';
 import { storeToRefs } from 'pinia';
-import { useNotificationStore } from '@/store/notification';
 
 const ui = ref(useUIStore())
 
-// Use the notification composable to get booking-specific unread count
-// const { bookingUnreadCount } = useNotifications()
-
-// Keep your existing method as fallback for initial load
-// const unreadNotificationCount = ref(null)
-
-// const fetchUnreadNotifications = async () => {
-//     try {
-//         const response = await axios.get(`/api/vendor-bookings-notifications`)
-//         unreadNotificationCount.value = response.data.success ? response.data.data : 0
-//     } catch (error) {
-//         console.log(error.response?.data?.message || 'Network error occurred')
-//     }
-// }
-
-// onMounted(() => {
-//     fetchUnreadNotifications()
-// })
-
+// Get the notification store and reactive refs
 const notificationStore = useNotificationStore()
-const { bookingUnreadCount } = storeToRefs(notificationStore)
+const { bookingUnreadCount, isInitialized } = storeToRefs(notificationStore)
 
-onMounted(() => {
-    notificationStore.initializeNotifications()
-    notificationStore.listenForNotifications()
-    notificationStore.requestNotificationPermission()
+onMounted(async () => {
+    // Initialize notifications if not already done
+    // if (!isInitialized.value) {
+    //     try {
+    //         await notificationStore.initializeNotifications()
+    //     } catch (error) {
+    //         console.error('Failed to initialize notifications in sidebar:', error)
+    //     }
+    // }
 })
 
 onUnmounted(() => {
-    notificationStore.cleanup()
+    // Note: Don't cleanup here if the store is used in multiple components
+    // The cleanup should be handled in a higher-level component or when the user logs out
+    // notificationStore.cleanup()
 })
-
 </script>
 
 <template>
@@ -113,7 +99,7 @@ onUnmounted(() => {
                         </span>
                     </NewNavLink>
 
-                    <!-- Updated to use booking-specific real-time count -->
+                    <!-- Bookings with notification count from store -->
                     <NewNavLink :href="route('vendor.bookings.index')" :notificationCount="bookingUnreadCount"
                         :active="route().current('vendor.bookings.index')" :isCollapsed="ui.sidebarCollapsed">
                         <template #icon>

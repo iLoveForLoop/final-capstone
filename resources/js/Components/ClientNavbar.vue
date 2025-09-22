@@ -353,7 +353,7 @@ onMounted(() => {
 
     emitter.on('chat-vendor', async (payload) => {
 
-
+        console.log('vendor id', payload)
         const newConversationData = {
             participants: [
                 Number(page.props.auth.user.id),
@@ -586,7 +586,7 @@ onUnmounted(() => {
                                                         <div class="flex items-center justify-between">
                                                             <p class="font-medium text-gray-900 truncate">{{
                                                                 message.sender
-                                                                }}</p>
+                                                            }}</p>
                                                             <div class="flex items-center space-x-1">
                                                                 <span v-if="!message.read"
                                                                     class="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></span>

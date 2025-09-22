@@ -9,19 +9,18 @@ import { computed, ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 import { Link } from '@inertiajs/vue3';
 import { useUIStore } from '@/store/ui'
-import { useNotifications } from '@/Composables/useNotifications' // Add this import
+import { useNotificationStore } from '@/store/notification'
+import { storeToRefs } from 'pinia'
 
 const ui = ref(useUIStore())
 
-// Use the notification composable
+// Use the notification store instead of composable
+const notificationStore = useNotificationStore()
 const {
     notifications,
     unreadCount,
-    markAsRead,
-    markAllAsRead,
-    getNotificationIcon,
-    getNotificationColor
-} = useNotifications()
+    recentNotifications
+} = storeToRefs(notificationStore)
 
 const props = defineProps({
     stats: {
@@ -39,14 +38,15 @@ const props = defineProps({
         type: Array,
         required: true
     },
-    notifications: {
-        type: Array,
-        required: true
-    },
-    unreadNotificationCount: {
-        type: Number,
-        default: 0
-    }
+    // Remove notifications and unreadNotificationCount props since we're using store
+    // notifications: {
+    //     type: Array,
+    //     required: true
+    // },
+    // unreadNotificationCount: {
+    //     type: Number,
+    //     default: 0
+    // }
 })
 
 const formatDate = (dateString) => {
@@ -87,7 +87,7 @@ const isChartDataValid = computed(() => {
         Array.isArray(props.chartData.bookings.bookings)
 })
 
-// NOTIFICATIONS - Updated to use composable
+// NOTIFICATIONS - Updated to use store methods
 const getNotificationIconClass = (notification) => {
     const baseClass = 'h-10 w-10 rounded-full flex items-center justify-center';
     const colorClass = notification.read ? 'bg-gray-100 text-gray-400' : `bg-${notification.color}-100 text-${notification.color}-600`;
@@ -109,19 +109,21 @@ const getNotificationIconSVG = (type) => {
     return icons[type] || icons['bell'];
 };
 
-// Updated notification click handler using composable
+// Updated notification click handler using store
 const markNotificationAsRead = async (notificationId) => {
     try {
-        // Mark as read locally using composable
-        markAsRead(notificationId)
+        // Use store method to mark as read
+        await notificationStore.markAsRead(notificationId)
 
-        // Also mark as read on server
-        await router.post(route('vendor.notifications.read', { notification: notificationId }));
+        // Navigate to action URL if available
+        const notification = notifications.value.find(n => n.id === notificationId);
+        if (notification && notification.action_url) {
+            window.location.href = notification.action_url;
+        }
     } catch (error) {
         console.error('Error marking notification as read:', error);
     }
 };
-
 </script>
 
 <template>
@@ -362,7 +364,7 @@ const markNotificationAsRead = async (notificationId) => {
                         </div>
                         <ul class="space-y-4">
                             <!-- Use composable notifications instead of prop -->
-                            <li v-for="notification in notifications" :key="notification.id"
+                            <li v-for="notification in recentNotifications" :key="notification.id"
                                 class="flex items-start cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
                                 @click="notification.read ? null : markNotificationAsRead(notification.id)">
                                 <div class="flex-shrink-0 mt-1 mr-3">

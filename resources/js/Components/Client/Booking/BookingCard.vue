@@ -2,7 +2,11 @@
 import { ref } from 'vue';
 import LeaveReviewModal from '../LeaveReviewModal.vue';
 import ViewReviewModal from '@/Components/ViewReviewModal.vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
+import CancelBooking from './CancelBooking.vue';
+import VendorContactInformation from './VendorContactInformation.vue';
+import emitter from '@/utils/eventBus';
+// import { router } from '@inertiajs/vue3';
 
 const props = defineProps({
     booking: {
@@ -47,6 +51,39 @@ const serviceData = ref({
     vendorId: props.booking.vendor.id
 
 })
+
+const showVendorModal = ref(false);
+const showCancellationModal = ref(false)
+const isLoading = ref(false)
+
+const handleConfirmCancellation = (bookingData, reason = null) => {
+    isLoading.value = true
+    try {
+
+        router.patch(route('client.booking.cancel', props.booking.id), {
+            reason: reason
+        }, {
+            onFinish: () => {
+                showCancellationModal.value = false
+                isLoading.value = false
+            },
+            onError: () => {
+                isLoading.value = true
+            }
+        })
+
+
+    } catch (error) {
+        // Handle error
+    } finally {
+        isLoading.value = false
+    }
+}
+
+const messageVendor = (data) => {
+    showVendorModal.value = false
+    emitter.emit('chat-vendor', props.booking.vendor.user_id)
+}
 
 
 
@@ -93,12 +130,37 @@ const serviceData = ref({
 
 // reviewChecker()
 
+const bookingData = ref({
+    id: props.booking.f_id,
+    serviceName: props.booking.service.name,
+    serviceProvider: props.booking.vendor.full_name,
+    date: props.booking.formatted_date,
+    startTime: props.booking.time,
+    endTime: '12:00',
+    location: props.booking.event_location
+})
+
+const contactData = ref({
+    id: props.booking.f_id,
+    name: props.booking.vendor.full_name,
+    email: props.booking.vendor.user.email,
+    phone: props.booking.vendor.contact_number,
+    address: props.booking.vendor.location,
+    avatar: props.booking.vendor_avatar,
+    isVerified: false
+})
+
 
 
 
 </script>
 
 <template>
+    <VendorContactInformation :vendor="contactData" :is-open="showVendorModal" :is-loading="isLoading"
+        @message="messageVendor" @close="showVendorModal = false" />
+    <CancelBooking :booking="bookingData" :isOpen="showCancellationModal" :isLoading="isLoading"
+        @close="showCancellationModal = false" @confirm="handleConfirmCancellation"
+        @cancel="showCancellationModal = false" />
     <LeaveReviewModal :isOpen="isReviewModalOpen" @close="isReviewModalOpen = false" :serviceData="serviceData" />
     <ViewReviewModal :isOpen="viewingReview" @close="viewingReview = false" :review="booking.review" />
     <div class="p-6">
@@ -108,7 +170,7 @@ const serviceData = ref({
                 <img :src="booking.service_image" :alt="booking.title" class="w-20 h-20 rounded-lg object-cover">
                 <div class="flex-1">
                     <div class="flex items-center space-x-2 mb-2">
-                        <span class="text-sm font-mono text-gray-500">{{ booking.id }}</span>
+                        <span class="text-sm font-mono text-gray-500">{{ booking.f_id }}</span>
                         <span :class="['px-2 py-1 text-xs rounded-full', getStatusColor(booking.status)]">
                             {{ booking.status.charAt(0).toUpperCase() + booking.status.slice(1) }}
                         </span>
@@ -171,7 +233,7 @@ const serviceData = ref({
         <!-- Actions -->
         <div class="flex items-center justify-between pt-4 border-t border-gray-200">
             <div class="flex space-x-3">
-                <button class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                <button @click="showVendorModal = true" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
                     Contact Provider
                 </button>
                 <!-- <button @click="downloadInvoice(booking.id)" class="text-sm text-gray-600 hover:text-gray-700">
@@ -184,7 +246,8 @@ const serviceData = ref({
                                     class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors">
                                     Reschedule
                                 </button> -->
-                <button v-if="booking.status === 'confirmed' || booking.status === 'pending'"
+                <button @click="showCancellationModal = true"
+                    v-if="booking.status === 'confirmed' || booking.status === 'pending'"
                     class="px-4 py-2 text-sm border border-red-300 text-red-700 rounded hover:bg-red-50 transition-colors">
                     Cancel
                 </button>

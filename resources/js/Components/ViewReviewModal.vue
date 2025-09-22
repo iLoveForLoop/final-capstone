@@ -16,19 +16,6 @@ import { Star, Calendar, User, MessageSquare } from 'lucide-vue-next'
 const props = defineProps({
     review: {
         type: Object,
-        default: () => ({
-            id: 'rev_001',
-            rating: 5,
-            title: "Great service overall",
-            comment: "The team delivered exactly what I needed. Communication was clear throughout the project and the final result exceeded my expectations.",
-            reviewDate: "2024-09-01T14:30:00Z",
-            serviceName: "Website Development",
-            serviceProvider: "WebCraft Pro",
-            vendorResponse: {
-                message: "Thank you for your positive feedback! We're glad we could meet your expectations and look forward to working with you again.",
-                date: "2024-09-02T09:15:00Z"
-            }
-        })
     },
     isOpen: {
         type: Boolean,

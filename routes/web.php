@@ -200,6 +200,9 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client'])->gro
     //calling get vendor services
     Route::get('/vendor/services/{vendor}', [ClientController::class, 'getVendorServices']);
 
+    //cancel booking
+    Route::patch('/bookings/{id}/cancel', [ClientController::class, 'cancelBooking'])->name('booking.cancel');
+
 
 
 
