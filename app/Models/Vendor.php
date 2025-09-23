@@ -92,7 +92,8 @@ class Vendor extends Model implements HasMedia
     }
 
     protected $casts = [
-        'specialties' => 'array'
+        'specialties' => 'array',
+        'service_coverage_areas' => 'array'
     ];
 
     protected $guarded = [];

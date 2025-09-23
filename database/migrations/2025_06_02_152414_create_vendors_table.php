@@ -26,6 +26,13 @@ class CreateVendorsTable extends Migration
 
             $table->json('specialties')->nullable();
 
+            //Newly added
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
+            $table->json('service_coverage_areas')->nullable();
+
+            $table->index(['latitude', 'longitude']); // for geo queries
+
 
             $table->timestamps();
         });

@@ -17,14 +17,14 @@ class ProfileSettingController extends Controller
 
         $vendor->avatar = $vendor->user->getFirstMediaUrl('images') ?? null;
         $vendor->categories = $vendor->serviceCategories()->pluck('name');
-        $portfolioImages = $vendor->getMedia('portfolioImages')->map(fn ($media) => [
+        $portfolioImages = $vendor->getMedia('servicePhotos')->map(fn ($media) => [
             'url' => $media->getUrl(),
             'id' => $media->id
         ]) ?? [];
-        $portfolioImages = $vendor->getMedia('portfolioImages')->map(fn ($media) => [
-            'url' => $media->getUrl(),
-            'id' => $media->id
-        ]) ?? [];
+        // $portfolioImages = $vendor->getMedia('portfolioImages')->map(fn ($media) => [
+        //     'url' => $media->getUrl(),
+        //     'id' => $media->id
+        // ]) ?? [];
 
         $showcaseVideos = $vendor->getMedia('showcaseVideos')->map(fn ($media) => [
             'id' => $media->id,

@@ -7,35 +7,71 @@ import { onUnmounted } from 'vue'
 const formData = useForm({
     // Basic Business Information
     businessName: '',
-
+    businessType: '',
     vendorCategories: [],
-
+    businessRegistrationNumber: '',
+    yearsInBusiness: '',
     businessDescription: '',
 
     // Password
     password: '',
-    password_confirmation: '',
+    passwordConfirmation: '',
 
     // Contact Information
-    full_name: '',
-
+    contactPerson: '',
+    position: '',
     phoneNumber: '',
     email: '',
-
+    whatsappNumber: '',
+    website: '',
+    facebookLink: '',
+    instagramLink: '',
 
     // Location & Service Area
     address: '',
     latitude: null,
     longitude: null,
     serviceCoverageAreas: [],
+    willingToTravel: false,
+    maxTravelDistance: '',
+    travelCharges: '',
 
+    // Service Details & Pricing
+    servicesOffered: '',
+    basicPackage: { description: '', price: '' },
+    standardPackage: { description: '', price: '' },
+    premiumPackage: { description: '', price: '' },
+    customPackagesAvailable: false,
+    pricingStructure: '',
+    minimumBookingDuration: '',
+    equipmentList: '',
+    capacityLimit: '',
+
+    advanceBookingRequired: '',
+    cancellationPolicy: '',
+    responseTime: '',
+
+    // Payment Information
+    acceptedPaymentMethods: [],
+    bankAccountDetails: '',
+    gcashNumber: '',
+    depositRequired: '',
+    paymentTiming: '',
+
+    // Legal & Compliance
+    businessPermits: [],
+    insuranceCoverage: false,
+    insuranceDetails: '',
+    certifications: [],
+
+    // Subscription
+    subscriptionPlan: '',
+    marketingPreferences: [],
 
     // File uploads for Spatie Media Library
     profilePhoto: null,
     servicePhotos: [],
-    permitFiles: [],
-
-    is_vendor: true
+    permitFiles: []
 })
 
 // UI State
@@ -61,10 +97,8 @@ const passwordRequirements = reactive({
 
 // Options
 const vendorCategoryOptions = [
-    { id: 1, name: 'Sound Systems' },
-    { id: 2, name: 'Entertainers' },
-    { id: 3, name: 'Suit and Dress Rentals' },
-    { id: 4, name: 'Photographers/Photo Booths' },
+    'Sound Systems', 'Catering Services', 'Entertainers',
+    'Makeup Artists', 'Suit and Dress Rentals', 'Photographers/Photo Booths'
 ]
 
 
@@ -108,14 +142,14 @@ const passwordStrengthText = computed(() => {
 })
 
 const passwordsMatch = computed(() => {
-    if (!formData.password && !formData.password_confirmation) return null
-    return formData.password === formData.password_confirmation
+    if (!formData.password && !formData.passwordConfirmation) return null
+    return formData.password === formData.passwordConfirmation
 })
 
 // Validation computed properties
 const isStep1Valid = computed(() => {
     return formData.businessName.trim() !== '' &&
-        formData.full_name.trim() !== '' &&
+        formData.contactPerson.trim() !== '' &&
         formData.vendorCategories.length > 0 &&
         formData.phoneNumber.trim() !== '' &&
         formData.email.trim() !== '' &&
@@ -192,8 +226,8 @@ const validateCurrentStep = () => {
                 errors.businessName = 'Business name is required'
                 isValid = false
             }
-            if (!formData.full_name.trim()) {
-                errors.full_name = 'Contact person is required'
+            if (!formData.contactPerson.trim()) {
+                errors.contactPerson = 'Contact person is required'
                 isValid = false
             }
             if (formData.vendorCategories.length === 0) {
@@ -259,7 +293,7 @@ const validateCurrentStep = () => {
                 isValid = false
             }
             if (!passwordsMatch.value) {
-                errors.password_confirmation = 'Passwords do not match'
+                errors.passwordConfirmation = 'Passwords do not match'
                 isValid = false
             }
             break
@@ -340,45 +374,40 @@ const checkPasswordStrength = () => {
 }
 
 const submitForm = () => {
-    if (!validateCurrentStep()) return;
-    isLoading.value = true;
+    if (!validateCurrentStep()) return
 
-    formData.profilePhoto = profilePhoto.value;
-    formData.servicePhotos = [...servicePhotos.value];
-    formData.permitFiles = [...permitFiles.value];
+    isLoading.value = true
+
+    formData.profilePhoto = profilePhoto.value
+    formData.servicePhotos = [...servicePhotos.value]
+    formData.permitFiles = [...permitFiles.value]
 
     formData
         .transform((data) => {
-            const fd = new FormData();
+            const fd = new FormData()
+
             Object.keys(data).forEach((key) => {
-                if (key === 'vendorCategories') {
-                    data.vendorCategories.forEach((category) => {
-                        fd.append('vendorCategories[]', category);
-                    });
-                } else if (key === 'serviceCoverageAreas') {
-                    data.serviceCoverageAreas.forEach((area) => {
-                        fd.append('serviceCoverageAreas[]', area);
-                    });
-                } else if (key === 'servicePhotos') {
+                if (key === 'servicePhotos') {
                     data.servicePhotos.forEach((file, index) => {
-                        fd.append(`servicePhotos[${index}]`, file);
-                    });
+                        fd.append(`servicePhotos[${index}]`, file)
+                    })
                 } else if (key === 'permitFiles') {
                     data.permitFiles.forEach((file, index) => {
-                        fd.append(`permitFiles[${index}]`, file);
-                    });
+                        fd.append(`permitFiles[${index}]`, file)
+                    })
                 } else if (data[key] !== null) {
-                    fd.append(key, data[key]);
+                    fd.append(key, data[key])
                 }
-            });
-            return fd;
-        })
-        .post(route('register'), {
+            })
+
+            return fd
+        }).post(route('register'), {
             onFinish: () => {
-                isLoading.value = false;
-            },
-        });
-};
+                isLoading.value = false
+            }
+        })
+
+}
 
 
 // Clean up URLs when component is unmounted
@@ -440,10 +469,10 @@ watch(() => formData.password, checkPasswordStrength)
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Owner/Contact Person
                                     *</label>
-                                <input v-model="formData.full_name" type="text" :class="['w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500',
-                                    errors.full_name ? 'border-red-300' : 'border-gray-300']"
+                                <input v-model="formData.contactPerson" type="text" :class="['w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                                    errors.contactPerson ? 'border-red-300' : 'border-gray-300']"
                                     placeholder="Primary contact name">
-                                <p v-if="errors.full_name" class="mt-1 text-sm text-red-600">{{ errors.full_name
+                                <p v-if="errors.contactPerson" class="mt-1 text-sm text-red-600">{{ errors.contactPerson
                                 }}</p>
                             </div>
                         </div>
@@ -453,11 +482,10 @@ watch(() => formData.password, checkPasswordStrength)
                             <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                                 <div v-for="category in vendorCategoryOptions" :key="category"
                                     class="flex items-center">
-                                    <input :id="category.id" v-model="formData.vendorCategories" :value="category.id"
+                                    <input :id="category" v-model="formData.vendorCategories" :value="category"
                                         type="checkbox"
                                         class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                                    <label :for="category" class="ml-2 text-sm text-gray-700">{{ category.name
-                                    }}</label>
+                                    <label :for="category" class="ml-2 text-sm text-gray-700">{{ category }}</label>
                                 </div>
                             </div>
                             <p v-if="errors.vendorCategories" class="mt-1 text-sm text-red-600">{{
@@ -816,9 +844,9 @@ watch(() => formData.password, checkPasswordStrength)
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password
                                         *</label>
                                     <div class="relative">
-                                        <input v-model="formData.password_confirmation"
+                                        <input v-model="formData.passwordConfirmation"
                                             :type="showPasswordConfirm ? 'text' : 'password'" :class="['w-full px-3 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500',
-                                                errors.password_confirmation ? 'border-red-300' : 'border-gray-300']"
+                                                errors.passwordConfirmation ? 'border-red-300' : 'border-gray-300']"
                                             placeholder="Confirm your password">
                                         <button type="button" @click="showPasswordConfirm = !showPasswordConfirm"
                                             class="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -842,8 +870,8 @@ watch(() => formData.password, checkPasswordStrength)
                                     <div v-else-if="passwordsMatch === true" class="mt-1 text-sm text-green-600">
                                         Passwords match ✓
                                     </div>
-                                    <p v-if="errors.password_confirmation" class="mt-1 text-sm text-red-600">{{
-                                        errors.password_confirmation }}</p>
+                                    <p v-if="errors.passwordConfirmation" class="mt-1 text-sm text-red-600">{{
+                                        errors.passwordConfirmation }}</p>
                                 </div>
                             </div>
                         </div>
@@ -884,7 +912,7 @@ watch(() => formData.password, checkPasswordStrength)
                                     </div>
                                     <div class="flex justify-between">
                                         <dt class="text-gray-600">Contact:</dt>
-                                        <dd class="text-gray-900">{{ formData.full_name || 'Not provided' }}</dd>
+                                        <dd class="text-gray-900">{{ formData.contactPerson || 'Not provided' }}</dd>
                                     </div>
                                     <div class="flex justify-between">
                                         <dt class="text-gray-600">Email:</dt>
@@ -892,7 +920,7 @@ watch(() => formData.password, checkPasswordStrength)
                                     </div>
                                     <div class="flex justify-between">
                                         <dt class="text-gray-600">Categories:</dt>
-                                        <dd class="text-gray-900">{{ formData.vendorCategories.length }} selected
+                                        <dd class="text-gray-900">{{ formData.vendorCategories.join(', ') }}
                                         </dd>
                                     </div>
                                 </dl>
