@@ -15,9 +15,9 @@ class ProfileSettingController extends Controller
 
         $vendor->load(['user', 'serviceCategories']);
 
-        $vendor->avatar = $vendor->user->getFirstMediaUrl('images') ?? null;
+        $vendor->avatar = $vendor->user->getFirstMediaUrl('avatar') ?? null;
         $vendor->categories = $vendor->serviceCategories()->pluck('name');
-        $portfolioImages = $vendor->getMedia('servicePhotos')->map(fn ($media) => [
+        $portfolioImages = $vendor->getMedia('portfolioImages')->map(fn ($media) => [
             'url' => $media->getUrl(),
             'id' => $media->id
         ]) ?? [];

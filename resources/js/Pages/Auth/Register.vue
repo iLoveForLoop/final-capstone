@@ -1,8 +1,11 @@
 <script setup>
-import { useForm } from '@inertiajs/vue3'
+import { useForm, usePage } from '@inertiajs/vue3'
 import { ref, reactive, computed, watch } from 'vue'
 import { onUnmounted } from 'vue'
 
+
+const page = usePage()
+const vendorCategoryOptions = ref(page.props.categories)
 // Form data structure
 const formData = useForm({
     // Basic Business Information
@@ -60,12 +63,7 @@ const passwordRequirements = reactive({
 })
 
 // Options
-const vendorCategoryOptions = [
-    { id: 1, name: 'Sound Systems' },
-    { id: 2, name: 'Entertainers' },
-    { id: 3, name: 'Suit and Dress Rentals' },
-    { id: 4, name: 'Photographers/Photo Booths' },
-]
+
 
 
 

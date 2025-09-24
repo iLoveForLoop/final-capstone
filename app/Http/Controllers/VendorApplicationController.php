@@ -14,7 +14,23 @@ class VendorApplicationController extends Controller
     public function index()
     {
         // $pending_applications = User::where('is_approved', false)->get();
-         $pending_applications = Vendor::with('user')->where('is_approved', false)->get();
+         $pending_applications = Vendor::with('user')->where('is_approved', false)
+         ->get()
+         ->map(function ($vendor){
+            $vendor->avatar = $vendor->user->getFirstMediaUrl('avatar') ?? null;
+            $vendor->vendor_categories = $vendor->serviceCategories->pluck('name');
+            $vendor->service_photos = $vendor->getMedia('portfolioImages')->map(fn ($media) => [
+                'url' => $media->getUrl(),
+                'id' => $media->id
+            ]) ?? [];
+            $vendor->permit_files = $vendor->getMedia('permits')->map(fn ($media) => [
+                'url' => $media->getUrl(),
+                'mime_type' => $media->mime_type,
+                'id' => $media->id
+            ]) ?? [];
+            return $vendor;
+         });
+
 
         return inertia('Admin/PendingApplication/Index', compact('pending_applications'));
     }

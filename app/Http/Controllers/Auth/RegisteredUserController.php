@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Client;
+use App\Models\ServiceCategory;
 use App\Models\User;
 use App\Models\Vendor;
 use Illuminate\Auth\Events\Registered;
@@ -22,7 +23,8 @@ class RegisteredUserController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Auth/Register');
+        $categories = ServiceCategory::all();
+        return Inertia::render('Auth/Register', compact('categories'));
     }
 
     /**
@@ -92,8 +94,8 @@ class RegisteredUserController extends Controller
                 'contact_number'         => $request->phoneNumber,
                 'latitude'               => $request->latitude,
                 'longitude'              => $request->longitude,
-                'service_coverage_areas' => json_encode($request->serviceCoverageAreas),
-            ]);
+                'service_coverage_areas' => $request->serviceCoverageAreas,
+        ]);
 
             // Attach service categories (pivot, if needed)
             if ($request->filled('vendorCategories')) {
@@ -103,11 +105,11 @@ class RegisteredUserController extends Controller
             // Attach media with Spatie
             if ($request->hasFile('profilePhoto')) {
                 $user->addMedia($request->file('profilePhoto'))
-                    ->toMediaCollection('profilePhoto');
+                    ->toMediaCollection('avatar');
             }
 
             foreach ($request->file('servicePhotos', []) as $photo) {
-                $vendor->addMedia($photo)->toMediaCollection('servicePhotos');
+                $vendor->addMedia($photo)->toMediaCollection('portfolioImages');
             }
 
             foreach ($request->file('permitFiles', []) as $permit) {

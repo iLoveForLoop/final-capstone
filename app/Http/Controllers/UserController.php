@@ -49,7 +49,7 @@ class UserController extends Controller
         'vendor' => $user->vendor,
         'roles' => $user->roles,
         'created_at' => $user->created_at,
-        'image_url' =>$user->getFirstMediaUrl('images'),
+        'image_url' =>$user->getFirstMediaUrl('avatar'),
         'service_categories' => $user->vendor?->serviceCategories ?? [],
         ];
     });
@@ -120,7 +120,7 @@ class UserController extends Controller
             $vendor->serviceCategories()->attach($request->service_categories);
 
             if($request->profile_image){
-                $user->addMediaFromRequest('profile_image')->toMediaCollection('images', 'public');
+                $user->addMediaFromRequest('profile_image')->toMediaCollection('avatar', 'public');
             }
 
             $user->assignRole('vendor');
@@ -207,7 +207,7 @@ class UserController extends Controller
     if ($request->hasFile('profile_image')) {
         // Clear existing media first if you want to replace
         $user->clearMediaCollection('images');
-        $user->addMediaFromRequest('profile_image')->toMediaCollection('images', 'public');
+        $user->addMediaFromRequest('profile_image')->toMediaCollection('avatar', 'public');
     }
 
     // Handle vendor/client specific updates

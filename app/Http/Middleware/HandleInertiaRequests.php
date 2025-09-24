@@ -48,7 +48,7 @@ class HandleInertiaRequests extends Middleware
                 )
                 : false;
 
-            $avatar = $user->getFirstMediaUrl('images');
+            $avatar = $user->getFirstMediaUrl('avatar');
         }
 
 

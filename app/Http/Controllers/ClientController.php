@@ -343,7 +343,7 @@ class ClientController extends Controller
                 'created_at'         => $service->vendor->created_at,
                 'updated_at'         => $service->vendor->updated_at,
                 'completedServices'  => $service->vendor->completed_services_count,
-                'avatar'             => $service->vendor->user->getFirstMediaUrl('images'),
+                'avatar'             => $service->vendor->user->getFirstMediaUrl('avatar'),
                 'website'            => 'to be added hehe',
             ],
 
@@ -353,7 +353,7 @@ class ClientController extends Controller
                 'rating'  => $review->rating,
                 'date'    => $review->created_at->diffForHumans(),
                 'comment' => $review->comment,
-                'avatar'  => $review->user->getFirstMediaUrl('images') ?? null,
+                'avatar'  => $review->user->getFirstMediaUrl('avatar') ?? null,
             ])
         ];
 
@@ -407,7 +407,7 @@ class ClientController extends Controller
             'completedEvents' => $vendor->getCompletedBookingsCount(),
             'available' => true, // ??
             'verified' => true, // ??
-            'avatar' => $vendor->user->getFirstMediaUrl('images') ?? null,
+            'avatar' => $vendor->user->getFirstMediaUrl('avatar') ?? null,
             'phone' => $vendor->contact_number,
             'email' => $vendor->user->email,
             'website' => 'test.com', // ??
@@ -435,7 +435,7 @@ class ClientController extends Controller
                 'rating'  => $review->rating,
                 'date'    => $review->created_at->diffForHumans(),
                 'comment' => $review->comment,
-                'avatar'  => $review->user->getFirstMediaUrl('images') ?? null,
+                'avatar'  => $review->user->getFirstMediaUrl('avatar') ?? null,
                 'response' => $review->response ?? null,
                 'responded_at' => $review->responded_at ? $review->responded_at->diffForHumans() : null
             ]),
