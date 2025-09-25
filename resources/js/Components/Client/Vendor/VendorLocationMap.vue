@@ -3,7 +3,9 @@ import { LMap, LTileLayer, LMarker, LPopup } from "@vue-leaflet/vue-leaflet";
 import { ref } from "vue";
 
 // Example vendor location (lat, lng)
-const vendorLocation = ref([14.5995, 120.9842]); // Manila example
+defineProps
+
+const vendorLocation = ref([9.9502683, 123.9761382]); // Manila example
 </script>
 
 <template>
