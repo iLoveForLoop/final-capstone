@@ -11,6 +11,7 @@ import {
 } from 'lucide-vue-next';
 import emitter from '@/utils/eventBus';
 import axios from 'axios';
+import DesktopNavs from './ClientNavbar/DesktopNavs.vue';
 
 const page = usePage()
 const isDropdownShowing = ref(false)
@@ -433,47 +434,7 @@ onUnmounted(() => {
                     </div>
 
                     <!-- Desktop Navigation - Always Centered -->
-                    <div class="hidden lg:flex flex-1 justify-center">
-                        <div class="flex items-center space-x-1">
-                            <!-- Core Navigation Links (Always visible) -->
-                            <Link :href="page.props.auth.user ? '/client' : '/'"
-                                class="px-4 py-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium flex items-center"
-                                :class="{ 'text-gray-900 bg-gray-50': (page.url === '/client' || page.url === '/') }">
-                            <Home :size="16" class="mr-1.5" />
-                            <span>Home</span>
-                            </Link>
-
-                            <Link :href="page.props.auth.user ? '/client/services' : '/services'"
-                                class="px-4 py-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium flex items-center"
-                                :class="{ 'text-gray-900 bg-gray-50': (page.url.startsWith('/client/services') || page.url.startsWith('/services')) }">
-                            <Search :size="16" class="mr-1.5" />
-                            <span>Services</span>
-                            </Link>
-
-
-                            <!-- Conditional Links -->
-                            <template v-if="page.props.auth.user">
-                                <Link href="/client/bookings"
-                                    class="px-4 py-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium flex items-center"
-                                    :class="{ 'text-gray-900 bg-gray-50': page.url.startsWith('/client/bookings') }">
-                                <Calendar :size="16" class="mr-1.5" />
-                                <span>Bookings</span>
-                                </Link>
-                                <Link href="/client/events"
-                                    class="px-4 py-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium flex items-center"
-                                    :class="{ 'text-gray-900 bg-gray-50': page.url.startsWith('/client/events') }">
-                                <Calendar :size="16" class="mr-1.5" />
-                                <span>Events</span>
-                                </Link>
-                                <Link href="/client/favorites"
-                                    class="px-4 py-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium flex items-center"
-                                    :class="{ 'text-gray-900 bg-gray-50': page.url.startsWith('/client/favorites') }">
-                                <Heart :size="16" class="mr-1.5" />
-                                <span>Favorites</span>
-                                </Link>
-                            </template>
-                        </div>
-                    </div>
+                    <DesktopNavs />
 
                     <!-- Right Side Actions -->
                     <div class="flex-1 flex justify-end">
@@ -620,7 +581,7 @@ onUnmounted(() => {
                                 Log In
                                 </Link>
                                 <!-- Get Started Button -->
-                                <Link href="/register"
+                                <Link href="/join"
                                     class="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-500 hover:to-indigo-500 transition-all duration-300 font-semibold shadow-md hover:shadow-lg">
                                 Get Started
                                 </Link>
@@ -748,7 +709,7 @@ onUnmounted(() => {
                                 <User :size="18" class="mr-3" />
                                 Log In
                                 </Link>
-                                <Link href="/register" @click="isMobileMenuOpen = false"
+                                <Link href="/join" @click="isMobileMenuOpen = false"
                                     class="flex items-center justify-center mx-4 mt-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-500 hover:to-indigo-500 transition-all duration-300 font-semibold text-center shadow-md">
                                 <span>Get Started</span>
                                 </Link>

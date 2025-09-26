@@ -384,32 +384,50 @@ watch(() => formData.password, checkPasswordStrength)
 </script>
 
 <template>
-    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
+    <div class="min-h-screen bg-gray-50 py-8">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Header -->
-            <div class="text-center mb-8">
-                <h1 class="text-4xl font-bold text-gray-900 mb-2">Join Eventory</h1>
-                <p class="text-xl text-gray-600">Register as a vendor and grow your business</p>
+            <div class="text-center mb-10">
+                <div class="flex justify-center mb-4">
+                    <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Vendor Registration</h1>
+                <p class="text-gray-600">Complete your profile to start accepting bookings</p>
             </div>
 
-            <!-- Progress Bar -->
+            <!-- Progress Section -->
             <div class="mb-8">
-                <div class="flex items-center justify-between mb-2">
+                <div class="flex justify-between items-center mb-3">
                     <span class="text-sm font-medium text-gray-700">Step {{ currentStep }} of {{ totalSteps }}</span>
-                    <span class="text-sm font-medium text-gray-700">{{ Math.round((currentStep / totalSteps) * 100) }}%
+                    <span class="text-sm font-medium text-blue-600">{{ Math.round((currentStep / totalSteps) * 100) }}%
                         Complete</span>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                    <div class="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                    <div class="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
                         :style="{ width: `${(currentStep / totalSteps) * 100}%` }"></div>
+                </div>
+                <div class="flex justify-between text-xs text-gray-500 px-1">
+                    <span>Business</span>
+                    <span>Location</span>
+                    <span>Contact</span>
+                    <span>Portfolio</span>
+                    <span>Legal</span>
+                    <span>Security</span>
+                    <span>Review</span>
                 </div>
             </div>
 
             <!-- Form Container -->
-            <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <!-- Step Header -->
-                <div class="bg-indigo-600 text-white p-6">
-                    <h2 class="text-2xl font-bold">{{ stepTitle }}</h2>
+                <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
+                    <h2 class="text-lg font-semibold text-gray-800">{{ stepTitle }}</h2>
                 </div>
 
                 <!-- Form Content -->
@@ -460,20 +478,25 @@ watch(() => formData.password, checkPasswordStrength)
                 <!-- Navigation Buttons -->
                 <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between">
                     <button v-if="currentStep > 1" @click="prevStep" type="button"
-                        class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7">
-                            </path>
-                        </svg>
-                        Previous
+                        class="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors">
+                        <div class="flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                            Previous
+                        </div>
                     </button>
                     <div v-else></div>
 
                     <div class="flex space-x-3">
                         <button v-if="currentStep < totalSteps" @click="nextStep" type="button"
-                            :disabled="!isCurrentStepValid" :class="['inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2',
-                                isCurrentStepValid ? 'border-transparent text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500' :
-                                    'border-gray-300 text-gray-700 bg-white opacity-50 cursor-not-allowed']">
+                            :disabled="!isCurrentStepValid" :class="[
+                                'px-5 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center',
+                                isCurrentStepValid
+                                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                            ]">
                             Next
                             <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
@@ -481,9 +504,13 @@ watch(() => formData.password, checkPasswordStrength)
                             </svg>
                         </button>
                         <button v-else @click="submitForm" :disabled="isLoading || !isCurrentStepValid" type="button"
-                            :class="['inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-offset-2',
-                                (isLoading || !isCurrentStepValid) ? 'bg-green-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 focus:ring-green-500']">
-                            <svg v-if="isLoading" class="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
+                            :class="[
+                                'px-6 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors flex items-center',
+                                (isLoading || !isCurrentStepValid)
+                                    ? 'bg-green-400 text-white cursor-not-allowed'
+                                    : 'bg-green-600 text-white hover:bg-green-700'
+                            ]">
+                            <svg v-if="isLoading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                                     stroke-width="4"></circle>
@@ -495,6 +522,11 @@ watch(() => formData.password, checkPasswordStrength)
                         </button>
                     </div>
                 </div>
+            </div>
+
+            <!-- Help Text -->
+            <div class="mt-6 text-center text-sm text-gray-500">
+                <p>Questions? <a href="#" class="text-blue-600 hover:text-blue-800">Contact our support team</a></p>
             </div>
         </div>
     </div>

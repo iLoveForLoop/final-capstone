@@ -81,6 +81,10 @@ const closeImageModal = () => {
     selectedImageModal.value = null
 }
 
+const getInitials = (name) => {
+    return name.split(' ').map(n => n.charAt(0)).join('').substring(0, 2).toUpperCase();
+};
+
 const handleApprove = () => {
     emit('approve', applicationData.value.id)
 }

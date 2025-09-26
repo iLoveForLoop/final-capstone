@@ -33,9 +33,9 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/register2', function() {
+Route::get('/join', function() {
 
-    return inertia('Register2');
+    return inertia('Join');
 });
 
 

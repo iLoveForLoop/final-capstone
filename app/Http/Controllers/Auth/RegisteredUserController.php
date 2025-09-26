@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\RedirectHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\ServiceCategory;
@@ -21,8 +22,14 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): Response
+    public function create(): Response|\Illuminate\Http\RedirectResponse
     {
+        if (auth()->check()) {
+            return RedirectHelper::redirectBasedOnRole(auth()->user());
+        }
+
+        // dd(request()->query('type'));
+
         $categories = ServiceCategory::all();
         return Inertia::render('Auth/Register', compact('categories'));
     }
