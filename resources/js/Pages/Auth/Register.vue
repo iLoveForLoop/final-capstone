@@ -384,73 +384,77 @@ watch(() => formData.password, checkPasswordStrength)
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-50 py-8">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-4 sm:py-8">
+        <div class="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8">
             <!-- Header -->
-            <div class="text-center mb-10">
-                <div class="flex justify-center mb-4">
-                    <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="text-center mb-6 sm:mb-10">
+                <div class="flex justify-center mb-3 sm:mb-4">
+                    <div
+                        class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-600 rounded-lg flex items-center justify-center shadow-sm">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
                             </path>
                         </svg>
                     </div>
                 </div>
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">Vendor Registration</h1>
-                <p class="text-gray-600">Complete your profile to start accepting bookings</p>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Vendor Registration</h1>
+                <p class="text-sm sm:text-base text-gray-600 px-2">Complete your profile to start accepting bookings</p>
             </div>
 
             <!-- Progress Section -->
-            <div class="mb-8">
+            <div class="mb-6 sm:mb-8 px-2 sm:px-0">
                 <div class="flex justify-between items-center mb-3">
-                    <span class="text-sm font-medium text-gray-700">Step {{ currentStep }} of {{ totalSteps }}</span>
-                    <span class="text-sm font-medium text-blue-600">{{ Math.round((currentStep / totalSteps) * 100) }}%
-                        Complete</span>
+                    <span class="text-xs sm:text-sm font-medium text-gray-700">Step {{ currentStep }} of {{ totalSteps
+                    }}</span>
+                    <span class="text-xs sm:text-sm font-medium text-blue-600">{{ Math.round((currentStep / totalSteps)
+                        * 100) }}% Complete</span>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
-                    <div class="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+                <div class="w-full bg-gray-200 rounded-full h-1.5 sm:h-2 mb-2">
+                    <div class="bg-blue-600 h-1.5 sm:h-2 rounded-full transition-all duration-300 ease-out shadow-sm"
                         :style="{ width: `${(currentStep / totalSteps) * 100}%` }"></div>
                 </div>
-                <div class="flex justify-between text-xs text-gray-500 px-1">
-                    <span>Business</span>
-                    <span>Location</span>
-                    <span>Contact</span>
-                    <span>Portfolio</span>
-                    <span>Legal</span>
-                    <span>Security</span>
-                    <span>Review</span>
+                <div class="flex justify-between text-[10px] sm:text-xs text-gray-500 px-1">
+                    <span class="truncate px-1">Business</span>
+                    <span class="truncate px-1">Location</span>
+                    <span class="truncate px-1">Contact</span>
+                    <span class="truncate px-1">Portfolio</span>
+                    <span class="truncate px-1">Legal</span>
+                    <span class="truncate px-1">Security</span>
+                    <span class="truncate px-1">Review</span>
                 </div>
             </div>
 
             <!-- Form Container -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div
+                class="bg-white rounded-xl sm:rounded-xl shadow-md sm:shadow-lg border border-gray-100 overflow-hidden mx-2 sm:mx-0">
                 <!-- Step Header -->
-                <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
-                    <h2 class="text-lg font-semibold text-gray-800">{{ stepTitle }}</h2>
+                <div class="border-b bg-blue-600 text-white px-4 sm:px-6 py-3 sm:py-4">
+                    <h2 class="text-base sm:text-lg font-semibold">{{ stepTitle }}</h2>
                 </div>
 
                 <!-- Form Content -->
-                <div class="p-6">
+                <div class="p-4 sm:p-6">
                     <!-- Step 1: Business Information -->
-                    <div v-show="currentStep === 1" class="space-y-6">
+                    <div v-show="currentStep === 1" class="space-y-4 sm:space-y-6">
                         <BusinessInformationForm :formData="formData" :errors="errors"
                             :vendorCategoryOptions="vendorCategoryOptions" />
                     </div>
 
                     <!-- Step 2: Location -->
-                    <div v-show="currentStep === 2" class="space-y-6">
+                    <div v-show="currentStep === 2" class="space-y-4 sm:space-y-6">
                         <LocationForm :formData="formData" :errors="errors"
                             :serviceCoverageOptions="serviceCoverageOptions" />
                     </div>
 
                     <!-- Step 3: Contact and Payment Preference -->
-                    <div v-show="currentStep === 3" class="space-y-6">
+                    <div v-show="currentStep === 3" class="space-y-4 sm:space-y-6">
                         <ContactAndPayment :formData="formData" :errors="errors" />
                     </div>
 
                     <!-- Step 4: Media & Portfolio -->
-                    <div v-show="currentStep === 4" class="space-y-6">
+                    <div v-show="currentStep === 4" class="space-y-4 sm:space-y-6">
                         <MediaAndPortfolio :errors="errors" :profilePhoto="profilePhoto"
                             :profilePhotoUrl="profilePhotoUrl" :servicePhotos="servicePhotos"
                             :servicePhotoUrls="servicePhotoUrls" @handle-file-upload="handleFileUpload"
@@ -458,59 +462,62 @@ watch(() => formData.password, checkPasswordStrength)
                     </div>
 
                     <!-- Step 5: Legal & Compliance -->
-                    <div v-show="currentStep === 5" class="space-y-6">
+                    <div v-show="currentStep === 5" class="space-y-4 sm:space-y-6">
                         <LegalAndCompliance :errors="errors" :permitFiles="permitFiles"
                             @handle-file-upload="handleFileUpload" @remove-file="removeFile" />
                     </div>
 
                     <!-- Step 6: Account Security -->
-                    <div v-show="currentStep === 6" class="space-y-6">
+                    <div v-show="currentStep === 6" class="space-y-4 sm:space-y-6">
                         <AccountSecurity :formData="formData" :errors="errors" :passwordStrength="passwordStrength"
                             :passwordRequirements="passwordRequirements" :passwordsMatch="passwordsMatch" />
                     </div>
 
                     <!-- Step 7: Review & Submit -->
-                    <div v-show="currentStep === 7" class="space-y-6">
+                    <div v-show="currentStep === 7" class="space-y-4 sm:space-y-6">
                         <Review :formData="formData" :errors="errors" v-model:termsAccepted="termsAccepted" />
                     </div>
                 </div>
 
                 <!-- Navigation Buttons -->
-                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between">
+                <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between gap-2">
                     <button v-if="currentStep > 1" @click="prevStep" type="button"
-                        class="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors">
-                        <div class="flex items-center">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="px-3 sm:px-5 py-2 text-sm sm:text-base text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors flex-1 sm:flex-none">
+                        <div class="flex items-center justify-center sm:justify-start">
+                            <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M15 19l-7-7 7-7"></path>
                             </svg>
                             Previous
                         </div>
                     </button>
-                    <div v-else></div>
+                    <div v-else class="flex-1 sm:flex-none"></div>
 
-                    <div class="flex space-x-3">
+                    <div class="flex space-x-2 sm:space-x-3 flex-1 sm:flex-none justify-end">
                         <button v-if="currentStep < totalSteps" @click="nextStep" type="button"
                             :disabled="!isCurrentStepValid" :class="[
-                                'px-5 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center',
+                                'px-3 sm:px-5 py-2 text-sm sm:text-base rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 sm:focus:ring-offset-2 transition-colors flex items-center justify-center w-full',
                                 isCurrentStepValid
-                                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
                                     : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                             ]">
                             Next
-                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
                                 </path>
                             </svg>
                         </button>
                         <button v-else @click="submitForm" :disabled="isLoading || !isCurrentStepValid" type="button"
                             :class="[
-                                'px-6 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors flex items-center',
+                                'px-4 sm:px-6 py-2 text-sm sm:text-base rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 sm:focus:ring-offset-2 transition-colors flex items-center justify-center w-full',
                                 (isLoading || !isCurrentStepValid)
                                     ? 'bg-green-400 text-white cursor-not-allowed'
-                                    : 'bg-green-600 text-white hover:bg-green-700'
+                                    : 'bg-green-600 text-white hover:bg-green-700 shadow-sm'
                             ]">
-                            <svg v-if="isLoading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                            <svg v-if="isLoading"
+                                class="animate-spin -ml-1 mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 text-white"
                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                                     stroke-width="4"></circle>
@@ -518,16 +525,28 @@ watch(() => formData.password, checkPasswordStrength)
                                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                                 </path>
                             </svg>
-                            {{ isLoading ? 'Submitting...' : 'Submit Registration' }}
+                            {{ isLoading ? 'Submitting...' : 'Submit' }}
                         </button>
                     </div>
                 </div>
             </div>
 
             <!-- Help Text -->
-            <div class="mt-6 text-center text-sm text-gray-500">
-                <p>Questions? <a href="#" class="text-blue-600 hover:text-blue-800">Contact our support team</a></p>
+            <div class="mt-4 sm:mt-6 text-center text-xs sm:text-sm text-gray-500 px-2">
+                <p>Questions? <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">Contact our support
+                        team</a></p>
             </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+/* Custom styles for better mobile experience */
+@media (max-width: 640px) {
+    .min-h-screen {
+        min-height: 100vh;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+}
+</style>

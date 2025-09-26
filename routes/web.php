@@ -38,6 +38,11 @@ Route::get('/join', function() {
     return inertia('Join');
 });
 
+Route::get('/organizer-reg', function() {
+
+    return inertia('Auth/OrganizerRegister');
+});
+
 
 
 Route::middleware('auth')->group(function () {
