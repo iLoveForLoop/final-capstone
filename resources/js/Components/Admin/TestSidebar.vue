@@ -10,7 +10,8 @@ import {
     CreditCard,
     Settings,
     ArrowLeftFromLine,
-    ShieldCheck
+    ShieldCheck,
+    Flag
 } from 'lucide-vue-next';
 import { useUIStore } from '@/store/ui';
 import NewNavLink from '../NewNavLink.vue';
@@ -75,6 +76,16 @@ const ui = ref(useUIStore())
                         </span>
                     </NewNavLink>
 
+                    <NewNavLink :href="route('admin.vendor-application.index')"
+                        :active="route().current('admin.vendor-application.index')" :isCollapsed="ui.sidebarCollapsed">
+                        <template #icon>
+                            <Flag class="h-5 w-5" />
+                        </template>
+                        <span class="text-gray-300 truncate" v-if="!ui.sidebarCollapsed">
+                            Reports
+                        </span>
+                    </NewNavLink>
+
                     <NewNavLink :href="route('admin.categories.index')"
                         :active="route().current('admin.categories.index')" :isCollapsed="ui.sidebarCollapsed">
                         <template #icon>
@@ -115,7 +126,7 @@ const ui = ref(useUIStore())
                         </span>
                     </NewNavLink>
 
-                    <NewNavLink :href="route('admin.payments.index')" :active="route().current('admin.payments.index')"
+                    <!-- <NewNavLink :href="route('admin.payments.index')" :active="route().current('admin.payments.index')"
                         :isCollapsed="ui.sidebarCollapsed">
                         <template #icon>
                             <CreditCard class="h-5 w-5" />
@@ -123,7 +134,7 @@ const ui = ref(useUIStore())
                         <span class="text-gray-300" v-if="!ui.sidebarCollapsed">
                             Payments
                         </span>
-                    </NewNavLink>
+                    </NewNavLink> -->
 
                     <NewNavLink :href="route('admin.settings.index')" :active="route().current('admin.settings.index')"
                         :isCollapsed="ui.sidebarCollapsed">

@@ -21,7 +21,7 @@
             <div class="mb-6 sm:mb-8 px-2 sm:px-0">
                 <div class="flex justify-between items-center mb-3">
                     <span class="text-xs sm:text-sm font-medium text-gray-700">Step {{ currentStep }} of {{ totalSteps
-                        }}</span>
+                    }}</span>
                     <span class="text-xs sm:text-sm font-medium text-blue-600">{{ Math.round((currentStep / totalSteps)
                         * 100) }}% Complete</span>
                 </div>
@@ -30,8 +30,7 @@
                         :style="{ width: `${(currentStep / totalSteps) * 100}%` }"></div>
                 </div>
                 <div class="flex justify-between text-[10px] sm:text-xs text-gray-500 px-1">
-                    <span class="truncate px-1">Personal</span>
-                    <span class="truncate px-1">Contact</span>
+                    <span class="truncate px-1">Personal Info</span>
                     <span class="truncate px-1">Security</span>
                     <span class="truncate px-1">Review</span>
                 </div>
@@ -51,9 +50,8 @@
                     <div v-show="currentStep === 1" class="space-y-4 sm:space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <div>
-                                <label for="firstName" class="block text-sm font-medium text-gray-700 mb-2">
-                                    First Name *
-                                </label>
+                                <label for="firstName" class="block text-sm font-medium text-gray-700 mb-2">First Name
+                                    *</label>
                                 <input id="firstName" v-model="formData.first_name" type="text"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     :class="{ 'border-red-500': errors.first_name }" />
@@ -62,9 +60,8 @@
                             </div>
 
                             <div>
-                                <label for="lastName" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Last Name *
-                                </label>
+                                <label for="lastName" class="block text-sm font-medium text-gray-700 mb-2">Last Name
+                                    *</label>
                                 <input id="lastName" v-model="formData.last_name" type="text"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     :class="{ 'border-red-500': errors.last_name }" />
@@ -72,81 +69,50 @@
                             </div>
                         </div>
 
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
-                                Email Address *
-                            </label>
-                            <input id="email" v-model="formData.email" type="email"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                :class="{ 'border-red-500': errors.email }" />
-                            <p v-if="errors.email" class="mt-1 text-sm text-red-600">{{ errors.email }}</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address
+                                    *</label>
+                                <input id="email" v-model="formData.email" type="email"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    :class="{ 'border-red-500': errors.email }" />
+                                <p v-if="errors.email" class="mt-1 text-sm text-red-600">{{ errors.email }}</p>
+                            </div>
+
+                            <div>
+                                <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-2">Phone
+                                    Number *</label>
+                                <input id="phoneNumber" v-model="formData.phoneNumber" type="tel"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    :class="{ 'border-red-500': errors.phoneNumber }" />
+                                <p v-if="errors.phoneNumber" class="mt-1 text-sm text-red-600">{{ errors.phoneNumber }}
+                                </p>
+                            </div>
                         </div>
 
                         <div>
-                            <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-2">
-                                Phone Number *
-                            </label>
-                            <input id="phoneNumber" v-model="formData.phoneNumber" type="tel"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                :class="{ 'border-red-500': errors.phoneNumber }" />
-                            <p v-if="errors.phoneNumber" class="mt-1 text-sm text-red-600">{{ errors.phoneNumber }}</p>
-                        </div>
-                    </div>
-
-                    <!-- Step 2: Contact Information -->
-                    <div v-show="currentStep === 2" class="space-y-4 sm:space-y-6">
-                        <div>
-                            <label for="address" class="block text-sm font-medium text-gray-700 mb-2">
-                                Address *
-                            </label>
+                            <label for="address" class="block text-sm font-medium text-gray-700 mb-2">Address *</label>
                             <textarea id="address" v-model="formData.address" rows="3"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 :class="{ 'border-red-500': errors.address }"
                                 placeholder="Enter your complete address"></textarea>
                             <p v-if="errors.address" class="mt-1 text-sm text-red-600">{{ errors.address }}</p>
                         </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-3">
-                                Preferred Contact Method *
-                            </label>
-                            <div class="space-y-2">
-                                <label class="flex items-center">
-                                    <input v-model="formData.preferred_contact_method" type="radio" value="email"
-                                        class="text-blue-600 focus:ring-blue-500" />
-                                    <span class="ml-2 text-sm text-gray-700">Email</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input v-model="formData.preferred_contact_method" type="radio" value="phone"
-                                        class="text-blue-600 focus:ring-blue-500" />
-                                    <span class="ml-2 text-sm text-gray-700">Phone</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input v-model="formData.preferred_contact_method" type="radio" value="both"
-                                        class="text-blue-600 focus:ring-blue-500" />
-                                    <span class="ml-2 text-sm text-gray-700">Both Email and Phone</span>
-                                </label>
-                            </div>
-                            <p v-if="errors.preferred_contact_method" class="mt-1 text-sm text-red-600">{{
-                                errors.preferred_contact_method }}</p>
-                        </div>
                     </div>
 
-                    <!-- Step 3: Account Security -->
-                    <div v-show="currentStep === 3" class="space-y-4 sm:space-y-6">
+                    <!-- Step 2: Account Security -->
+                    <div v-show="currentStep === 2" class="space-y-4 sm:space-y-6">
                         <div>
-                            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-                                Password *
-                            </label>
+                            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password
+                                *</label>
                             <input id="password" v-model="formData.password" type="password"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 :class="{ 'border-red-500': errors.password }" @input="checkPasswordStrength" />
                             <div v-if="formData.password" class="mt-2">
                                 <div class="flex items-center justify-between mb-1">
                                     <span class="text-xs text-gray-600">Password Strength</span>
-                                    <span class="text-xs font-medium" :class="passwordStrengthClass">
-                                        {{ passwordStrengthText }}
-                                    </span>
+                                    <span class="text-xs font-medium" :class="passwordStrengthClass">{{
+                                        passwordStrengthText }}</span>
                                 </div>
                                 <div class="w-full bg-gray-200 rounded-full h-1">
                                     <div class="h-1 rounded-full transition-all duration-300"
@@ -193,9 +159,8 @@
                         </div>
 
                         <div>
-                            <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">
-                                Confirm Password *
-                            </label>
+                            <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">Confirm
+                                Password *</label>
                             <input id="confirmPassword" v-model="formData.password_confirmation" type="password"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 :class="{ 'border-red-500': errors.password_confirmation || (formData.password_confirmation && !passwordsMatch) }" />
@@ -208,16 +173,15 @@
                         </div>
                     </div>
 
-                    <!-- Step 4: Review & Submit -->
-                    <div v-show="currentStep === 4" class="space-y-4 sm:space-y-6">
+                    <!-- Step 3: Review & Submit -->
+                    <div v-show="currentStep === 3" class="space-y-4 sm:space-y-6">
                         <div class="bg-gray-50 rounded-lg p-4">
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Review Your Information</h3>
 
                             <div class="space-y-3">
                                 <div class="flex justify-between">
-                                    <span class="text-sm text-gray-600">Name:</span>
-                                    <span class="text-sm font-medium">{{ formData.first_name }} {{ formData.last_name
-                                        }}</span>
+                                    <span class="text-sm text-gray-600">Full Name:</span>
+                                    <span class="text-sm font-medium">{{ fullName }}</span>
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-sm text-gray-600">Email:</span>
@@ -231,11 +195,6 @@
                                     <span class="text-sm text-gray-600">Address:</span>
                                     <span class="text-sm font-medium">{{ formData.address }}</span>
                                 </div>
-                                <div class="flex justify-between">
-                                    <span class="text-sm text-gray-600">Contact Method:</span>
-                                    <span class="text-sm font-medium capitalize">{{ formData.preferred_contact_method
-                                        }}</span>
-                                </div>
                             </div>
                         </div>
 
@@ -245,8 +204,8 @@
                                 :class="{ 'border-red-500': errors.terms }" />
                             <label for="terms" class="ml-2 text-sm text-gray-700">
                                 I agree to the <a href="#" class="text-blue-600 hover:text-blue-800">Terms of
-                                    Service</a> and <a href="#" class="text-blue-600 hover:text-blue-800">Privacy
-                                    Policy</a> *
+                                    Service</a> and
+                                <a href="#" class="text-blue-600 hover:text-blue-800">Privacy Policy</a> *
                             </label>
                         </div>
                         <p v-if="errors.terms" class="text-sm text-red-600">{{ errors.terms }}</p>
@@ -257,39 +216,20 @@
                 <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between gap-2">
                     <button v-if="currentStep > 1" @click="prevStep" type="button"
                         class="px-3 sm:px-5 py-2 text-sm sm:text-base text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors flex-1 sm:flex-none">
-                        <div class="flex items-center justify-center sm:justify-start">
-                            <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 19l-7-7 7-7"></path>
-                            </svg>
-                            Previous
-                        </div>
+                        Previous
                     </button>
                     <div v-else class="flex-1 sm:flex-none"></div>
 
                     <div class="flex space-x-2 sm:space-x-3 flex-1 sm:flex-none justify-end">
                         <button v-if="currentStep < totalSteps" @click="nextStep" type="button"
-                            :disabled="!isCurrentStepValid" :class="[
-                                'px-3 sm:px-5 py-2 text-sm sm:text-base rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 sm:focus:ring-offset-2 transition-colors flex items-center justify-center w-full',
-                                isCurrentStepValid
-                                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
-                                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                            ]">
+                            :disabled="!isCurrentStepValid"
+                            :class="['px-3 sm:px-5 py-2 text-sm sm:text-base rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 sm:focus:ring-offset-2 transition-colors flex items-center justify-center w-full',
+                                isCurrentStepValid ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm' : 'bg-gray-200 text-gray-500 cursor-not-allowed']">
                             Next
-                            <svg class="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
-                                </path>
-                            </svg>
                         </button>
                         <button v-else @click="submitForm" :disabled="isLoading || !isCurrentStepValid" type="button"
-                            :class="[
-                                'px-4 sm:px-6 py-2 text-sm sm:text-base rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 sm:focus:ring-offset-2 transition-colors flex items-center justify-center w-full',
-                                (isLoading || !isCurrentStepValid)
-                                    ? 'bg-green-400 text-white cursor-not-allowed'
-                                    : 'bg-green-600 text-white hover:bg-green-700 shadow-sm'
-                            ]">
+                            :class="['px-4 sm:px-6 py-2 text-sm sm:text-base rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 sm:focus:ring-offset-2 transition-colors flex items-center justify-center w-full',
+                                (isLoading || !isCurrentStepValid) ? 'bg-green-400 text-white cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700 shadow-sm']">
                             <svg v-if="isLoading"
                                 class="animate-spin -ml-1 mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 text-white"
                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -317,21 +257,17 @@
 <script setup>
 import { useForm, usePage } from '@inertiajs/vue3'
 import { ref, reactive, computed, watch } from 'vue'
-import { onUnmounted } from 'vue'
 
 const page = usePage()
 
 // Form data structure for customer/organizer
 const formData = useForm({
-    // Personal Information
+    // Personal Information - will be combined into full_name for backend
     first_name: '',
     last_name: '',
     email: '',
     phoneNumber: '',
-
-    // Contact Information
     address: '',
-    preferred_contact_method: '',
 
     // Password
     password: '',
@@ -343,7 +279,7 @@ const formData = useForm({
 
 // UI State
 const currentStep = ref(1)
-const totalSteps = 4
+const totalSteps = 3
 const isLoading = ref(false)
 const errors = reactive({})
 const termsAccepted = ref(false)
@@ -363,14 +299,8 @@ const passwordsMatch = computed(() => {
     return formData.password === formData.password_confirmation
 })
 
-const stepTitle = computed(() => {
-    const titles = {
-        1: 'Personal Information',
-        2: 'Contact Information',
-        3: 'Account Security',
-        4: 'Review & Submit'
-    }
-    return titles[currentStep.value]
+const fullName = computed(() => {
+    return `${formData.first_name} ${formData.last_name}`.trim()
 })
 
 // Password strength visual feedback
@@ -401,27 +331,32 @@ const passwordStrengthBarClass = computed(() => {
     return classes[passwordStrength.value] || 'bg-red-500'
 })
 
+const stepTitle = computed(() => {
+    const titles = {
+        1: 'Personal Information',
+        2: 'Account Security',
+        3: 'Review & Submit'
+    }
+    return titles[currentStep.value]
+})
+
 // Validation computed properties
 const isStep1Valid = computed(() => {
     return formData.first_name.trim() !== '' &&
         formData.last_name.trim() !== '' &&
         formData.email.trim() !== '' &&
         /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) &&
-        formData.phoneNumber.trim() !== ''
+        formData.phoneNumber.trim() !== '' &&
+        formData.address.trim() !== ''
 })
 
 const isStep2Valid = computed(() => {
-    return formData.address.trim() !== '' &&
-        formData.preferred_contact_method !== ''
-})
-
-const isStep3Valid = computed(() => {
     return formData.password.length >= 8 &&
         passwordStrength.value >= 3 &&
         passwordsMatch.value === true
 })
 
-const isStep4Valid = computed(() => {
+const isStep3Valid = computed(() => {
     return termsAccepted.value === true
 })
 
@@ -430,7 +365,6 @@ const isCurrentStepValid = computed(() => {
         case 1: return isStep1Valid.value
         case 2: return isStep2Valid.value
         case 3: return isStep3Valid.value
-        case 4: return isStep4Valid.value
         default: return false
     }
 })
@@ -463,20 +397,13 @@ const validateCurrentStep = () => {
                 errors.phoneNumber = 'Phone number is required'
                 isValid = false
             }
-            break
-
-        case 2:
             if (!formData.address.trim()) {
                 errors.address = 'Address is required'
                 isValid = false
             }
-            if (!formData.preferred_contact_method) {
-                errors.preferred_contact_method = 'Preferred contact method is required'
-                isValid = false
-            }
             break
 
-        case 3:
+        case 2:
             if (formData.password.length < 8) {
                 errors.password = 'Password must be at least 8 characters long'
                 isValid = false
@@ -491,7 +418,7 @@ const validateCurrentStep = () => {
             }
             break
 
-        case 4:
+        case 3:
             if (!termsAccepted.value) {
                 errors.terms = 'You must accept the terms and conditions'
                 isValid = false
@@ -534,25 +461,38 @@ const checkPasswordStrength = () => {
 }
 
 const submitForm = () => {
-    if (!validateCurrentStep()) return;
-    isLoading.value = true;
+    if (!validateCurrentStep()) return
+    isLoading.value = true
+
+    // Combine first_name and last_name into full_name for backend
+    const submissionData = {
+        ...formData.data(),
+        full_name: fullName.value,
+        is_vendor: false
+    }
+
+    // Remove first_name and last_name from the data since we're using full_name
+    delete submissionData.first_name
+    delete submissionData.last_name
+
+    // console.log('Form data: ', formData);
 
     formData
-        .transform((data) => {
-            const fd = new FormData();
-            Object.keys(data).forEach((key) => {
-                if (data[key] !== null) {
-                    fd.append(key, data[key]);
+        .transform(() => {
+            const fd = new FormData()
+            Object.keys(submissionData).forEach((key) => {
+                if (submissionData[key] !== null && submissionData[key] !== undefined) {
+                    fd.append(key, submissionData[key])
                 }
-            });
-            return fd;
+            })
+            return fd
         })
         .post(route('register'), {
             onFinish: () => {
-                isLoading.value = false;
+                isLoading.value = false
             },
-        });
-};
+        })
+}
 
 // Watch for password changes to update strength
 watch(() => formData.password, checkPasswordStrength)

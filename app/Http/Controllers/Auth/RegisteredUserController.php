@@ -28,10 +28,19 @@ class RegisteredUserController extends Controller
             return RedirectHelper::redirectBasedOnRole(auth()->user());
         }
 
-        // dd(request()->query('type'));
 
-        $categories = ServiceCategory::all();
+
+        if(request()->query('type') === 'vendor'){
+            $categories = ServiceCategory::all();
         return Inertia::render('Auth/Register', compact('categories'));
+        }
+
+        if(request()->query('type') === 'organizer'){
+
+            return Inertia::render('Auth/OrganizerRegister');
+        }
+
+
     }
 
     /**
@@ -43,7 +52,7 @@ class RegisteredUserController extends Controller
     {
 
 
-
+        // dd($request->all());
 
 
         try {
@@ -102,7 +111,7 @@ class RegisteredUserController extends Controller
                 'latitude'               => $request->latitude,
                 'longitude'              => $request->longitude,
                 'service_coverage_areas' => $request->serviceCoverageAreas,
-        ]);
+            ]);
 
             // Attach service categories (pivot, if needed)
             if ($request->filled('vendorCategories')) {
@@ -131,7 +140,7 @@ class RegisteredUserController extends Controller
         // Handle client registration
         $user->assignRole('client');
         $user->client()->create([
-            'full_name'      => $request->name,
+            'full_name'      => $request->full_name,
             'contact_number' => $request->phoneNumber,
             'location'       => $request->address,
         ]);

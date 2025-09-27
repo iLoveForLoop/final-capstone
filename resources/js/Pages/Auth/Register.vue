@@ -390,7 +390,7 @@ watch(() => formData.password, checkPasswordStrength)
             <div class="text-center mb-6 sm:mb-10">
                 <div class="flex justify-center mb-3 sm:mb-4">
                     <div
-                        class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-600 rounded-lg flex items-center justify-center shadow-sm">
+                        class="w-10 h-10 sm:w-12 sm:h-12 bg-purple-500 rounded-lg flex items-center justify-center shadow-sm">
                         <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -408,11 +408,12 @@ watch(() => formData.password, checkPasswordStrength)
                 <div class="flex justify-between items-center mb-3">
                     <span class="text-xs sm:text-sm font-medium text-gray-700">Step {{ currentStep }} of {{ totalSteps
                     }}</span>
-                    <span class="text-xs sm:text-sm font-medium text-blue-600">{{ Math.round((currentStep / totalSteps)
+                    <span class="text-xs sm:text-sm font-medium text-purple-500">{{ Math.round((currentStep /
+                        totalSteps)
                         * 100) }}% Complete</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-1.5 sm:h-2 mb-2">
-                    <div class="bg-blue-600 h-1.5 sm:h-2 rounded-full transition-all duration-300 ease-out shadow-sm"
+                    <div class="bg-purple-500 h-1.5 sm:h-2 rounded-full transition-all duration-300 ease-out shadow-sm"
                         :style="{ width: `${(currentStep / totalSteps) * 100}%` }"></div>
                 </div>
                 <div class="flex justify-between text-[10px] sm:text-xs text-gray-500 px-1">
@@ -430,7 +431,7 @@ watch(() => formData.password, checkPasswordStrength)
             <div
                 class="bg-white rounded-xl sm:rounded-xl shadow-md sm:shadow-lg border border-gray-100 overflow-hidden mx-2 sm:mx-0">
                 <!-- Step Header -->
-                <div class="border-b bg-blue-600 text-white px-4 sm:px-6 py-3 sm:py-4">
+                <div class="border-b bg-purple-500 text-white px-4 sm:px-6 py-3 sm:py-4">
                     <h2 class="text-base sm:text-lg font-semibold">{{ stepTitle }}</h2>
                 </div>
 
@@ -499,7 +500,7 @@ watch(() => formData.password, checkPasswordStrength)
                             :disabled="!isCurrentStepValid" :class="[
                                 'px-3 sm:px-5 py-2 text-sm sm:text-base rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 sm:focus:ring-offset-2 transition-colors flex items-center justify-center w-full',
                                 isCurrentStepValid
-                                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
+                                    ? 'bg-purple-500 text-white hover:bg-blue-700 shadow-sm'
                                     : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                             ]">
                             Next
@@ -533,7 +534,7 @@ watch(() => formData.password, checkPasswordStrength)
 
             <!-- Help Text -->
             <div class="mt-4 sm:mt-6 text-center text-xs sm:text-sm text-gray-500 px-2">
-                <p>Questions? <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">Contact our support
+                <p>Questions? <a href="#" class="text-purple-500 hover:text-blue-800 font-medium">Contact our support
                         team</a></p>
             </div>
         </div>
