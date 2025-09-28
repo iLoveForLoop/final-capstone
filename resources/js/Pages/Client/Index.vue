@@ -294,7 +294,7 @@ const activeFilterCount = computed(() => {
         </section>
 
         <!-- Categories -->
-        <section class="py-16 relative z-10">
+        <!-- <section class="py-16 relative z-10">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center mb-14 reveal-animation">
                     <h2 class="text-3xl font-bold text-gray-900 mb-3">Browse Categories</h2>
@@ -375,7 +375,7 @@ const activeFilterCount = computed(() => {
                     </Link>
                 </div>
             </div>
-        </section>
+        </section> -->
 
         <!-- Footer -->
         <footer class="bg-gradient-to-b from-gray-900 to-gray-800 text-white py-16 relative z-10">
@@ -388,7 +388,7 @@ const activeFilterCount = computed(() => {
                         </p>
                     </div>
 
-                    <div class="reveal-animation animation-delay-100">
+                    <!-- <div class="reveal-animation animation-delay-100">
                         <h3 class="font-semibold mb-5 text-lg">Platform</h3>
                         <ul class="space-y-3 text-sm">
                             <li>
@@ -438,9 +438,9 @@ const activeFilterCount = computed(() => {
                                 Entertainment</Link>
                             </li>
                         </ul>
-                    </div>
+                    </div> -->
 
-                    <div class="reveal-animation animation-delay-300">
+                    <!-- <div class="reveal-animation animation-delay-300">
                         <h3 class="font-semibold mb-5 text-lg">Support</h3>
                         <ul class="space-y-3 text-sm">
                             <li>
@@ -461,7 +461,7 @@ const activeFilterCount = computed(() => {
                                     class="text-gray-400 hover:text-white transition-colors duration-300">Privacy</Link>
                             </li>
                         </ul>
-                    </div>
+                    </div> -->
                 </div>
 
                 <div class="border-t border-gray-800 mt-12 pt-8 reveal-animation">

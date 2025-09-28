@@ -402,7 +402,9 @@ class ClientController extends Controller
             'categories' => $vendor->serviceCategories->pluck('name'),
             'rating' => $vendor->averageRating(),
             'reviewCount' => $vendor->reviews()->count(),
-            'location' => $vendor->location,
+            'location' => $vendor->location ?? null,
+            'latitude' => $vendor->latitude ?? null,
+            'longitude' => $vendor->longitude,
             'responseTime' => '2 hours',
             'completedEvents' => $vendor->getCompletedBookingsCount(),
             'available' => true, // ??

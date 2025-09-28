@@ -678,9 +678,9 @@ onMounted(() => {
                                         {{ selectedEvent.status.charAt(0).toUpperCase() + selectedEvent.status.slice(1)
                                         }}
                                     </span>
-                                    <span class="text-sm" :class="getPriorityColor(selectedEvent.priority)">
+                                    <!-- <span class="text-sm" :class="getPriorityColor(selectedEvent.priority)">
                                         {{ selectedEvent.priority.toUpperCase() }} PRIORITY
-                                    </span>
+                                    </span> -->
                                 </div>
                                 <p class="text-gray-600">{{ selectedEvent.description }}</p>
                             </div>
@@ -769,7 +769,7 @@ onMounted(() => {
                     </div>
 
                     <!-- Tasks -->
-                    <div class="mb-6">
+                    <!-- <div class="mb-6">
                         <h3 class="font-semibold text-gray-900 mb-3">Tasks & Checklist</h3>
                         <div v-if="selectedEvent.tasks.length > 0" class="space-y-2">
                             <div v-for="(task, index) in selectedEvent.tasks" :key="index"
@@ -790,7 +790,7 @@ onMounted(() => {
                         <div v-else class="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-lg">
                             No tasks added yet
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Action Buttons -->
                     <div class="flex items-center justify-between pt-6 border-t border-gray-200">

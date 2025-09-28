@@ -1,42 +1,45 @@
 <template>
-    <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-        <!-- Header -->
-        <header class="bg-white border-b border-gray-200">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center py-4">
-                    <!-- Logo -->
-                    <Link href="/" class="flex items-center space-x-3 group reveal-animation">
-                    <div
-                        class="w-8 h-8 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-sm">
-                        <Calendar class="w-4 h-4 text-white" />
-                    </div>
-                    <span class="text-xl font-semibold text-gray-900">
-                        Eventory
-                    </span>
-                    </Link>
+    <div class="min-h-screen bg-gradient-to-br from-gray-300 via-white to-gray-500 relative overflow-hidden">
+        <!-- Animated Background -->
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+            <div
+                class="absolute -top-40 -right-32 w-80 h-80 bg-blue-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000">
+            </div>
+            <div
+                class="absolute top-60 -left-20 w-80 h-80 bg-purple-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000">
+            </div>
+            <div
+                class="absolute -bottom-20 left-40 w-80 h-80 bg-teal-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob">
+            </div>
+        </div>
 
-                    <!-- Back to Login -->
-                    <Link href="/login"
-                        class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-all duration-200 px-3 py-2 rounded-md hover:bg-gray-50 text-sm reveal-animation animation-delay-100">
+        <div class="absolute inset-0">
+            <div
+                class="absolute top-1/4 left-3/4 w-52 h-52 bg-teal-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000">
+            </div>
+        </div>
+
+        <!-- Simple Back Button Header -->
+        <header class="relative z-10">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-start py-6">
+                    <Link href="/"
+                        class="flex items-center space-x-2 text-gray-700 hover:text-gray-900 transition-all duration-200 px-4 py-2 rounded-lg hover:bg-white/50 backdrop-blur-sm text-sm reveal-animation">
                     <ArrowLeft class="w-4 h-4" />
-                    <span class="hidden sm:inline">Back to Login</span>
+                    <span>Back to Home</span>
                     </Link>
                 </div>
             </div>
         </header>
 
         <!-- Main Content -->
-        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <main class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
             <!-- Hero Section -->
             <section class="text-center mb-12 sm:mb-16">
-                <!-- <div
-                    class="w-16 h-16 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-6 reveal-animation">
-                    <Users class="w-8 h-8 text-purple-600" />
-                </div> -->
                 <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 reveal-animation animation-delay-100">
                     Join Eventory as
                 </h1>
-                <p class="text-gray-600 max-w-md mx-auto text-base sm:text-lg reveal-animation animation-delay-200">
+                <p class="text-gray-700 max-w-md mx-auto text-base sm:text-lg reveal-animation animation-delay-200">
                     Choose your role to get started with your event planning journey
                 </p>
             </section>
@@ -46,10 +49,10 @@
                 <!-- Event Organizer Card -->
                 <div class="group reveal-animation animation-delay-300">
                     <div :class="[
-                        'relative bg-white rounded-xl border-2 p-6 transition-all duration-300 h-full flex flex-col',
+                        'relative bg-white/80 backdrop-blur-sm rounded-xl border-2 p-6 transition-all duration-300 h-full flex flex-col',
                         selectedRole === 'organizer'
                             ? 'border-blue-500 shadow-lg'
-                            : 'border-gray-200 hover:border-blue-300 hover:shadow-md'
+                            : 'border-white/60 hover:border-blue-300 hover:shadow-md'
                     ]">
                         <!-- Icon -->
                         <div :class="[
@@ -67,7 +70,7 @@
                         <!-- Content -->
                         <div class="flex-grow">
                             <h3 class="text-lg font-semibold text-gray-900 mb-2">Event Organizer</h3>
-                            <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                            <p class="text-gray-700 text-sm leading-relaxed mb-4">
                                 Plan and manage events. Find trusted vendors and create unforgettable experiences.
                             </p>
 
@@ -82,7 +85,7 @@
                                     ]">
                                         <Check class="w-2 h-2 text-blue-600" />
                                     </div>
-                                    <span class="text-xs text-gray-600">{{ feature }}</span>
+                                    <span class="text-xs text-gray-700">{{ feature }}</span>
                                 </div>
                             </div>
                         </div>
@@ -115,10 +118,10 @@
                 <!-- Vendor Card -->
                 <div class="group reveal-animation animation-delay-400">
                     <div :class="[
-                        'relative bg-white rounded-xl border-2 p-6 transition-all duration-300 h-full flex flex-col',
+                        'relative bg-white/80 backdrop-blur-sm rounded-xl border-2 p-6 transition-all duration-300 h-full flex flex-col',
                         selectedRole === 'vendor'
                             ? 'border-purple-500 shadow-lg'
-                            : 'border-gray-200 hover:border-purple-300 hover:shadow-md'
+                            : 'border-white/60 hover:border-purple-300 hover:shadow-md'
                     ]">
                         <!-- Icon -->
                         <div :class="[
@@ -136,7 +139,7 @@
                         <!-- Content -->
                         <div class="flex-grow">
                             <h3 class="text-lg font-semibold text-gray-900 mb-2">Service Vendor</h3>
-                            <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                            <p class="text-gray-700 text-sm leading-relaxed mb-4">
                                 Showcase your services. Connect with event organizers and grow your business.
                             </p>
 
@@ -151,7 +154,7 @@
                                     ]">
                                         <Check class="w-2 h-2 text-purple-600" />
                                     </div>
-                                    <span class="text-xs text-gray-600">{{ feature }}</span>
+                                    <span class="text-xs text-gray-700">{{ feature }}</span>
                                 </div>
                             </div>
                         </div>
@@ -181,25 +184,13 @@
                     </div>
                 </div>
             </section>
-
-
-            <!-- Quick Stats -->
-            <!-- <section class="max-w-2xl mx-auto mt-12 reveal-animation animation-delay-800">
-                <div class="grid grid-cols-3 gap-4 text-center">
-                    <div v-for="(stat, index) in stats" :key="stat.label"
-                        :class="['bg-white rounded-lg p-4 shadow-sm border border-gray-100 reveal-animation']"
-                        :style="{ animationDelay: `${index * 150 + 900}ms` }">
-                        <div class="text-lg font-bold text-gray-900">{{ stat.value }}</div>
-                        <div class="text-xs text-gray-600">{{ stat.label }}</div>
-                    </div>
-                </div>
-            </section> -->
         </main>
 
         <!-- Footer -->
-        <footer class="bg-white border-t border-gray-200 mt-12 reveal-animation animation-delay-900">
+        <footer
+            class="relative z-10 bg-white/50 backdrop-blur-sm border-t border-white/30 mt-12 reveal-animation animation-delay-900">
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                <div class="text-center text-gray-600 text-sm">
+                <div class="text-center text-gray-700 text-sm">
                     <p>&copy; {{ new Date().getFullYear() }} Eventory. All rights reserved.</p>
                 </div>
             </div>
@@ -211,7 +202,6 @@
 import { Link } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 import {
-    Calendar,
     ArrowLeft,
     Users,
     Store,
@@ -259,23 +249,41 @@ const vendorFeatures = [
     'Get booking requests',
     'Manage availability'
 ];
-
-const stats = [
-    { value: '1,000+', label: 'Vendors' },
-    { value: '5,000+', label: 'Events' },
-    { value: '98%', label: 'Satisfaction' }
-];
 </script>
 
 <style scoped>
-/* Smooth transitions */
-* {
-    transition-property: color, background-color, border-color, box-shadow;
-    transition-duration: 300ms;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+/* BLOB Animation */
+@keyframes blob {
+    0% {
+        transform: translate(0px, 0px) scale(1);
+    }
+
+    33% {
+        transform: translate(30px, -50px) scale(1.1);
+    }
+
+    66% {
+        transform: translate(-20px, 20px) scale(0.9);
+    }
+
+    100% {
+        transform: translate(0px, 0px) scale(1);
+    }
 }
 
-/* Reveal Animation - Based on your existing code */
+.animate-blob {
+    animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+    animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+    animation-delay: 4s;
+}
+
+/* Reveal Animation */
 .reveal-animation {
     opacity: 0;
     transform: translateY(20px);
@@ -312,21 +320,15 @@ const stats = [
     transition-delay: 600ms;
 }
 
-.animation-delay-700 {
-    transition-delay: 700ms;
-}
-
-.animation-delay-800 {
-    transition-delay: 800ms;
-}
-
 .animation-delay-900 {
     transition-delay: 900ms;
 }
 
-/* Keep only essential hover effects */
-.group:hover .group-hover\:translate-x-1 {
-    transform: translateX(0.25rem);
+/* Smooth transitions */
+* {
+    transition-property: color, background-color, border-color, box-shadow;
+    transition-duration: 300ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Performance optimizations */

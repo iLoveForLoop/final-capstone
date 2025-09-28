@@ -130,7 +130,7 @@ class ProfileSettingController extends Controller
 
         if($request->hasFile('profileImageFile')){
             $user->clearMediaCollection('images');
-            $user->addMediaFromRequest('profileImageFile')->toMediaCollection('images', 'public');
+            $user->addMediaFromRequest('profileImageFile')->toMediaCollection('avatar', 'public');
         }
 
         // 3. Handle portfolio images with Spatie Media Library

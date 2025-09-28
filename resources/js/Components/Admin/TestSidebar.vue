@@ -76,8 +76,8 @@ const ui = ref(useUIStore())
                         </span>
                     </NewNavLink>
 
-                    <NewNavLink :href="route('admin.vendor-application.index')"
-                        :active="route().current('admin.vendor-application.index')" :isCollapsed="ui.sidebarCollapsed">
+                    <NewNavLink :href="route('admin.reports.index')" :active="route().current('admin.reports.index')"
+                        :isCollapsed="ui.sidebarCollapsed">
                         <template #icon>
                             <Flag class="h-5 w-5" />
                         </template>

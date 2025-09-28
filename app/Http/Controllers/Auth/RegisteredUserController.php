@@ -40,6 +40,8 @@ class RegisteredUserController extends Controller
             return Inertia::render('Auth/OrganizerRegister');
         }
 
+        return Inertia::render('Join');
+
 
     }
 

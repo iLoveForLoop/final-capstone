@@ -73,7 +73,7 @@ Route::prefix('admin')->as('admin.')->middleware(['auth', 'role:admin'])->group(
     //wapa nahuman page
     Route::get('/bookings', [AdminController::class, 'bookingsPage'])->name('bookings.index');
     Route::get('/reviews', [AdminController::class, 'reviewsPage'])->name('reviews.index');
-    Route::get('/payments', [AdminController::class, 'paymentsPage'])->name('payments.index');
+    Route::get('/reports', [AdminController::class, 'reportsPage'])->name('reports.index');
     Route::get('/settings', [AdminController::class, 'settingsPage'])->name('settings.index');
 
 });

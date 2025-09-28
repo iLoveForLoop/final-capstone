@@ -177,8 +177,8 @@ class AdminController extends Controller
         return inertia('Admin/Reviews/Index');
     }
 
-    public function paymentsPage(){
-        return inertia('Admin/Payments/Index');
+    public function reportsPage(){
+        return inertia('Admin/Reports/Index');
     }
 
     public function settingsPage() {

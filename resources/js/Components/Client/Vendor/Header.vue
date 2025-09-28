@@ -4,12 +4,12 @@ import { ref } from 'vue'
 import { Button } from '@/Components/ui/button'
 import { Badge } from '@/Components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/Components/ui/dialog'
 import { Label } from '@/Components/ui/label'
 import { Input } from '@/Components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select'
 import { Textarea } from '@/Components/ui/textarea'
-import { router } from '@inertiajs/vue3'
+import { router, useForm } from '@inertiajs/vue3'
 
 const props = defineProps({
     vendor: {
@@ -29,50 +29,73 @@ import {
     MessageCircle,
     Check,
     Mail,
+    TriangleAlert,
 } from 'lucide-vue-next'
 import emitter from '@/utils/eventBus'
 
-const bookingForm = ref({
-    date: '',
-    time: '',
-    duration: 4,
-    packageId: '',
-    location: '',
-    notes: '',
-    contactName: '',
-    contactPhone: '',
-    contactEmail: ''
+const reportForm = useForm({
+    reason: '',
+    details: '',
 })
 
+const showReportModal = ref(false)
+const isSubmittingReport = ref(false)
 
-const showBookingModal = ref(false)
-const isFavorite = ref(false)
+const closeReportModal = () => {
+    showReportModal.value = false
+    reportForm.value = {
+        reason: '',
+        details: '',
+        email: '',
+        attachments: []
+    }
+    isSubmittingReport.value = false
+}
 
-const closeBookingModal = () => {
-    showBookingModal.value = false
-    bookingForm.value = {
-        date: '',
-        time: '',
-        duration: 4,
-        packageId: '',
-        location: '',
-        notes: '',
-        contactName: '',
-        contactPhone: '',
-        contactEmail: ''
+const reportVendor = () => {
+    showReportModal.value = true
+}
+
+const submitReport = async () => {
+    if (!reportForm.value.reason || !reportForm.value.details) {
+        alert('Please fill in all required fields')
+        return
+    }
+
+    isSubmittingReport.value = true
+
+    try {
+        const response = await fetch('/api/reports', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                vendor_id: props.vendor.id,
+                reason: reportForm.value.reason,
+                details: reportForm.value.details,
+                email: reportForm.value.email,
+                attachments: reportForm.value.attachments
+            })
+        })
+
+        if (response.ok) {
+            const result = await response.json()
+            alert('Report submitted successfully! We will review it within 24 hours.')
+            closeReportModal()
+        } else {
+            throw new Error('Failed to submit report')
+        }
+    } catch (error) {
+        console.error('Error submitting report:', error)
+        alert('Failed to submit report. Please try again.')
+    } finally {
+        isSubmittingReport.value = false
     }
 }
 
 
-const submitBooking = () => {
-    console.log('Booking submitted:', bookingForm.value)
-    alert('Booking request sent! The vendor will respond within 2 hours.')
-    closeBookingModal()
-}
-
-const sendMessage = () => {
-    alert('Message feature would open here')
-}
 
 const goBack = () => {
     if (window.history.length > 1) {
@@ -82,38 +105,29 @@ const goBack = () => {
     }
 }
 
-const toggleFavorite = () => {
-    isFavorite.value = !isFavorite.value
-}
-
-const openBookingModal = () => {
-    showBookingModal.value = true
-}
 
 const chatVendor = () => {
-    // console.log(props.vendor.user_id)
     emitter.emit('chat-vendor', props.vendor.user_id)
-
 }
+
 
 </script>
 
-
 <template>
     <div class="relative overflow-hidden">
-        <!-- Simple Background -->
         <div class="absolute inset-0 bg-gradient-to-r from-slate-900 to-slate-800"></div>
 
         <!-- Header Content -->
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 py-12">
+        <div class="relative max-w-6xl mx-auto px-4 sm:px-6 py-8">
             <!-- Back Button -->
-            <Button @click="goBack" class="mb-8 text-white bg-transparent">
+            <Button @click="goBack"
+                class="mb-10 text-white bg-white/10 hover:bg-white/20 border-0 transition-colors duration-200">
                 <ArrowLeft class="mr-2 h-4 w-4" />
                 Back
             </Button>
 
             <!-- Vendor Info Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center text-white">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start text-white">
                 <!-- Avatar Section -->
                 <div class="lg:col-span-3 flex justify-center lg:justify-start">
                     <div class="relative">
@@ -123,11 +137,11 @@ const chatVendor = () => {
                         </Avatar>
                         <!-- Verified Badge -->
                         <Badge v-if="vendor.verified"
-                            class="absolute -bottom-3 -right-3 bg-green-500 text-white rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center border-4 border-white shadow-lg p-0">
+                            class="absolute -bottom-2 -right-2 bg-green-500 text-white rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center border-4 border-slate-900 shadow-lg p-0">
                             <Check :size="16" />
                         </Badge>
                         <!-- Status Indicator -->
-                        <Badge class="absolute -top-2 -left-2"
+                        <Badge class="absolute -top-2 -left-2 px-3 py-1 text-xs font-medium"
                             :class="vendor.available ? 'bg-green-500' : 'bg-red-500'">
                             {{ vendor.available ? 'Available' : 'Busy' }}
                         </Badge>
@@ -135,10 +149,10 @@ const chatVendor = () => {
                 </div>
 
                 <!-- Vendor Details -->
-                <div class="lg:col-span-6 text-center lg:text-left space-y-6">
+                <div class="lg:col-span-7 text-center lg:text-left space-y-6">
                     <div>
-                        <h1 class="text-4xl font-bold">{{ vendor.name }}</h1>
-                        <p class="text-white/80 text-xl mt-2">
+                        <h1 class="text-3xl md:text-4xl font-bold">{{ vendor.name }}</h1>
+                        <p class="text-white/80 text-lg mt-2">
                             {{ vendor.categories.join(", ") }}
                         </p>
                     </div>
@@ -162,127 +176,93 @@ const chatVendor = () => {
 
                     <!-- Simple Stats -->
                     <div class="flex flex-wrap gap-3 justify-center lg:justify-start">
-                        <span class="flex px-4 py-2 bg-white/10 text-white text-sm rounded-full">
+                        <span class="flex items-center px-4 py-2 bg-white/10 text-white text-sm rounded-full">
                             <Clock class="h-4 w-4 mr-2" />
                             {{ vendor.responseTime }} response
                         </span>
-                        <span class="flex px-4 py-2 bg-white/10 text-white text-sm rounded-full">
+                        <span class="flex items-center px-4 py-2 bg-white/10 text-white text-sm rounded-full">
                             <CalendarCheck class="h-4 w-4 mr-2" />
                             {{ vendor.completedEvents }}+ Events
                         </span>
-                        <span v-if="vendor.verified" class="flex px-4 py-2 bg-white/10 text-white text-sm rounded-full">
+                        <span v-if="vendor.verified"
+                            class="flex items-center px-4 py-2 bg-white/10 text-white text-sm rounded-full">
                             <Shield class="h-4 w-4 mr-2" />
                             Verified Vendor
                         </span>
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="lg:col-span-3 flex flex-col gap-4">
-                    <Button @click="openBookingModal" size="lg"
-                        class="w-full bg-white text-slate-900 hover:bg-slate-100 font-semibold">
-                        <Calendar class="h-5 w-5 mr-2" />
-                        Book Now
+                <!-- Action Buttons - Simplified -->
+                <div class="lg:col-span-2 flex flex-col gap-4">
+                    <Button @click="chatVendor" size="lg"
+                        class="w-full bg-blue-500 text-white hover:bg-blue-600 font-semibold transition-colors duration-200">
+                        <MessageCircle class="h-5 w-5 mr-2" />
+                        Message
                     </Button>
-                    <div class="flex gap-3">
-                        <Button @click="chatVendor" variant="ghost"
-                            class="bg-white flex-1 border-white text-slate-900 hover:bg-white/90 hover:text-slate-900">
-                            <MessageCircle class="h-4 w-4 mr-2" />
-                            Message
-                        </Button>
-                        <Button @click="toggleFavorite" variant="ghost" size="icon"
-                            class="bg-white border-white hover:bg-white/90 hover:text-slate-900"
-                            :class="isFavorite ? 'text-red-400' : 'text-slate-900'">
-                            <Heart :class="['h-5 w-5', isFavorite ? 'fill-current' : '']" />
-                        </Button>
-                    </div>
+                    <Button @click="reportVendor" variant="ghost"
+                        class="w-full bg-white/10 text-white hover:bg-white/20 border-0 transition-colors duration-200">
+                        <TriangleAlert class="h-5 w-5 mr-2" />
+                        Report
+                    </Button>
                 </div>
             </div>
         </div>
-    </div>
-    <!-- Enhanced Booking Modal -->
-    <Dialog v-model:open="showBookingModal">
-        <DialogContent class="sm:max-w-[625px]">
-            <DialogHeader>
-                <DialogTitle>Book {{ vendor.name }}</DialogTitle>
-                <DialogDescription>
-                    Fill out the form below to send a booking request to the vendor.
-                </DialogDescription>
-            </DialogHeader>
 
-            <form @submit.prevent="submitBooking" class="grid gap-4 py-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="grid gap-2">
-                        <Label for="date">Event Date</Label>
-                        <Input id="date" v-model="bookingForm.date" type="date" required />
-                    </div>
-                    <div class="grid gap-2">
-                        <Label for="time">Event Time</Label>
-                        <Input id="time" v-model="bookingForm.time" type="time" required />
-                    </div>
-                </div>
+        <!-- Report Dialog -->
+        <Dialog :open="showReportModal" @update:open="showReportModal = $event">
+            <DialogContent class="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Report Vendor</DialogTitle>
+                    <DialogDescription>
+                        Please provide details about your concern regarding {{ vendor.name }}.
+                        We take all reports seriously and will review them within 24 hours.
+                    </DialogDescription>
+                </DialogHeader>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid gap-4 py-4">
+                    <!-- Reason Selection -->
                     <div class="grid gap-2">
-                        <Label for="duration">Duration (hours)</Label>
-                        <Input id="duration" v-model="bookingForm.duration" type="number" min="1" required />
-                    </div>
-                    <div class="grid gap-2">
-                        <Label for="package">Select Package</Label>
-                        <Select v-model="bookingForm.packageId" required>
+                        <Label for="reason" class="text-sm font-medium">Reason for report *</Label>
+                        <Select v-model="reportForm.reason">
                             <SelectTrigger>
-                                <SelectValue placeholder="Choose a package" />
+                                <SelectValue placeholder="Select a reason" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem v-for="p in vendor.packages" :key="p.id" :value="p.id">
-                                    {{ p.name }} - ₱{{ p.price.toLocaleString() }}
-                                </SelectItem>
+                                <SelectItem value="inappropriate_behavior">Inappropriate Behavior</SelectItem>
+                                <SelectItem value="fake_profile">Fake Profile or Information</SelectItem>
+                                <SelectItem value="spam_scam">Spam or Scam</SelectItem>
+                                <SelectItem value="poor_service">Poor Service Quality</SelectItem>
+                                <SelectItem value="unprofessional">Unprofessional Conduct</SelectItem>
+                                <SelectItem value="safety_concerns">Safety Concerns</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
-                </div>
 
-                <div class="grid gap-2">
-                    <Label for="name">Contact Name</Label>
-                    <Input id="name" v-model="bookingForm.contactName" type="text" required
-                        placeholder="Your full name" />
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
+                    <!-- Details -->
                     <div class="grid gap-2">
-                        <Label for="phone">Contact Phone</Label>
-                        <Input id="phone" v-model="bookingForm.contactPhone" type="tel" required
-                            placeholder="+63 XXX XXX XXXX" />
-                    </div>
-                    <div class="grid gap-2">
-                        <Label for="email">Contact Email</Label>
-                        <Input id="email" v-model="bookingForm.contactEmail" type="email" required
-                            placeholder="your@email.com" />
+                        <Label for="details" class="text-sm font-medium">Detailed description *</Label>
+                        <Textarea id="details" v-model="reportForm.details"
+                            placeholder="Please provide specific details about your concern..." class="min-h-32" />
                     </div>
                 </div>
 
-                <div class="grid gap-2">
-                    <Label for="location">Event Location</Label>
-                    <Input id="location" v-model="bookingForm.location" type="text" required
-                        placeholder="Enter event venue address" />
-                </div>
-
-                <div class="grid gap-2">
-                    <Label for="notes">Additional Notes</Label>
-                    <Textarea id="notes" v-model="bookingForm.notes"
-                        placeholder="Special requests, requirements, or additional details..." />
-                </div>
-
-                <div class="flex justify-end gap-3 mt-4">
-                    <Button type="button" variant="outline" @click="closeBookingModal">Cancel</Button>
-                    <Button type="submit">
-                        <Mail :size="18" class="mr-2" />
-                        Send Booking Request
+                <DialogFooter class="flex flex-col sm:flex-row gap-2">
+                    <Button variant="outline" @click="closeReportModal" :disabled="isSubmittingReport">
+                        Cancel
                     </Button>
-                </div>
-            </form>
-        </DialogContent>
-    </Dialog>
+                    <Button @click="submitReport"
+                        :disabled="isSubmittingReport || !reportForm.reason || !reportForm.details"
+                        class="bg-red-600 hover:bg-red-700">
+                        <span v-if="isSubmittingReport">Submitting...</span>
+                        <span v-else>Submit Report</span>
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    </div>
 </template>
 
-<style></style>
+<style>
+/* Additional styling if needed */
+</style>

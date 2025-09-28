@@ -27,7 +27,7 @@ defineProps({
                         <Navigation :size="18" class="mr-2" />
                         Get Directions
                     </Button> -->
-                    <VendorLocationMap />
+                    <VendorLocationMap :vendor="vendor" />
                 </div>
             </CardContent>
         </Card>
