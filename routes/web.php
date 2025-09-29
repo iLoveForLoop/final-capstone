@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CateringServiceController;
 use App\Http\Controllers\ClientController;
@@ -43,7 +44,8 @@ Route::get('/organizer-reg', function() {
     return inertia('Auth/OrganizerRegister');
 });
 
-
+//REPORTING
+Route::post('/reports', [ReportController::class, 'store'])->name('report.store');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -70,10 +72,16 @@ Route::prefix('admin')->as('admin.')->middleware(['auth', 'role:admin'])->group(
     Route::post('/services', [AdminController::class, 'addService'])->name('services.store');
     Route::resource('service', ServiceController::class);
 
+
+    //reports
+    Route::get('/reports', [AdminController::class, 'reportsPage'])->name('reports.index');
+    Route::patch('/reports/{report}/status', [AdminController::class, 'updateStatus'])->name('reports.update-status');
+    Route::get('/reports/{report}', [AdminController::class, 'show'])->name('reports.show');
+
     //wapa nahuman page
     Route::get('/bookings', [AdminController::class, 'bookingsPage'])->name('bookings.index');
     Route::get('/reviews', [AdminController::class, 'reviewsPage'])->name('reviews.index');
-    Route::get('/reports', [AdminController::class, 'reportsPage'])->name('reports.index');
+
     Route::get('/settings', [AdminController::class, 'settingsPage'])->name('settings.index');
 
 });

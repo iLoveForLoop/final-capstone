@@ -34,8 +34,10 @@ import {
 import emitter from '@/utils/eventBus'
 
 const reportForm = useForm({
+    reported_id: props.vendor.user_id,
+    reported_type: 'vendor',
     reason: '',
-    details: '',
+    description: '',
 })
 
 const showReportModal = ref(false)
@@ -45,7 +47,7 @@ const closeReportModal = () => {
     showReportModal.value = false
     reportForm.value = {
         reason: '',
-        details: '',
+        description: '',
         email: '',
         attachments: []
     }
@@ -56,43 +58,48 @@ const reportVendor = () => {
     showReportModal.value = true
 }
 
-const submitReport = async () => {
-    if (!reportForm.value.reason || !reportForm.value.details) {
-        alert('Please fill in all required fields')
-        return
-    }
+import { usePage } from '@inertiajs/vue3'
 
-    isSubmittingReport.value = true
+const page = usePage()
 
-    try {
-        const response = await fetch('/api/reports', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({
-                vendor_id: props.vendor.id,
-                reason: reportForm.value.reason,
-                details: reportForm.value.details,
-                email: reportForm.value.email,
-                attachments: reportForm.value.attachments
-            })
-        })
+const submitReport = () => {
+    console.log(reportForm)
 
-        if (response.ok) {
-            const result = await response.json()
-            alert('Report submitted successfully! We will review it within 24 hours.')
+    reportForm.post('/reports', {
+        preserveScroll: true,
+        onSuccess: () => {
+            // Access flash from the page composable
+            console.log('The flash: ', page.props.flash)
+            if (page.props.flash.success) {
+                alert(page.props.flash.success)
+            } else if (page.props.flash.error) {
+                alert(page.props.flash.error)
+            }
+            else {
+                alert('Report submitted successfully! We will review it within 24 hours.')
+            }
             closeReportModal()
-        } else {
-            throw new Error('Failed to submit report')
+            reportForm.reset()
+        },
+        onError: (errors) => {
+            // Access flash from the page composable
+            if (page.props.flash.error) {
+                alert(page.props.flash.error)
+            }
+            // Handle validation errors
+            else if (errors.reason || errors.description || errors.reported_id) {
+                const errorMessages = Object.values(errors).flat().join(', ')
+                alert(`Please fix the following errors: ${errorMessages}`)
+            }
+            else {
+                alert('Failed to submit report. Please check the form and try again.')
+            }
+            console.error('Report submission errors:', errors)
+        },
+        onFinish: () => {
+            isSubmittingReport.value = false
         }
-    } catch (error) {
-        console.error('Error submitting report:', error)
-        alert('Failed to submit report. Please try again.')
-    } finally {
-        isSubmittingReport.value = false
-    }
+    })
 }
 
 
@@ -241,8 +248,8 @@ const chatVendor = () => {
 
                     <!-- Details -->
                     <div class="grid gap-2">
-                        <Label for="details" class="text-sm font-medium">Detailed description *</Label>
-                        <Textarea id="details" v-model="reportForm.details"
+                        <Label for="description" class="text-sm font-medium">Detailed description *</Label>
+                        <Textarea id="description" v-model="reportForm.description"
                             placeholder="Please provide specific details about your concern..." class="min-h-32" />
                     </div>
                 </div>
@@ -252,7 +259,7 @@ const chatVendor = () => {
                         Cancel
                     </Button>
                     <Button @click="submitReport"
-                        :disabled="isSubmittingReport || !reportForm.reason || !reportForm.details"
+                        :disabled="isSubmittingReport || !reportForm.reason || !reportForm.description"
                         class="bg-red-600 hover:bg-red-700">
                         <span v-if="isSubmittingReport">Submitting...</span>
                         <span v-else>Submit Report</span>

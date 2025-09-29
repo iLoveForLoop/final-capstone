@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\Report;
 use App\Models\Service;
 use App\Models\ServiceCategory;
 use App\Models\User;
@@ -177,8 +178,65 @@ class AdminController extends Controller
         return inertia('Admin/Reviews/Index');
     }
 
-    public function reportsPage(){
-        return inertia('Admin/Reports/Index');
+    public function reportsPage(Request $request){
+        // Server-side filtering and pagination
+        $query = Report::with(['reporter', 'reported', 'reporter.vendor',
+            'reported.vendor',])
+            ->latest();
+
+        // Status filter
+        if ($request->has('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        // Search filter
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('reason', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhereHas('reporter', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('reported', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $reports = $query->paginate(10)->withQueryString();
+
+        return inertia('Admin/Reports/Index', [
+            'reports' => $reports,
+            'filters' => [
+                'status' => $request->status ?? 'all',
+                'search' => $request->search ?? '',
+            ]
+        ]);
+    }
+
+    public function updateStatus(Request $request, Report $report)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,reviewed,resolved,dismissed'
+        ]);
+
+        $report->update([
+            'status' => $request->status
+        ]);
+
+        return back()->with('success', 'Report status updated successfully.');
+    }
+
+    public function show(Report $report)
+    {
+        $report->load(['reporter', 'reported']);
+
+        return inertia('Admin/Reports/Show', [
+            'report' => $report
+        ]);
     }
 
     public function settingsPage() {

@@ -83,4 +83,15 @@ class User extends Authenticatable implements HasMedia
     public function events(){
         return $this->hasMany(Event::class);
     }
+
+    public function getIsVendorAttribute()
+    {
+        return $this->vendor()->exists();
+    }
+
+    public function getIsClientAttribute()
+    {
+        return $this->client()->exists();
+    }
+
 }

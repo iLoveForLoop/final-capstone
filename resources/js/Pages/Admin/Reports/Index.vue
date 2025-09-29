@@ -1,113 +1,40 @@
 <script setup>
 import TestLayout from '@/Layouts/TestLayout.vue';
-import { ref, computed } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
+import { Head, router } from '@inertiajs/vue3';
 
-// Sample data
-const reports = ref([
-    {
-        id: 1,
-        vendor: {
-            name: "Golden Gate Catering",
-            email: "contact@goldencatering.com",
-            category: "Catering",
-            location: "Quezon City",
-            image_url: null
-        },
-        reporter: {
-            name: "Maria Santos",
-            email: "maria@email.com"
-        },
-        reason: "Not responding",
-        description: "Vendor hasn't responded to messages for 2 weeks. Multiple customers complained about lack of communication.",
-        status: "pending",
-        priority: "high",
-        created_at: "2025-09-25T10:30:00Z"
-    },
-    {
-        id: 2,
-        vendor: {
-            name: "Lens Photography",
-            email: "info@lens.ph",
-            category: "Photography",
-            location: "Makati",
-            image_url: null
-        },
-        reporter: {
-            name: "John Cruz",
-            email: "john@email.com"
-        },
-        reason: "No show",
-        description: "Didn't show up on event day without any prior notice",
-        status: "investigating",
-        priority: "critical",
-        created_at: "2025-09-24T14:15:00Z"
-    },
-    {
-        id: 3,
-        vendor: {
-            name: "Sound Pro Audio",
-            email: "info@soundpro.ph",
-            category: "Sound Systems",
-            location: "Manila",
-            image_url: null
-        },
-        reporter: {
-            name: "Carlos Rodriguez",
-            email: "carlos@email.com"
-        },
-        reason: "Poor service",
-        description: "Equipment was faulty during the event",
-        status: "resolved",
-        priority: "medium",
-        created_at: "2025-09-22T11:45:00Z"
-    }
-]);
+const props = defineProps({
+    reports: Object,
+    filters: Object,
+});
 
-const selectedStatus = ref('all');
-const selectedPriority = ref('all');
-const searchQuery = ref('');
+// Filters
+const selectedStatus = ref(props.filters.status || 'all');
+const searchQuery = ref(props.filters.search || '');
 const selectedReport = ref(null);
 const showModal = ref(false);
 
 const statuses = [
     { value: 'all', label: 'All Statuses' },
     { value: 'pending', label: 'Pending' },
-    { value: 'investigating', label: 'Investigating' },
+    { value: 'reviewed', label: 'Under Review' },
     { value: 'resolved', label: 'Resolved' },
     { value: 'dismissed', label: 'Dismissed' }
 ];
 
-const priorities = [
-    { value: 'all', label: 'All Priorities' },
-    { value: 'low', label: 'Low' },
-    { value: 'medium', label: 'Medium' },
-    { value: 'high', label: 'High' },
-    { value: 'critical', label: 'Critical' }
-];
-
-const filteredReports = computed(() => {
-    let filtered = reports.value;
-
-    if (searchQuery.value) {
-        const query = searchQuery.value.toLowerCase();
-        filtered = filtered.filter(report =>
-            report.vendor.name.toLowerCase().includes(query) ||
-            report.reporter.name.toLowerCase().includes(query) ||
-            report.reason.toLowerCase().includes(query)
-        );
-    }
-
-    if (selectedStatus.value !== 'all') {
-        filtered = filtered.filter(r => r.status === selectedStatus.value);
-    }
-
-    if (selectedPriority.value !== 'all') {
-        filtered = filtered.filter(r => r.priority === selectedPriority.value);
-    }
-
-    return filtered;
+// Server-side filtering
+watch([selectedStatus, searchQuery], () => {
+    router.get('/admin/reports', {
+        status: selectedStatus.value,
+        search: searchQuery.value,
+    }, {
+        preserveState: true,
+        replace: true,
+        preserveScroll: true,
+    });
 });
+
+
 
 const viewReport = (report) => {
     selectedReport.value = report;
@@ -115,49 +42,56 @@ const viewReport = (report) => {
 };
 
 const updateStatus = (id, status) => {
-    const report = reports.value.find(r => r.id === id);
-    if (report) {
-        report.status = status;
-    }
-    showModal.value = false;
+    router.patch(`/admin/reports/${id}/status`, { status }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            showModal.value = false;
+        }
+    });
 };
 
 const resetFilters = () => {
     selectedStatus.value = 'all';
-    selectedPriority.value = 'all';
     searchQuery.value = '';
-};
-
-const applyFilters = () => {
-    // Filters are applied automatically via computed
 };
 
 const getStatusColor = (status) => {
     const colors = {
         pending: 'bg-yellow-100 text-yellow-800',
-        investigating: 'bg-blue-100 text-blue-800',
+        reviewed: 'bg-blue-100 text-blue-800',
         resolved: 'bg-green-100 text-green-800',
         dismissed: 'bg-gray-100 text-gray-800'
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
 };
 
-const getPriorityColor = (priority) => {
-    const colors = {
-        low: 'bg-green-100 text-green-800',
-        medium: 'bg-yellow-100 text-yellow-800',
-        high: 'bg-orange-100 text-orange-800',
-        critical: 'bg-red-100 text-red-800'
-    };
-    return colors[priority] || 'bg-gray-100 text-gray-800';
-};
-
 const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
     });
+};
+
+const getReportType = (report) => {
+    return `${report.reporter_type} → ${report.reported_type}`;
+};
+
+const getReportTypeColor = (report) => {
+    if (report.reporter_type === 'vendor' && report.reported_type === 'client') {
+        return 'bg-purple-100 text-purple-800';
+    } else if (report.reporter_type === 'client' && report.reported_type === 'vendor') {
+        return 'bg-orange-100 text-orange-800';
+    }
+    return 'bg-gray-100 text-gray-800';
+};
+
+const getDisplayName = (user) => {
+    return user.vendor && user.vendor.business_name
+        ? user.vendor.business_name
+        : user.name;
 };
 </script>
 
@@ -170,18 +104,12 @@ const formatDate = (dateString) => {
             <!-- Header Section -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-800">Vendor Reports</h1>
-                    <p class="text-gray-500 text-sm mt-1">Monitor and manage customer reports about vendors</p>
+                    <h1 class="text-2xl font-bold text-gray-800">Reports Management</h1>
+                    <p class="text-gray-500 text-sm mt-1">Monitor and manage reports between vendors and clients</p>
                 </div>
-                <button
-                    class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center gap-2 text-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                        </path>
-                    </svg>
-                    Export Reports
-                </button>
+                <div class="text-sm text-gray-500">
+                    Total: {{ reports.total }} reports
+                </div>
             </div>
 
             <!-- Filters -->
@@ -189,25 +117,17 @@ const formatDate = (dateString) => {
                 <div class="flex flex-col md:flex-row gap-4">
                     <div class="flex-1">
                         <label class="block text-xs font-medium text-gray-500 mb-1">Status</label>
-                        <select v-model="selectedStatus" @change="applyFilters"
+                        <select v-model="selectedStatus"
                             class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option v-for="status in statuses" :key="status.value" :value="status.value">{{ status.label
-                                }}</option>
-                        </select>
-                    </div>
-                    <div class="flex-1">
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Priority</label>
-                        <select v-model="selectedPriority" @change="applyFilters"
-                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option v-for="priority in priorities" :key="priority.value" :value="priority.value">{{
-                                priority.label }}</option>
+                            <option v-for="status in statuses" :key="status.value" :value="status.value">
+                                {{ status.label }}
+                            </option>
                         </select>
                     </div>
                     <div class="flex-1">
                         <label class="block text-xs font-medium text-gray-500 mb-1">Search</label>
                         <div class="relative">
-                            <input v-model="searchQuery" @input="applyFilters" type="text"
-                                placeholder="Search reports..."
+                            <input v-model="searchQuery" type="text" placeholder="Search reports..."
                                 class="w-full border border-gray-200 rounded-lg px-3 py-2 pl-9 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500" />
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="h-4 w-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
@@ -221,7 +141,7 @@ const formatDate = (dateString) => {
                     <div class="flex items-end">
                         <button @click="resetFilters"
                             class="text-xs text-indigo-600 hover:text-indigo-800 flex items-center gap-1 h-[36px]">
-                            Reset
+                            Reset Filters
                         </button>
                     </div>
                 </div>
@@ -235,54 +155,59 @@ const formatDate = (dateString) => {
                             <tr>
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Vendor</th>
+                                    Report Type
+                                </th>
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Reporter</th>
+                                    Reporter
+                                </th>
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Issue</th>
-                                <!-- <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Priority</th> -->
+                                    Reported
+                                </th>
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status</th>
+                                    Issue
+                                </th>
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Date</th>
+                                    Status
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Date
+                                </th>
                                 <th
                                     class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions</th>
+                                    Actions
+                                </th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <tr v-for="report in filteredReports" :key="report.id" class="hover:bg-gray-50">
+                            <tr v-for="report in reports.data" :key="report.id" class="hover:bg-gray-50">
+                                <!-- {{ console.log(report.reported.vendor) }} -->
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-
-                                        <div class="ml-3">
-                                            <div class="text-sm font-medium text-gray-900">{{ report.vendor.name }}
-                                            </div>
-                                            <div class="text-xs text-gray-500">{{ report.vendor.category }} • {{
-                                                report.vendor.location }}</div>
-                                        </div>
-                                    </div>
+                                    <span :class="getReportTypeColor(report)"
+                                        class="px-2 py-1 text-xs font-medium rounded-full capitalize">
+                                        {{ getReportType(report) }}
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">{{ report.reporter.name }}</div>
+                                    <div class="text-sm font-medium text-gray-900">{{ getDisplayName(report.reporter) }}
+                                    </div>
                                     <div class="text-xs text-gray-500">{{ report.reporter.email }}</div>
+                                    <div class="text-xs text-gray-400 capitalize">{{ report.reporter_type }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900">{{ getDisplayName(report.reported) }}
+                                    </div>
+                                    <div class="text-xs text-gray-500">{{ report.reported.email }}</div>
+                                    <div class="text-xs text-gray-400 capitalize">{{ report.reported_type }}</div>
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="text-sm font-medium text-gray-900">{{ report.reason }}</div>
                                     <div class="text-xs text-gray-500 max-w-xs truncate">{{ report.description }}</div>
                                 </td>
-                                <!-- <td class="px-6 py-4 whitespace-nowrap">
-                                    <span :class="getPriorityColor(report.priority)"
-                                        class="px-2 py-1 text-xs font-medium rounded-full capitalize">
-                                        {{ report.priority }}
-                                    </span>
-                                </td> -->
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span :class="getStatusColor(report.status)"
                                         class="px-2 py-1 text-xs font-medium rounded-full capitalize">
@@ -304,7 +229,7 @@ const formatDate = (dateString) => {
                                                     clip-rule="evenodd" />
                                             </svg>
                                         </button>
-                                        <button @click="updateStatus(report.id, 'investigating')"
+                                        <button @click="updateStatus(report.id, 'reviewed')"
                                             v-if="report.status === 'pending'"
                                             class="text-blue-600 hover:text-blue-900">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20"
@@ -315,7 +240,7 @@ const formatDate = (dateString) => {
                                             </svg>
                                         </button>
                                         <button @click="updateStatus(report.id, 'resolved')"
-                                            v-if="report.status === 'investigating'"
+                                            v-if="report.status === 'reviewed'"
                                             class="text-green-600 hover:text-green-900">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20"
                                                 fill="currentColor">
@@ -325,6 +250,7 @@ const formatDate = (dateString) => {
                                             </svg>
                                         </button>
                                         <button @click="updateStatus(report.id, 'dismissed')"
+                                            v-if="report.status !== 'dismissed'"
                                             class="text-red-600 hover:text-red-900">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20"
                                                 fill="currentColor">
@@ -336,13 +262,41 @@ const formatDate = (dateString) => {
                                     </div>
                                 </td>
                             </tr>
-                            <tr v-if="filteredReports.length === 0">
+                            <tr v-if="reports.data.length === 0">
                                 <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
                                     No reports found
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1 flex justify-between items-center">
+                            <div>
+                                <p class="text-sm text-gray-700">
+                                    Showing
+                                    <span class="font-medium">{{ reports.from }}</span>
+                                    to
+                                    <span class="font-medium">{{ reports.to }}</span>
+                                    of
+                                    <span class="font-medium">{{ reports.total }}</span>
+                                    results
+                                </p>
+                            </div>
+                            <div class="flex gap-1">
+                                <template v-for="(link, index) in reports.links" :key="index">
+                                    <button v-if="link.url" @click="router.get(link.url)"
+                                        class="px-3 py-1 text-sm border rounded-md"
+                                        :class="link.active ? 'bg-indigo-600 text-white border-indigo-600' : 'text-gray-700 border-gray-300 hover:bg-gray-50'"
+                                        v-html="link.label"></button>
+                                    <span v-else class="px-3 py-1 text-sm text-gray-500" v-html="link.label"></span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -363,30 +317,14 @@ const formatDate = (dateString) => {
                 </div>
 
                 <div v-if="selectedReport" class="space-y-4">
-                    <!-- Vendor Info -->
+                    <!-- Report Type -->
                     <div>
-                        <h4 class="text-sm font-medium text-gray-500 mb-2">REPORTED VENDOR</h4>
+                        <h4 class="text-sm font-medium text-gray-500 mb-2">REPORT TYPE</h4>
                         <div class="bg-gray-50 p-3 rounded-lg">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-10 w-10 rounded-full overflow-hidden">
-                                    <template v-if="selectedReport.vendor.image_url">
-                                        <img :src="selectedReport.vendor.image_url" :alt="selectedReport.vendor.name"
-                                            class="h-full w-full object-cover">
-                                    </template>
-                                    <template v-else>
-                                        <div
-                                            class="h-full w-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-medium text-sm">
-                                            {{ selectedReport.vendor.name.charAt(0).toUpperCase() }}
-                                        </div>
-                                    </template>
-                                </div>
-                                <div class="ml-3">
-                                    <div class="font-medium text-gray-900">{{ selectedReport.vendor.name }}</div>
-                                    <div class="text-sm text-gray-600">{{ selectedReport.vendor.email }}</div>
-                                    <div class="text-xs text-gray-500">{{ selectedReport.vendor.category }} • {{
-                                        selectedReport.vendor.location }}</div>
-                                </div>
-                            </div>
+                            <span :class="getReportTypeColor(selectedReport)"
+                                class="px-3 py-1 text-sm font-medium rounded-full capitalize">
+                                {{ getReportType(selectedReport) }}
+                            </span>
                         </div>
                     </div>
 
@@ -394,8 +332,21 @@ const formatDate = (dateString) => {
                     <div>
                         <h4 class="text-sm font-medium text-gray-500 mb-2">REPORTED BY</h4>
                         <div class="bg-gray-50 p-3 rounded-lg">
-                            <div class="font-medium text-gray-900">{{ selectedReport.reporter.name }}</div>
+                            <div class="font-medium text-gray-900">{{ getDisplayName(selectedReport.reporter) }}</div>
                             <div class="text-sm text-gray-600">{{ selectedReport.reporter.email }}</div>
+                            <div class="text-xs text-gray-500 capitalize">{{ selectedReport.reporter_type }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Reported Info -->
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500 mb-2">{{ selectedReport.reported_type.toUpperCase()
+                        }}
+                            BEING REPORTED</h4>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <div class="font-medium text-gray-900">{{ getDisplayName(selectedReport.reported) }}</div>
+                            <div class="text-sm text-gray-600">{{ selectedReport.reported.email }}</div>
+                            <div class="text-xs text-gray-500 capitalize">{{ selectedReport.reported_type }}</div>
                         </div>
                     </div>
 
@@ -403,16 +354,14 @@ const formatDate = (dateString) => {
                     <div>
                         <h4 class="text-sm font-medium text-gray-500 mb-2">REPORT DETAILS</h4>
                         <div class="space-y-3">
-                            <div class="flex justify-between">
+                            <div>
                                 <span class="text-sm font-medium text-gray-700">Reason:</span>
-                                <span class="text-sm text-gray-900">{{ selectedReport.reason }}</span>
+                                <p class="text-sm text-gray-900 mt-1">{{ selectedReport.reason }}</p>
                             </div>
-                            <div class="flex justify-between">
-                                <span class="text-sm font-medium text-gray-700">Priority:</span>
-                                <span :class="getPriorityColor(selectedReport.priority)"
-                                    class="px-2 py-1 text-xs font-medium rounded-full capitalize">
-                                    {{ selectedReport.priority }}
-                                </span>
+                            <div>
+                                <span class="text-sm font-medium text-gray-700">Description:</span>
+                                <p class="text-sm text-gray-900 mt-1 whitespace-pre-wrap">{{ selectedReport.description
+                                }}</p>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-sm font-medium text-gray-700">Status:</span>
@@ -421,9 +370,9 @@ const formatDate = (dateString) => {
                                     {{ selectedReport.status }}
                                 </span>
                             </div>
-                            <div>
-                                <span class="text-sm font-medium text-gray-700">Description:</span>
-                                <p class="text-sm text-gray-900 mt-1">{{ selectedReport.description }}</p>
+                            <div class="flex justify-between">
+                                <span class="text-sm font-medium text-gray-700">Reported Date:</span>
+                                <span class="text-sm text-gray-900">{{ formatDate(selectedReport.created_at) }}</span>
                             </div>
                         </div>
                     </div>
@@ -435,16 +384,17 @@ const formatDate = (dateString) => {
                             Close
                         </button>
                         <button v-if="selectedReport.status === 'pending'"
-                            @click="updateStatus(selectedReport.id, 'investigating')"
+                            @click="updateStatus(selectedReport.id, 'reviewed')"
                             class="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">
-                            Start Investigation
+                            Start Review
                         </button>
-                        <button v-if="selectedReport.status === 'investigating'"
+                        <button v-if="selectedReport.status === 'reviewed'"
                             @click="updateStatus(selectedReport.id, 'resolved')"
                             class="px-4 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700 transition">
                             Mark Resolved
                         </button>
-                        <button @click="updateStatus(selectedReport.id, 'dismissed')"
+                        <button v-if="selectedReport.status !== 'dismissed'"
+                            @click="updateStatus(selectedReport.id, 'dismissed')"
                             class="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 transition">
                             Dismiss Report
                         </button>
