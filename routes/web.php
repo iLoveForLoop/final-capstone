@@ -58,6 +58,7 @@ Route::prefix('admin')->as('admin.')->middleware(['auth', 'role:admin'])->group(
 
     //users page
     Route::resource('users', UserController::class);
+    Route::patch('/{user}/status', [UserController::class, 'updateStatus'])->name('users.status.update');
 
     //vendor applications page
     Route::resource('vendor-application', VendorApplicationController::class);
@@ -92,7 +93,7 @@ Route::prefix('admin')->as('admin.')->middleware(['auth', 'role:admin'])->group(
 
 
 
-Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'role:vendor'])->group(function () {
+Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'role:vendor', 'user.status'])->group(function () {
     Route::get('/', [VendorController::class, 'index'])->name('index');
 
     //service page
@@ -185,7 +186,7 @@ Route::middleware(['auth'])->group(function () {
 
 
 
-Route::prefix('client')->as('client.')->middleware(['auth', 'role:client'])->group(function () {
+Route::prefix('client')->as('client.')->middleware(['auth', 'role:client', 'user.status'])->group(function () {
 
     Route::get('/', [ClientController::class, 'index'])->name('index');
 

@@ -95,7 +95,7 @@ const showError = () => {
             <!-- Header Section -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <button @click="showSuccess">Test</button>
+                    <!-- <button @click="showSuccess">Test</button> -->
                     <h1 class="text-2xl font-bold text-gray-800">Services Management</h1>
                     <p class="text-gray-500 text-sm mt-1">Manage your services</p>
                 </div>

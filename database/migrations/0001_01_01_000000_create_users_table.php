@@ -17,6 +17,14 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+
+            //new additions
+            $table->enum('status', ['active', 'suspended', 'banned'])->default('active');
+            $table->timestamp('suspended_until')->nullable(); // auto-unsuspend after this time
+            $table->text('suspension_reason')->nullable();
+            $table->text('ban_reason')->nullable();
+
+
             $table->rememberToken();
             $table->timestamps();
         });

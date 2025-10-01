@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ServiceCategory;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 
@@ -23,12 +24,14 @@ class UserController extends Controller
     $service_categories = ServiceCategory::all();
 
     // Apply role filter
-
     if ($request->has('role') && $request->role !== 'all') {
-
         $query->role($request->role);
     }
 
+    // Apply status filter
+    if ($request->has('status') && $request->status !== 'all') {
+        $query->where('status', $request->status);
+    }
 
     // Apply search filter
     if ($request->has('search')) {
@@ -42,20 +45,20 @@ class UserController extends Controller
     $users = $query->paginate(5);
 
     $users->getCollection()->transform(function ($user) {
-    return [
-        'id' => $user->id,
-        'name' => $user->name,
-        'email' => $user->email,
-        'vendor' => $user->vendor,
-        'roles' => $user->roles,
-        'created_at' => $user->created_at,
-        'image_url' =>$user->getFirstMediaUrl('avatar'),
-        'service_categories' => $user->vendor?->serviceCategories ?? [],
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'vendor' => $user->vendor,
+            'roles' => $user->roles,
+            'created_at' => $user->created_at,
+            'image_url' => $user->getFirstMediaUrl('avatar'),
+            'service_categories' => $user->vendor?->serviceCategories ?? [],
+            'status' => $user->status
         ];
     });
 
-    $filters = $request->only(['role', 'search']);
-    // dd($users);
+    $filters = $request->only(['role', 'search', 'status']);
 
     return inertia(
         'Admin/Users/Index',
@@ -234,10 +237,174 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(User $user)
+    public function destroy(Request $request, User $user)
     {
-        // dd($user);
-        $user->delete();
-        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully');
+        $request->validate([
+            'password' => ['required', 'current_password'],
+        ]);
+
+        try {
+            DB::transaction(function () use ($user) {
+                // Log the deletion action before deleting
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($user)
+                    ->withProperties([
+                        'user_id' => $user->id,
+                        'user_email' => $user->email,
+                        'user_name' => $user->name,
+                    ])
+                    ->log('User permanently deleted');
+
+                // Delete the user
+                $user->delete();
+            });
+
+            // return response()->json([
+            //     'success' => true,
+            //     'message' => 'User deleted successfully.',
+            // ]);
+
+            return redirect()->back()->with('success', 'User deleted successfully.');
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete user.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    //status update
+    public function updateStatus(Request $request, User $user)
+    {
+
+
+
+        $request->validate([
+            'action' => 'required|in:activate,suspend,ban',
+            'reason' => 'nullable|string|max:500',
+            'suspended_until' => 'nullable|date|after:now',
+        ]);
+
+
+
+        try {
+            DB::transaction(function () use ($request, $user) {
+                $previousStatus = $user->status;
+
+                switch ($request->action) {
+                    case 'activate':
+                        $user->update([
+                            'status' => 'active',
+                            'suspended_until' => null,
+                            'suspension_reason' => null,
+                            'ban_reason' => null,
+                        ]);
+
+                        // Log the activation
+                        activity()
+                            ->causedBy(auth()->user())
+                            ->performedOn($user)
+                            ->withProperties([
+                                'action' => 'activate',
+                                'previous_status' => $previousStatus,
+                                'reason' => $request->reason,
+                                'ip_address' => $request->ip(),
+                            ])
+                            ->log('user_activated');
+                        break;
+
+                    case 'suspend':
+
+                        $user->update([
+                            'status' => 'suspended',
+                            'suspended_until' => $request->suspended_until,
+                            'suspension_reason' => $request->reason,
+                            'ban_reason' => null,
+                        ]);
+
+                        // dd($user->status);
+
+                        // Log the suspension
+                        activity()
+                            ->causedBy(auth()->user())
+                            ->performedOn($user)
+                            ->withProperties([
+                                'action' => 'suspend',
+                                'previous_status' => $previousStatus,
+                                'reason' => $request->reason,
+                                'suspended_until' => $request->suspended_until,
+                                'ip_address' => $request->ip(),
+                            ])
+                            ->log('user_suspended');
+                        break;
+
+                    case 'ban':
+                        $user->update([
+                            'status' => 'banned',
+                            'suspended_until' => null,
+                            'suspension_reason' => null,
+                            'ban_reason' => $request->reason,
+                        ]);
+
+                        // Log the ban
+                        activity()
+                            ->causedBy(auth()->user())
+                            ->performedOn($user)
+                            ->withProperties([
+                                'action' => 'ban',
+                                'previous_status' => $previousStatus,
+                                'reason' => $request->reason,
+                                'ip_address' => $request->ip(),
+                            ])
+                            ->log('user_banned');
+                        break;
+                }
+            });
+
+            // return response()->json([
+            //     'success' => true,
+            //     'message' => "User {$request->action}ed successfully.",
+            // ]);
+
+            return redirect()->back()->with('success', "User {$request->action}ed successfully.");
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update user status.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function getActivityLog(User $user)
+    {
+        $activities = $user->activities()
+            ->with('causer')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($activity) {
+                return [
+                    'id' => $activity->id,
+                    'description' => $activity->description,
+                    'properties' => $activity->properties,
+                    'causer' => $activity->causer ? [
+                        'id' => $activity->causer->id,
+                        'name' => $activity->causer->name,
+                        'email' => $activity->causer->email,
+                    ] : null,
+                    'created_at' => $activity->created_at->toDateTimeString(),
+                    'time_ago' => $activity->created_at->diffForHumans(),
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'activities' => $activities,
+        ]);
     }
 }
