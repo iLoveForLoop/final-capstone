@@ -235,12 +235,12 @@ const chatVendor = () => {
                                 <SelectValue placeholder="Select a reason" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="inappropriate_behavior">Inappropriate Behavior</SelectItem>
-                                <SelectItem value="fake_profile">Fake Profile or Information</SelectItem>
-                                <SelectItem value="spam_scam">Spam or Scam</SelectItem>
-                                <SelectItem value="poor_service">Poor Service Quality</SelectItem>
-                                <SelectItem value="unprofessional">Unprofessional Conduct</SelectItem>
-                                <SelectItem value="safety_concerns">Safety Concerns</SelectItem>
+                                <SelectItem value="Inappropriate behavior">Inappropriate Behavior</SelectItem>
+                                <SelectItem value="Fake Profile">Fake Profile or Information</SelectItem>
+                                <SelectItem value="Spam Scam">Spam or Scam</SelectItem>
+                                <SelectItem value="Poor Service">Poor Service Quality</SelectItem>
+                                <SelectItem value="Unprofessional">Unprofessional Conduct</SelectItem>
+                                <SelectItem value="Inactivity">Inactivity</SelectItem>
                                 <SelectItem value="other">Other</SelectItem>
                             </SelectContent>
                         </Select>

@@ -12,6 +12,7 @@ import {
 import emitter from '@/utils/eventBus';
 import axios from 'axios';
 import DesktopNavs from './ClientNavbar/DesktopNavs.vue';
+import ChatWindow from './ClientNavbar/ChatWindow.vue';
 
 const page = usePage()
 const isDropdownShowing = ref(false)
@@ -92,6 +93,7 @@ const loadConversations = async () => {
         isLoading.value = true
         const response = await axios.get('/conversations')
         conversations.value = response.data.conversations
+        console.log("Conversations: ", conversations.value)
     } catch (error) {
         console.error('Failed to load conversations:', error)
     } finally {
@@ -545,9 +547,10 @@ onUnmounted(() => {
                                                     </div>
                                                     <div class="flex-1 min-w-0">
                                                         <div class="flex items-center justify-between">
+                                                            {{ console.log("Message: ", message) }}
                                                             <p class="font-medium text-gray-900 truncate">{{
                                                                 message.sender
-                                                            }}</p>
+                                                                }}</p>
                                                             <div class="flex items-center space-x-1">
                                                                 <span v-if="!message.read"
                                                                     class="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></span>
@@ -721,11 +724,13 @@ onUnmounted(() => {
         </nav>
 
         <!-- Facebook-Style Chat Windows at Bottom -->
-        <div class="fixed bottom-0 right-4 z-50 flex items-end space-x-2">
+        <ChatWindow :openChats="openChats" @toggle-chat-window="toggleChatWindow" @close-chat-window="closeChatWindow"
+            @send-chat-message="sendChatMessage" />
+        <!-- <div class="fixed bottom-0 right-4 z-50 flex items-end space-x-2">
             <div v-for="chat in openChats" :key="chat.id"
                 class="bg-white border border-gray-200 rounded-t-lg shadow-lg overflow-hidden chat-window"
                 :class="{ 'minimized': chat.minimized }">
-                <!-- Chat Header -->
+
                 <div class="flex items-center justify-between p-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white cursor-pointer"
                     @click="toggleChatWindow(chat.id)">
                     <div class="flex items-center space-x-2">
@@ -755,9 +760,9 @@ onUnmounted(() => {
                     </div>
                 </div>
 
-                <!-- Chat Body -->
+
                 <div v-if="!chat.minimized" class="chat-body">
-                    <!-- Messages Area -->
+
                     <div ref="chatMessages" class="h-64 overflow-y-auto p-3 space-y-3 bg-gray-50 ">
                         <div v-for="msg in chat.chatMessages" :key="msg.id" class="flex"
                             :class="{ 'justify-end': msg.sent, 'justify-start': !msg.sent }">
@@ -778,7 +783,7 @@ onUnmounted(() => {
                         </div>
                     </div>
 
-                    <!-- Message Input -->
+
                     <div class="p-3 border-t border-gray-200 bg-white">
                         <div class="flex items-center space-x-2">
                             <input type="text" v-model="chat.newMessage" @keypress.enter="sendChatMessage(chat.id)"
@@ -792,7 +797,7 @@ onUnmounted(() => {
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
     </div>
 </template>
 
