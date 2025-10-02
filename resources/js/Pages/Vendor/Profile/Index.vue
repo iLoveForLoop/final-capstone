@@ -1,7 +1,7 @@
 <script setup>
 import VendorLayout from '@/Layouts/VendorLayout.vue';
 import { ref, reactive, watch } from 'vue';
-import { useForm } from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 import Header from '@/Components/Vendor/Profile/Header.vue';
 import NavigationTabs from '@/Components/Vendor/Profile/NavigationTabs.vue';
 import BasicInfo from '@/Components/Vendor/Profile/BasicInfo.vue';
@@ -172,7 +172,21 @@ const saveChanges = () => {
     // Submit to backend
     formData.post(route('vendor.profile-setting.update'), {
         data: submitData,
+        onSuccess: () => {
+            // 🔑 Refresh props from backend
+            router.reload({ only: ['vendor', 'portfolioImages', 'showcaseVideos'] })
+
+            // Reset editing mode
+            // isEditing.value = false
+
+            // Optionally reset local upload arrays
+            formData.portfolioImages = []
+            formData.removedImageIds = []
+        },
     })
+
+    console.log('Form data: ', formData);
+
 
     isEditing.value = false
 }
@@ -325,6 +339,14 @@ const removeProfileImage = () => {
     formData.profileImageFile = null;
     showProfileImageModal.value = false;
 };
+
+watch(
+    () => props.portfolioImages,
+    (newVal) => {
+        portfolioImages.value = [...newVal] // overwrite with fresh backend images
+    }
+)
+
 </script>
 
 <template>

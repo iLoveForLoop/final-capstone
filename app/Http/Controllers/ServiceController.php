@@ -192,6 +192,8 @@ class ServiceController extends Controller
                     'description' => $service->description,
                     'image_url' => $service->getFirstMediaUrl('images'),
                     'vendor' => $service->vendor ?? null,
+                    'rating' => $service->vendor->averageRating(),
+                    'dateAdded' => $service->created_at->format('Y-m-d'),
                     'category' => $service->category ? [
                         'id' => $service->category->id,
                         'name' => $service->category->name

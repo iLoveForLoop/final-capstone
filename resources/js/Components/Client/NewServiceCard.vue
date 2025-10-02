@@ -15,6 +15,8 @@ const props = defineProps({
 
 const bookingForm = ref(null)
 
+// console.log('Service: ', props.service)
+
 const formatPrice = (price) => {
     return new Intl.NumberFormat('en-PH', {
         style: 'currency',

@@ -512,7 +512,7 @@ class ClientController extends Controller
 
         $booking = $user->bookings()
             ->where('id', $id)
-            ->where('status', 'pending')
+            // ->where('status', 'pending')
             ->firstOrFail();
 
         $booking->update([

@@ -152,6 +152,7 @@ const activeFilterCount = computed(() => {
 <template>
 
     <Head title="Home" />
+    <QuickBookingStepperModal ref="eventModal" :categories="categories" />
 
     <div class="min-h-screen bg-gradient-to-br from-gray-300 via-white to-gray-500 relative overflow-hidden">
         <!-- Enhanced animated background -->
@@ -180,8 +181,6 @@ const activeFilterCount = computed(() => {
                 class="absolute animate-float-delayed bottom-1/4 left-2/3 w-5 h-5 bg-purple-400 rounded-full opacity-50">
             </div> -->
         </div>
-
-        <QuickBookingStepperModal ref="eventModal" :categories="categories" />
 
         <!-- Navigation -->
         <ClientNavbar class="relative z-20" />
@@ -293,89 +292,7 @@ const activeFilterCount = computed(() => {
             </div>
         </section>
 
-        <!-- Categories -->
-        <!-- <section class="py-16 relative z-10">
-            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center mb-14 reveal-animation">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-3">Browse Categories</h2>
-                    <p class="text-gray-600 text-lg">Find vendors by service type</p>
-                </div>
 
-                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <Link href="/categories/catering"
-                        class="group p-8 bg-white border border-gray-100 rounded-2xl hover:border-blue-100 hover:shadow-lg transition-all duration-300 reveal-animation">
-                    <div
-                        class="w-14 h-14 bg-blue-50 rounded-xl mb-5 flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-300">
-                        <ChefHat class="h-7 w-7 text-blue-600" />
-                    </div>
-                    <h3
-                        class="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
-                        Catering Services</h3>
-                    <p class="text-gray-600 text-sm leading-relaxed">Professional food and beverage services</p>
-                    </Link>
-
-                    <Link href="/categories/photography"
-                        class="group p-8 bg-white border border-gray-100 rounded-2xl hover:border-blue-100 hover:shadow-lg transition-all duration-300 reveal-animation animation-delay-100">
-                    <div
-                        class="w-14 h-14 bg-blue-50 rounded-xl mb-5 flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-300">
-                        <Camera class="h-7 w-7 text-blue-600" />
-                    </div>
-                    <h3
-                        class="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
-                        Photography</h3>
-                    <p class="text-gray-600 text-sm leading-relaxed">Professional event photographers</p>
-                    </Link>
-
-                    <Link href="/categories/sound-systems"
-                        class="group p-8 bg-white border border-gray-100 rounded-2xl hover:border-blue-100 hover:shadow-lg transition-all duration-300 reveal-animation animation-delay-200">
-                    <div
-                        class="w-14 h-14 bg-blue-50 rounded-xl mb-5 flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-300">
-                        <Music class="h-7 w-7 text-blue-600" />
-                    </div>
-                    <h3
-                        class="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
-                        Sound Systems</h3>
-                    <p class="text-gray-600 text-sm leading-relaxed">Audio equipment and technical support</p>
-                    </Link>
-
-                    <Link href="/categories/entertainers"
-                        class="group p-8 bg-white border border-gray-100 rounded-2xl hover:border-blue-100 hover:shadow-lg transition-all duration-300 reveal-animation animation-delay-300">
-                    <div
-                        class="w-14 h-14 bg-blue-50 rounded-xl mb-5 flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-300">
-                        <Mic2 class="h-7 w-7 text-blue-600" />
-                    </div>
-                    <h3
-                        class="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
-                        Entertainment</h3>
-                    <p class="text-gray-600 text-sm leading-relaxed">Bands, DJs, and performers</p>
-                    </Link>
-
-                    <Link href="/categories/makeup"
-                        class="group p-8 bg-white border border-gray-100 rounded-2xl hover:border-blue-100 hover:shadow-lg transition-all duration-300 reveal-animation animation-delay-400">
-                    <div
-                        class="w-14 h-14 bg-blue-50 rounded-xl mb-5 flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-300">
-                        <Sparkles class="h-7 w-7 text-blue-600" />
-                    </div>
-                    <h3
-                        class="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
-                        Makeup Artists</h3>
-                    <p class="text-gray-600 text-sm leading-relaxed">Professional beauty services</p>
-                    </Link>
-
-                    <Link href="/categories/attire"
-                        class="group p-8 bg-white border border-gray-100 rounded-2xl hover:border-blue-100 hover:shadow-lg transition-all duration-300 reveal-animation animation-delay-500">
-                    <div
-                        class="w-14 h-14 bg-blue-50 rounded-xl mb-5 flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-300">
-                        <Shirt class="h-7 w-7 text-blue-600" />
-                    </div>
-                    <h3
-                        class="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
-                        Attire Rentals</h3>
-                    <p class="text-gray-600 text-sm leading-relaxed">Formal wear and costume rentals</p>
-                    </Link>
-                </div>
-            </div>
-        </section> -->
 
         <!-- Footer -->
         <footer class="bg-gradient-to-b from-gray-900 to-gray-800 text-white py-16 relative z-10">

@@ -1,5 +1,6 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import { Check, Calendar, MapPin, Clock, Briefcase, FileText, AlertCircle, Loader } from 'lucide-vue-next'
 
 const props = defineProps({
     selectedServices: {
@@ -9,6 +10,8 @@ const props = defineProps({
 })
 
 const eventForm = defineModel('eventForm')
+const agreedToTerms = ref(false)
+const isSubmitting = ref(false)
 
 // Calculate total price
 const totalPrice = computed(() => {
@@ -21,175 +24,283 @@ const totalPrice = computed(() => {
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-PH', {
         style: 'currency',
-        currency: 'PHP'
+        currency: 'PHP',
+        minimumFractionDigits: 0
     }).format(amount);
 }
 
-
 // Format date
 const formatDate = (dateString) => {
-    if (!dateString) return ''
+    if (!dateString) return 'Not set'
     return new Date(dateString).toLocaleDateString('en-US', {
-        weekday: 'long',
+        weekday: 'short',
         year: 'numeric',
-        month: 'long',
+        month: 'short',
         day: 'numeric'
     })
+}
+
+// Format time
+const formatTime = (timeString) => {
+    if (!timeString) return 'Not set'
+    return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    })
+}
+
+// Handle form submission
+const submitBooking = async () => {
+    if (!agreedToTerms.value) {
+        alert('Please agree to the terms and conditions to proceed.')
+        return
+    }
+    isSubmitting.value = true
+    try {
+        // Handle booking submission logic here
+        console.log('Submitting booking:', {
+            eventForm: eventForm.value,
+            selectedServices: props.selectedServices,
+            totalPrice: totalPrice.value
+        })
+
+
+        await new Promise(resolve => setTimeout(resolve, 2000))
+
+        // handling would go here
+        alert('Booking request sent to vendors successfully!')
+    } catch (error) {
+        console.error('Booking submission failed:', error)
+        alert('Failed to submit booking. Please try again.')
+    } finally {
+        isSubmitting.value = false
+    }
 }
 </script>
 
 <template>
-
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
         <!-- Header -->
-        <div class="text-center pb-6 border-b border-gray-100">
-            <h2 class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-2">Review Your Event</h2>
-            <p class="text-gray-500 text-sm sm:text-base">Please verify all details before proceeding</p>
+        <div class="text-center pb-6 border-b border-gray-200">
+            <div class="w-12 h-12 mx-auto mb-4 bg-blue-50 rounded-full flex items-center justify-center">
+                <Check class="h-6 w-6 text-blue-600" />
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-semibold text-gray-900 mb-2">Review Booking</h1>
+            <p class="text-gray-600 text-sm sm:text-base">Verify your event details before submitting to vendors</p>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-            <!-- Main Content -->
-            <div class="lg:col-span-2 space-y-5">
-                <!-- Event Details Card -->
-                <div class="bg-white rounded-lg border border-gray-100 p-5 sm:p-6">
-                    <h3 class="text-lg sm:text-xl font-medium text-gray-800 mb-4">Event Details</h3>
+        <div class="mt-6 lg:mt-8">
+            <!-- Event Details -->
+            <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 mb-6">
+                <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <Calendar class="h-5 w-5 text-gray-600" />
+                    Event Details
+                </h2>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Event Name</p>
-                            <p class="text-gray-800 font-medium">{{ eventForm.name || 'Untitled Event' }}</p>
-                        </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div class="space-y-1">
+                        <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Event Name</label>
+                        <p class="text-gray-900 font-medium text-sm sm:text-base">{{ eventForm.name || 'Untitled Event'
+                            }}</p>
+                    </div>
 
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Location</p>
-                            <p class="text-gray-800 font-medium">{{ eventForm.location || 'Location TBD' }}</p>
-                        </div>
-
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Date</p>
-                            <p class="text-gray-800 font-medium">{{ formatDate(eventForm.event_date) }}</p>
-                        </div>
-
-                        <div v-if="eventForm.event_time">
-                            <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Time</p>
-                            <p class="text-gray-800 font-medium">{{ eventForm.event_time }}</p>
+                    <div class="space-y-1">
+                        <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Location</label>
+                        <div class="flex items-center gap-1 text-gray-900 font-medium text-sm sm:text-base">
+                            <MapPin class="h-4 w-4 text-gray-500" />
+                            {{ eventForm.location || 'Location TBD' }}
                         </div>
                     </div>
 
-                    <div v-if="eventForm.description" class="mt-5 pt-5 border-t border-gray-100">
-                        <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Description</p>
-                        <p class="text-gray-700">{{ eventForm.description }}</p>
+                    <div class="space-y-1">
+                        <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Date</label>
+                        <div class="flex items-center gap-1 text-gray-900 font-medium text-sm sm:text-base">
+                            <Calendar class="h-4 w-4 text-gray-500" />
+                            {{ formatDate(eventForm.event_date) }}
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Time</label>
+                        <div class="flex items-center gap-1 text-gray-900 font-medium text-sm sm:text-base">
+                            <Clock class="h-4 w-4 text-gray-500" />
+                            {{ formatTime(eventForm.event_time) }}
+                        </div>
                     </div>
                 </div>
 
-                <!-- Selected Services Card -->
-                <div class="bg-white rounded-lg border border-gray-100 p-5 sm:p-6">
-                    <div class="flex items-center justify-between mb-5">
-                        <h3 class="text-lg sm:text-xl font-medium text-gray-800">Selected Services</h3>
-                        <span class="bg-gray-100 text-gray-800 px-2.5 py-1 rounded-full text-xs font-medium">
-                            {{ selectedServices?.length || 0 }} selected
-                        </span>
-                    </div>
+                <div v-if="eventForm.description" class="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
+                    <label
+                        class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">Description</label>
+                    <p class="text-gray-700 text-sm sm:text-base leading-relaxed">{{ eventForm.description }}</p>
+                </div>
+            </div>
 
-                    <div class="space-y-4">
-                        <div v-for="service in selectedServices" :key="service.id"
-                            class="border border-gray-100 rounded-lg p-4 hover:border-gray-200 transition-colors">
-                            <div class="flex flex-col sm:flex-row gap-4">
-                                <!-- Service Image -->
-                                <div class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-gray-100">
-                                    <img v-if="service.image_url" :src="service.image_url" :alt="service.name"
-                                        class="w-full h-full object-cover">
-                                    <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                                d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Z" />
-                                        </svg>
-                                    </div>
+            <!-- Selected Services -->
+            <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 mb-6">
+                <div class="flex items-center justify-between mb-4 sm:mb-6">
+                    <h2 class="text-lg sm:text-xl font-semibold text-gray-900 flex items-center gap-2">
+                        <Briefcase class="h-5 w-5 text-gray-600" />
+                        Selected Services
+                    </h2>
+                    <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">
+                        {{ selectedServices?.length || 0 }} services
+                    </span>
+                </div>
+
+                <div class="space-y-4">
+                    <div v-for="service in selectedServices" :key="service.id"
+                        class="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
+                        <div class="flex gap-4">
+                            <!-- Service Image -->
+                            <div
+                                class="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                                <img v-if="service.image_url" :src="service.image_url" :alt="service.name"
+                                    class="w-full h-full object-cover">
+                                <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
+                                    <Briefcase class="h-6 w-6 sm:h-8 sm:w-8" />
                                 </div>
+                            </div>
 
-                                <!-- Service Details -->
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                                        <div class="min-w-0">
-                                            <h4 class="text-base font-medium text-gray-800">{{ service.name }}</h4>
-                                            <p class="text-gray-500 text-sm mt-1 line-clamp-2">{{ service.description }}
-                                            </p>
-                                        </div>
-                                        <div class="sm:text-right">
-                                            <p class="text-gray-800 font-medium">{{ formatCurrency(service.price) }}</p>
+                            <!-- Service Details -->
+                            <div class="flex-1 min-w-0">
+                                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                                    <div class="min-w-0 flex-1">
+                                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-1">{{
+                                            service.name }}</h3>
+                                        <p class="text-gray-600 text-sm leading-relaxed line-clamp-2">{{
+                                            service.description }}</p>
+
+                                        <!-- Vendor Info -->
+                                        <div class="flex items-center mt-2 text-xs sm:text-sm text-gray-500">
+                                            <MapPin class="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                            <span class="font-medium">{{ service.vendor?.business_name ||
+                                                service.vendor?.name || 'Vendor' }}</span>
+                                            <span class="mx-2">•</span>
+                                            <span class="truncate">
+                                                {{ service.vendor?.location || 'Location not specified' }}
+                                            </span>
+
                                         </div>
                                     </div>
-
-                                    <!-- Vendor Info -->
-                                    <div class="flex items-center mt-3 text-xs text-gray-500">
-                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                                d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5m-4 0h4" />
-                                        </svg>
-                                        {{ service.vendor?.name || 'Unknown vendor' }}
+                                    <div class="sm:text-right">
+                                        <p class="text-lg sm:text-xl font-semibold text-green-600">{{
+                                            formatCurrency(service.price) }}</p>
+                                        <p v-if="service.catering_service?.price !== service.catering_service?.package_price"
+                                            class="text-xs text-gray-500 mt-1">per person</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Empty State -->
-                    <div v-if="!selectedServices?.length" class="text-center py-8">
-                        <div class="w-14 h-14 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                    d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m5.25 0h7.5m-7.5 0v7.5" />
-                            </svg>
-                        </div>
-                        <h4 class="text-base font-medium text-gray-700 mb-1">No services selected</h4>
-                        <p class="text-gray-500 text-sm">Add services to continue</p>
-                    </div>
                 </div>
 
-                <!-- Notes Section -->
-                <div class="bg-white rounded-lg border border-gray-100 p-5 sm:p-6">
-                    <label class="block text-base font-medium text-gray-800 mb-3">Additional Notes</label>
-                    <textarea v-model="eventForm.final_notes" rows="3"
-                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-gray-300 focus:ring-1 focus:ring-gray-200 transition-colors placeholder-gray-400"
-                        placeholder="Any special requests or instructions..."></textarea>
+                <!-- Empty State -->
+                <div v-if="!selectedServices?.length" class="text-center py-8">
+                    <div class="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
+                        <AlertCircle class="h-6 w-6 text-gray-400" />
+                    </div>
+                    <h3 class="text-base font-semibold text-gray-700 mb-1">No Services Selected</h3>
+                    <p class="text-gray-500 text-sm">Add services to continue with your booking</p>
                 </div>
             </div>
 
-            <!-- Summary Sidebar -->
-            <div class="lg:col-span-1">
-                <div class="bg-white rounded-lg border border-gray-100 p-5 sm:p-6 sticky top-6">
-                    <h3 class="text-lg font-medium text-gray-800 mb-5">Summary</h3>
+            <!-- Additional Information -->
+            <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 mb-6">
+                <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <FileText class="h-5 w-5 text-gray-600" />
+                    Additional Information
+                </h2>
 
-                    <div class="space-y-3 mb-5">
-                        <div v-for="service in selectedServices" :key="service.id" class="flex justify-between text-sm">
-                            <p class="text-gray-700 truncate pr-2">{{ service.name }}</p>
-                            <p class="text-gray-800 font-medium whitespace-nowrap">{{ formatCurrency(service.price) }}
+                <div class="space-y-6">
+                    <!-- Special Instructions -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Special Instructions</label>
+                        <textarea v-model="eventForm.final_notes" rows="3"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder-gray-400 resize-none"
+                            placeholder="Any special requests or instructions for vendors..."></textarea>
+                        <p class="text-xs text-gray-500 mt-1">This will be shared with all selected vendors</p>
+                    </div>
+
+                    <!-- Terms and Conditions -->
+                    <div class="border-t border-gray-200 pt-6">
+                        <div class="flex items-start gap-3">
+                            <input type="checkbox" v-model="agreedToTerms" id="terms"
+                                class="mt-0.5 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                            <div class="flex-1">
+                                <label for="terms" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Accept Terms & Conditions
+                                </label>
+                                <p class="text-xs text-gray-600 leading-relaxed">
+                                    I agree to the
+                                    <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">booking terms</a>,
+                                    <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">cancellation
+                                        policy</a>, and
+                                    <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">privacy
+                                        policy</a>.
+                                    I understand this request will be sent to vendors and a deposit may be required.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary & Submit -->
+            <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+                <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Booking Summary</h2>
+
+                <div class="space-y-4">
+                    <!-- Services List -->
+                    <div class="space-y-3">
+                        <div v-for="service in selectedServices" :key="service.id"
+                            class="flex justify-between items-start text-sm">
+                            <div class="flex-1 min-w-0 pr-3">
+                                <p class="text-gray-700 font-medium truncate">{{ service.name }}</p>
+                                <p class="text-gray-500 text-xs mt-0.5">{{ service.vendor?.business_name }}</p>
+                            </div>
+                            <p class="text-gray-900 font-semibold whitespace-nowrap">{{ formatCurrency(service.price) }}
                             </p>
                         </div>
                     </div>
 
-                    <div class="border-t border-gray-100 pt-4">
-                        <div class="flex justify-between items-center mb-2">
-                            <p class="text-gray-600 text-sm">Subtotal</p>
-                            <p class="text-gray-800 font-medium">{{ formatCurrency(totalPrice) }}</p>
+                    <!-- Total -->
+                    <div class="border-t border-gray-200 pt-4">
+                        <div class="flex justify-between items-center text-base">
+                            <span class="font-semibold text-gray-900">Total</span>
+                            <span class="font-bold text-green-600">{{ formatCurrency(totalPrice) }}</span>
                         </div>
-                        <div class="flex justify-between items-center text-base mt-4 pt-4 border-t border-gray-100">
-                            <p class="font-medium text-gray-800">Total</p>
-                            <p class="font-semibold text-gray-900">{{ formatCurrency(totalPrice) }}</p>
+                        <p class="text-xs text-gray-500 text-center mt-2">All prices in Philippine Peso (₱)</p>
+                    </div>
+
+                    <!-- Quick Event Info -->
+                    <div class="bg-gray-50 rounded-lg p-3 mt-4">
+                        <div class="grid grid-cols-2 gap-4 text-xs">
+                            <div>
+                                <p class="text-gray-500 font-medium">Date</p>
+                                <p class="text-gray-900">{{ formatDate(eventForm.event_date) }}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 font-medium">Location</p>
+                                <p class="text-gray-900 truncate">{{ eventForm.location || 'Not set' }}</p>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="mt-6 pt-5 border-t border-gray-100">
-                        <div class="space-y-2 text-sm">
-                            <div class="flex justify-between">
-                                <p class="text-gray-500">Event Date</p>
-                                <p class="text-gray-700">{{ eventForm.event_date || 'Not set' }}</p>
-                            </div>
-                            <div class="flex justify-between">
-                                <p class="text-gray-500">Location</p>
-                                <p class="text-gray-700 text-right">{{ eventForm.location || 'Not set' }}</p>
-                            </div>
-                        </div>
+                    <!-- Submit Button -->
+                    <div class="mt-6">
+                        <button @click="submitBooking"
+                            :disabled="!agreedToTerms || !selectedServices.length || isSubmitting"
+                            class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                            <Loader v-if="isSubmitting" class="h-4 w-4 animate-spin" />
+                            <span class="text-sm sm:text-base">
+                                {{ isSubmitting ? 'Sending to Vendors...' : 'Submit Booking Request' }}
+                            </span>
+                        </button>
+                        <p class="text-xs text-gray-500 text-center mt-2">
+                            Vendors will contact you within 24 hours
+                        </p>
                     </div>
                 </div>
             </div>
@@ -203,5 +314,17 @@ const formatDate = (dateString) => {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+/* Improve mobile touch targets */
+@media (max-width: 640px) {
+    button {
+        min-height: 48px;
+    }
+
+    input[type="checkbox"] {
+        min-width: 16px;
+        min-height: 16px;
+    }
 }
 </style>

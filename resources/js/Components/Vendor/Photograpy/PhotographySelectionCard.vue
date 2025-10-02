@@ -1,5 +1,4 @@
 <script setup>
-
 import ServiceViewModal from '@/Components/ServiceViewModal.vue';
 import { ref } from 'vue';
 
@@ -22,8 +21,6 @@ const emit = defineEmits(['select', 'view'])
 
 const serviceViewModal = ref(null)
 
-const showDetails = ref(false);
-
 const formatPrice = (price) => {
     return new Intl.NumberFormat('en-PH', {
         style: 'currency',
@@ -40,10 +37,6 @@ const showPriceRange = (service) => {
     return formatPrice(service.price);
 };
 
-const toggleDetails = () => {
-    showDetails.value = !showDetails.value;
-};
-
 const handleSelect = () => {
     emit('select', props.service.id)
 }
@@ -55,215 +48,139 @@ const handleView = () => {
 const handleServiceViewClose = () => {
     console.log('closeeedd')
 }
-
 </script>
 
 <template>
     <ServiceViewModal ref="serviceViewModal" :service="service" @close="handleServiceViewClose" />
-    <div class="bg-white rounded-xl border border-gray-200 p-5 space-y-5 hover:shadow-sm transition-shadow">
-        <!-- Header with Price and Coverage Type -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div class="flex flex-wrap items-center gap-2">
-                <div
-                    class="bg-[#E6F4F6] text-[#239BA7] px-3 py-1.5 rounded-lg font-semibold text-base border border-[#239BA7]/30">
-                    {{ showPriceRange(service) }}
-                </div>
 
-                <span v-if="service.photography_service?.coverage_type"
-                    class="inline-flex items-center text-xs font-medium text-[#239BA7] bg-[#E6F4F6] px-2.5 py-1 rounded-lg border border-[#239BA7]/30">
-                    {{ service.photography_service.coverage_type }}
-                </span>
+    <div
+        class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+        <div class="flex flex-col md:flex-row">
+            <!-- Service Image -->
+            <div class="md:w-2/5 relative">
+                <slot name="favorite"></slot>
+                <img :src="service.image_url || '/images/service-placeholder.jpg'" :alt="service.name"
+                    class="w-full h-40 sm:h-48 md:h-full object-cover">
             </div>
 
-            <div v-if="service.photography_service?.studio_shoot_available" class="flex-shrink-0">
-                <span
-                    class="inline-flex items-center text-xs px-2.5 py-1 bg-[#F5FBFB] text-[#239BA7] rounded-lg font-medium border border-[#239BA7]/30">
-                    🏢 Studio Available
-                </span>
-            </div>
-        </div>
-
-        <!-- Service Title and Description -->
-        <div>
-            <h3 class="text-lg font-bold text-gray-900 mb-1.5">{{ service.name }}</h3>
-            <p class="text-gray-600 text-sm leading-relaxed line-clamp-3">{{ service.description }}</p>
-        </div>
-
-        <!-- Key Information Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <!-- Photographers -->
-            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                <div class="flex items-center">
-                    <div class="w-6 h-6 bg-[#E6F4F6] rounded-lg flex items-center justify-center mr-2">
-                        <svg class="h-3.5 w-3.5 text-[#239BA7]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-xs text-gray-500 font-medium">Photographers</div>
-                        <div class="text-base font-semibold text-gray-900">
-                            {{ service.photography_service?.number_of_photographers || 1 }}
-                            <span class="text-xs font-normal text-gray-500">photographer{{
-                                service.photography_service?.number_of_photographers > 1 ? 's' : '' }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Coverage Hours -->
-            <div v-if="service.photography_service?.hours_of_coverage"
-                class="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                <div class="flex items-center">
-                    <div class="w-6 h-6 bg-[#E6F4F6] rounded-lg flex items-center justify-center mr-2">
-                        <svg class="h-3.5 w-3.5 text-[#239BA7]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-xs text-gray-500 font-medium">Coverage</div>
-                        <div class="text-base font-semibold text-gray-900">
-                            {{ service.photography_service.hours_of_coverage }}
-                            <span class="text-xs font-normal text-gray-500">hours</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Delivery Time -->
-            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                <div class="flex items-center">
-                    <div class="w-6 h-6 bg-[#E6F4F6] rounded-lg flex items-center justify-center mr-2">
-                        <svg class="h-3.5 w-3.5 text-[#239BA7]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-xs text-gray-500 font-medium">Delivery Time</div>
-                        <div class="text-base font-semibold text-gray-900">
-                            {{ service.photography_service?.delivery_time_days || 30 }}
-                            <span class="text-xs font-normal text-gray-500">days</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Delivery Fee -->
-            <div v-if="service.delivery_fee" class="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                <div class="flex items-center">
-                    <div class="w-6 h-6 bg-[#E6F4F6] rounded-lg flex items-center justify-center mr-2">
-                        <svg class="h-3.5 w-3.5 text-[#239BA7]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-xs text-gray-500 font-medium">Delivery Fee</div>
-                        <div class="text-base font-semibold text-gray-900">
-                            {{ formatPrice(service.delivery_fee) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Toggle Button -->
-        <button @click="toggleDetails"
-            class="w-full flex items-center justify-between text-sm font-medium text-[#239BA7]">
-            <span>{{ showDetails ? 'Hide details' : 'Show more details' }}</span>
-            <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': showDetails }" fill="none"
-                stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-        </button>
-
-        <!-- Collapsible Content -->
-        <div v-show="showDetails" class="space-y-4 pt-2">
-            <!-- Deliverables -->
-            <div v-if="service.photography_service?.deliverables?.length" class="space-y-2">
-                <h4 class="text-xs font-semibold text-gray-700 flex items-center">
-                    <svg class="w-3.5 h-3.5 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Deliverables
-                    <span class="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full ml-1.5">
-                        {{ service.photography_service.deliverables.length }} items
+            <!-- Content Container -->
+            <div class="md:w-3/5 p-3 sm:p-4 flex flex-col">
+                <!-- Category and Date Added - Keep side by side on mobile -->
+                <div class="flex items-center justify-between mb-3">
+                    <span v-if="service.category_name" class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                        {{ service.category_name }}
                     </span>
-                </h4>
-                <div class="bg-gray-50 rounded-lg p-2 border border-gray-100">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                        <div v-for="(item, index) in service.photography_service.deliverables" :key="index"
-                            class="flex items-center justify-between py-1 px-2 hover:bg-gray-100 rounded">
-                            <span class="text-xs font-medium text-gray-700">{{ item }}</span>
-                        </div>
+
+                    <div class="flex items-center text-xs sm:text-sm text-gray-500">
+                        <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 flex-shrink-0" fill="currentColor"
+                            viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.415L11 9.586V6z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        <span class="truncate">{{ service.dateAdded || 'Recently added' }}</span>
                     </div>
                 </div>
-            </div>
 
-            <!-- Specifications -->
-            <div v-if="service.photography_service?.specifications?.length" class="space-y-2">
-                <h4 class="text-xs font-semibold text-gray-700 flex items-center">
-                    <svg class="w-3.5 h-3.5 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                    Features
-                </h4>
-                <div class="bg-gray-50 rounded-lg p-2 border border-gray-100">
-                    <ul class="space-y-1.5">
-                        <li v-for="(spec, index) in service.photography_service.specifications" :key="index"
-                            class="flex items-start text-xs text-gray-700">
-                            <span
-                                class="inline-block w-1.5 h-1.5 bg-[#239BA7] rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
-                            <span>{{ spec }}</span>
-                        </li>
-                    </ul>
+                <!-- Price and Rating - Keep side by side on mobile -->
+                <div class="flex items-center justify-between mb-3">
+                    <div class="text-base sm:text-lg font-bold text-green-600">
+                        {{ showPriceRange(service) }}
+                        <span v-if="service.photography_service?.coverage_type"
+                            class="text-xs sm:text-sm font-normal text-gray-600 ml-1 sm:ml-2">
+                            • {{ service.photography_service.coverage_type }}
+                        </span>
+                    </div>
+
+                    <!-- Rating -->
+                    <div class="flex items-center text-xs sm:text-sm text-gray-500">
+                        <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 text-yellow-400 flex-shrink-0" fill="currentColor"
+                            viewBox="0 0 20 20">
+                            <path
+                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        {{ service.rating || 'No ratings yet' }}
+                    </div>
+                </div>
+
+                <!-- Service Title and Description -->
+                <div class="mb-3 flex-grow">
+                    <h3 class="font-semibold text-gray-900 text-sm sm:text-base mb-2 line-clamp-1 leading-tight">
+                        {{ service.name }}
+                    </h3>
+                    <p class="text-xs sm:text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                        {{ service.description }}
+                    </p>
+                </div>
+
+                <!-- Vendor Information -->
+                <div v-if="service.vendor" class="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
+                    <a :href="route('client.vendor.show', service.vendor.id)"
+                        class="font-medium cursor-pointer text-blue-500 hover:text-blue-600 transition-colors break-words">
+                        {{ service.vendor.business_name }}
+                    </a>
+                    <span class="mx-1">•</span>
+                    <span class="text-gray-500">{{ service.vendor.location }}</span>
+                </div>
+
+                <!-- Action Buttons - Keep side by side on mobile -->
+                <div v-if="isDateAvailable" class="flex space-x-2 sm:space-x-3 pt-3 border-t border-gray-100">
+                    <button @click="handleView"
+                        class="flex-1 border border-gray-300 text-gray-700 py-2.5 sm:py-2 px-3 sm:px-4 rounded-lg text-xs sm:text-sm hover:bg-gray-50 transition-colors font-medium min-h-[44px]">
+                        View Details
+                    </button>
+
+                    <button @click="handleSelect" :class="{
+                        'bg-blue-600 text-white hover:bg-blue-700': !isSelected,
+                        'bg-green-600 text-white hover:bg-green-700': isSelected
+                    }"
+                        class="flex-1 py-2.5 sm:py-2 px-3 sm:px-4 rounded-lg text-xs sm:text-sm transition-colors flex items-center justify-center font-medium min-h-[44px]">
+                        <span v-if="isSelected" class="flex items-center">
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            Selected
+                        </span>
+                        <span v-else>Select</span>
+                    </button>
+                </div>
+
+                <!-- Date Not Available Message -->
+                <div v-else class="pt-3 border-t border-gray-100">
+                    <p class="text-xs sm:text-sm text-red-500 text-center px-2">
+                        Sorry, the date you selected is not available
+                    </p>
                 </div>
             </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div v-if="isDateAvailable" class="flex gap-3 pt-4 border-t border-gray-100">
-            <button @click="handleView"
-                class="flex-1 px-4 py-2.5 bg-gray-50 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors text-sm">
-                View
-            </button>
-
-            <button @click="handleSelect" :class="{
-                'bg-[#239BA7] text-white hover:bg-[#1D8E99]': !isSelected,
-                'bg-green-600 text-white hover:bg-green-700': isSelected
-            }"
-                class="flex-1 px-4 py-2.5 font-medium rounded-lg transition-colors flex items-center justify-center text-sm">
-                <span v-if="isSelected" class="flex items-center">
-                    <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                            clip-rule="evenodd"></path>
-                    </svg>
-                    Selected
-                </span>
-                <span v-else>Select</span>
-            </button>
-        </div>
-        <div v-else class="flex gap-3 pt-4 border-t border-gray-100">
-            <p>Sorry the date you selected is not available</p>
         </div>
     </div>
 </template>
 
 <style scoped>
-.line-clamp-3 {
+.line-clamp-1 {
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
 
-.rotate-180 {
-    transform: rotate(180deg);
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Ensure proper touch targets for mobile */
+button {
+    min-height: 44px;
+}
+
+@media (max-width: 640px) {
+    button {
+        min-height: 42px;
+    }
 }
 </style>

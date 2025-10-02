@@ -47,8 +47,10 @@ const dishSelectionLimits = computed(() => {
 });
 
 // Check if catering service is customizable
+// console.log('Catering customizeable: ', props.service);
+
 const isCateringCustomizable = computed(() => {
-    return props.service?.catering_service?.is_customizable === 1;
+    return props.service?.catering_service?.is_customizable;
 });
 
 // Get selection limit for a category
@@ -399,6 +401,8 @@ defineExpose({
 
                                             <div v-for="(dishes, category) in service.catering_service.dishes"
                                                 :key="category" class="space-y-3">
+
+
 
                                                 <!-- Category Header -->
                                                 <div class="flex items-center justify-between">
