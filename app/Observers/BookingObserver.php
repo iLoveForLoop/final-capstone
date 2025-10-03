@@ -1,8 +1,10 @@
 <?php
 namespace App\Observers;
 
+use App\Mail\Vendor\BookingRequestMail;
 use App\Models\Booking;
 use App\Services\NotificationService;
+use Illuminate\Support\Facades\Mail;
 
 class BookingObserver
 {
@@ -11,11 +13,17 @@ class BookingObserver
     public function __construct(NotificationService $notificationService)
     {
         $this->notificationService = $notificationService;
+
     }
 
     public function created(Booking $booking)
     {
+        $booking->load(['service.vendor.user', 'user']);
+
         $this->notificationService->createBookingReceivedNotification($booking);
+
+        Mail::to($booking->service->vendor->user->email)->send(new BookingRequestMail($booking));
+
     }
 
     public function updated(Booking $booking)

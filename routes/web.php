@@ -20,9 +20,11 @@ use App\Http\Controllers\VendorCalendarController;
 use App\Http\Controllers\VendorApplicationController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\WelcomeController;
+use App\Mail\TestMail;
 use App\Models\Service;
 use App\Models\Vendor;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -181,7 +183,11 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
-
+//MAIL TEST
+Route::get('/test-brevo', function () {
+    Mail::to('baykingjeferson110@gmail.com')->send(new TestMail());
+    return "Test email sent via Brevo!";
+});
 
 
 

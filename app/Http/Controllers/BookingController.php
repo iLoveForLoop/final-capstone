@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\Vendor\BookingRequestMail;
 use App\Models\Booking;
 use App\Models\Event;
 use App\Models\Service;
 use App\Models\ServiceCategory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class BookingController extends Controller
@@ -473,6 +475,9 @@ class BookingController extends Controller
      */
     public function store(Request $request)
     {
+
+
+
         $request->validate([
             'name'        => 'required|string|max:255',
             'location'    => 'required|string|max:255',
@@ -507,7 +512,11 @@ class BookingController extends Controller
                 'catering_dishes' => $request->dishes ?? null,
                 'pax' => $request->pax ?? null
             ]);
+
+            // Mail::to('baykingjeferson110@gmail.com')->send(new BookingRequestMail($booking));
         }
+
+
 
         return redirect()->back()->with('success', 'Event and bookings created successfully!');
     }
