@@ -12,6 +12,7 @@ const props = defineProps({
 const eventForm = defineModel('eventForm')
 const agreedToTerms = ref(false)
 const isSubmitting = ref(false)
+const emit = defineEmits(['submit-selection'])
 
 // Calculate total price
 const totalPrice = computed(() => {
@@ -57,25 +58,28 @@ const submitBooking = async () => {
         return
     }
     isSubmitting.value = true
-    try {
-        // Handle booking submission logic here
-        console.log('Submitting booking:', {
-            eventForm: eventForm.value,
-            selectedServices: props.selectedServices,
-            totalPrice: totalPrice.value
-        })
+
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    emit('submit-selection')
+    // console.log('Submitting');
 
 
-        await new Promise(resolve => setTimeout(resolve, 2000))
+    isSubmitting.value = false
 
-        // handling would go here
-        alert('Booking request sent to vendors successfully!')
-    } catch (error) {
-        console.error('Booking submission failed:', error)
-        alert('Failed to submit booking. Please try again.')
-    } finally {
-        isSubmitting.value = false
-    }
+    // try {
+
+
+
+    //     await new Promise(resolve => setTimeout(resolve, 2000))
+
+
+    //     alert('Booking request sent to vendors successfully!')
+    // } catch (error) {
+    //     console.error('Booking submission failed:', error)
+    //     alert('Failed to submit booking. Please try again.')
+    // } finally {
+    //     isSubmitting.value = false
+    // }
 }
 </script>
 
@@ -102,7 +106,7 @@ const submitBooking = async () => {
                     <div class="space-y-1">
                         <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Event Name</label>
                         <p class="text-gray-900 font-medium text-sm sm:text-base">{{ eventForm.name || 'Untitled Event'
-                            }}</p>
+                        }}</p>
                     </div>
 
                     <div class="space-y-1">

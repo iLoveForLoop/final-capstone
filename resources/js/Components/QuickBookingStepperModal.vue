@@ -21,12 +21,14 @@ const open = () => {
     resetForm();
     // Disable body scroll
     // document.body.style.overflow = 'hidden';
+    document.body.classList.add("overflow-hidden");
 };
 
 const closeModal = () => {
     showModal.value = false;
     // Re-enable body scroll
-    document.body.style.overflow = 'unset';
+    // document.body.style.overflow = 'unset';
+    document.body.classList.remove("overflow-hidden");
 };
 
 defineExpose({ open });
@@ -122,8 +124,10 @@ const submitSelection = () => {
     eventForm.vendors = selectedServices.value
     eventForm.dishes = selectedDishes.value
 
-    console.log(eventForm.dishes);
-    console.log(eventForm.pax);
+    // console.log(eventForm.dishes);
+    // console.log(eventForm.pax);
+    console.log('Triggered');
+
 
     eventForm.post(route('client.bookings.store'), {
         preserveScroll: true,
@@ -263,7 +267,8 @@ const finalNotes = ref('');
 
                                 <!-- Step 4: Review & Confirmation -->
                                 <div v-if="currentStep === 3" class="step-content">
-                                    <ReviewEvent :selectedServices="selectedServices" v-model:eventForm="eventForm" />
+                                    <ReviewEvent :selectedServices="selectedServices" v-model:eventForm="eventForm"
+                                        @submit-selection="submitSelection" />
                                 </div>
                             </div>
                         </div>
@@ -301,14 +306,14 @@ const finalNotes = ref('');
                                     </svg>
                                 </button>
 
-                                <button v-else @click="submitSelection"
+                                <!-- <button v-else @click="submitSelection"
                                     class="w-full sm:w-auto px-6 py-2.5 bg-[#239BA7] hover:bg-[#1D8A95] text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M5 13l4 4L19 7" />
                                     </svg>
                                     Confirm Booking
-                                </button>
+                                </button> -->
                             </div>
                         </div>
 

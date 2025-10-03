@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import BookingForm from './BookingForm.vue';
+// import BookingForm from './BookingForm.vue';
 import BookingModal from './BookingModal.vue';
 import { Link, router } from '@inertiajs/vue3'
 
