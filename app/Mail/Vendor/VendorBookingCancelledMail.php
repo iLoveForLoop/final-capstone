@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Mail\Customer;
+namespace App\Mail\Vendor;
 
 use App\Models\Booking;
 use Illuminate\Bus\Queueable;
@@ -10,18 +10,23 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class BookingConfirmedMail extends Mailable implements ShouldQueue
+class VendorBookingCancelledMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
-
-    public $booking;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(Booking $booking)
+
+    public $bookingId;
+    public $booking;
+
+    public $cancellationReason;
+
+    public function __construct(int $bookingId, $cancellationReason)
     {
-        $this->booking = $booking;
+        $this->bookingId = $bookingId;
+        $this->cancellationReason = $cancellationReason;
     }
 
     /**
@@ -30,7 +35,7 @@ class BookingConfirmedMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Booking Confirmed - ' . $this->booking->service->name . ' - Eventory',
+            subject: 'Vendor Booking Cancelled Mail',
         );
     }
 
@@ -39,10 +44,11 @@ class BookingConfirmedMail extends Mailable implements ShouldQueue
      */
     public function content(): Content
     {
-        // dd('here');
-        return new Content(
-            view: 'emails.customer.booking_confirmed',
+        $this->booking = Booking::with(['service.vendor.user', 'user'])
+        ->findOrFail($this->bookingId);
 
+        return new Content(
+            markdown: 'emails.vendor.booking_cancelled',
         );
     }
 

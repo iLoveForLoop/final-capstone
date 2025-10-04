@@ -23,7 +23,7 @@ class BookingObserver
 
         $this->notificationService->createBookingReceivedNotification($booking);
 
-        Mail::to($booking->service->vendor->user->email)->send(new BookingRequestMail($booking));
+        Mail::to($booking->service->vendor->user->email)->queue(new BookingRequestMail($booking));
 
     }
 
@@ -40,7 +40,7 @@ class BookingObserver
                 case 'confirmed':
                     if ($oldStatus === 'pending') {
                         $this->notificationService->createBookingConfirmedNotification($booking);
-                        Mail::to($booking->user->email)->send(new BookingConfirmedMail($booking));
+                        Mail::to($booking->user->email)->queue(new BookingConfirmedMail($booking));
                     }
                     break;
                 case 'completed':

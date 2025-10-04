@@ -106,7 +106,6 @@ const declineBooking = (bookingId, reason = null) => {
 
     router.patch(route('vendor.bookings.decline', bookingId), {
         reason: reason,
-        from: "vendor"
     }, {
         onFinish: () => {
             delete loadingActions.value[bookingId]

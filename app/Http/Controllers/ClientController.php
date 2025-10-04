@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\Vendor\VendorBookingCancelledMail;
 use App\Models\Client;
 use App\Models\Service;
 use App\Models\ServiceCategory;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class ClientController extends Controller
 {
@@ -508,6 +510,8 @@ class ClientController extends Controller
             'reason' => 'nullable|string|max:500'
         ]);
 
+        dd($request->reason);
+
         $user = auth()->user();
 
         $booking = $user->bookings()
@@ -515,12 +519,14 @@ class ClientController extends Controller
             // ->where('status', 'pending')
             ->firstOrFail();
 
-        $booking->update([
-            'status' => 'cancelled'
-        ]);
+        // $booking->update([
+        //     'status' => 'cancelled'
+        // ]);
 
         // Optional: Send notification to user
         // $this->sendBookingCancellationNotification($booking, $request->get('reason'));
+
+        Mail::to($booking->service->vendor->user->email)->queue(new VendorBookingCancelledMail($booking->id, $request->reason));
 
         return back()->with('success', 'Booking has been cancelled.');
     }

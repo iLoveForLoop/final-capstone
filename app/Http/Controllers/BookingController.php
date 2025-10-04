@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Mail\Customer\BookingCancelledMail;
+use App\Mail\Customer\BookingCompletedMail;
 use App\Mail\Vendor\BookingRequestMail;
+use App\Mail\Vendor\VendorBookingCancelledMail;
 use App\Models\Booking;
 use App\Models\Event;
 use App\Models\Service;
@@ -235,9 +237,9 @@ class BookingController extends Controller
         //send email to user
         $booking->load(['service.vendor.user', 'user']);
 
-        if($request->from === 'vendor'){
-            Mail::to($booking->user->email)->send(new BookingCancelledMail($booking, $request->reason));
-        }
+
+        Mail::to($booking->user->email)->queue(new BookingCancelledMail($booking, $request->reason));
+
 
 
 
@@ -260,8 +262,14 @@ class BookingController extends Controller
             'status' => 'completed'
         ]);
 
+        $booking->load(['service.vendor.user', 'user']);
+
         // Optional: Generate invoice or receipt
         // $this->generateInvoice($booking);
+
+
+        Mail::to($booking->user->email)->queue(new BookingCompletedMail($booking));
+
 
         return back()->with('success', 'Booking has been marked as completed!');
     }

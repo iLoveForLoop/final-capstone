@@ -10,15 +10,15 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class BookingConfirmedMail extends Mailable implements ShouldQueue
+class BookingCompletedMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
-
-    public $booking;
 
     /**
      * Create a new message instance.
      */
+
+    public $booking;
     public function __construct(Booking $booking)
     {
         $this->booking = $booking;
@@ -30,7 +30,7 @@ class BookingConfirmedMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Booking Confirmed - ' . $this->booking->service->name . ' - Eventory',
+            subject: 'Service Completed - ' . $this->booking->service->name . ' - Eventory',
         );
     }
 
@@ -41,8 +41,7 @@ class BookingConfirmedMail extends Mailable implements ShouldQueue
     {
         // dd('here');
         return new Content(
-            view: 'emails.customer.booking_confirmed',
-
+            markdown: 'emails.customer.booking_completed',
         );
     }
 

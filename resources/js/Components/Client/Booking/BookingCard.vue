@@ -61,7 +61,7 @@ const handleConfirmCancellation = (bookingData, reason = null) => {
     try {
 
         router.patch(route('client.booking.cancel', props.booking.id), {
-            reason: reason
+            reason: reason,
         }, {
             onFinish: () => {
                 showCancellationModal.value = false

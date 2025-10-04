@@ -51,7 +51,7 @@
                     <!-- Main Message -->
                     <p style="font-size: 15px; color: #475569; margin: 0 0 32px 0; line-height: 1.7;">
                         Great news! You've received a new booking request through Eventory.
-                        A client has selected your premium service and is awaiting your confirmation.
+                        A client has selected your service and is awaiting your confirmation.
                     </p>
 
                     <!-- Booking Card -->

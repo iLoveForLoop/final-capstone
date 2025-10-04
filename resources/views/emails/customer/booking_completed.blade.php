@@ -4,14 +4,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Booking Cancelled - Eventory</title>
+    <title>Service Completed - Eventory</title>
 </head>
 
 <body
     style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #f8fafc; color: #334155; margin:0; padding:0; line-height: 1.6;">
     <!-- Preheader Text -->
     <div style="display: none; max-height: 0; overflow: hidden;">
-        Your booking for {{ $booking->service->name }} has been cancelled by
+        Your {{ $booking->service->name }} service has been successfully completed by
         {{ $booking->service->vendor->business_name }}
     </div>
 
@@ -19,7 +19,7 @@
         style="max-width:600px; margin:0 auto; background:#fff; border-radius:8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
         <!-- Header -->
         <table width="100%" cellpadding="0" cellspacing="0"
-            style="background: linear-gradient(135deg, #ef4444, #f87171);">
+            style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);">
             <tr>
                 <td style="padding: 30px 20px; text-align: center;">
                     <h1
@@ -29,13 +29,13 @@
             </tr>
         </table>
 
-        <!-- Cancellation Badge -->
-        <table width="100%" cellpadding="0" cellspacing="0" style="background: #fef2f2;">
+        <!-- Completion Badge -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="background: #faf5ff;">
             <tr>
                 <td style="padding: 20px; text-align: center;">
                     <div
-                        style="display: inline-block; background: #ef4444; color: #ffffff; padding: 12px 24px; border-radius: 24px; font-weight: 600; font-size: 14px;">
-                        Booking Cancelled
+                        style="display: inline-block; background: #8b5cf6; color: #ffffff; padding: 12px 24px; border-radius: 24px; font-weight: 600; font-size: 14px;">
+                        🎉 Service Completed Successfully
                     </div>
                 </td>
             </tr>
@@ -50,10 +50,10 @@
 
                     <!-- Main Message -->
                     <p style="font-size: 15px; color: #475569; margin: 0 0 32px 0; line-height: 1.7;">
-                        We regret to inform you that your booking with
-                        <strong>{{ $booking->service->vendor->business_name }}</strong>
-                        has been cancelled. We understand this may be disappointing and sincerely apologize for any
-                        inconvenience this may cause.
+                        We're delighted to inform you that your <strong>{{ $booking->service->name }}</strong> service
+                        with <strong>{{ $booking->service->vendor->business_name }}</strong> has been successfully
+                        completed!
+                        We hope your event was everything you envisioned and more.
                     </p>
 
                     <!-- Booking Card -->
@@ -63,7 +63,7 @@
                             <td style="padding: 24px;">
                                 <h2
                                     style="color: #1e293b; font-size: 18px; font-weight: 600; margin: 0 0 20px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
-                                    Cancelled Booking Details</h2>
+                                    Service Completion Details</h2>
 
                                 <table width="100%" cellpadding="0" cellspacing="0">
                                     <tr>
@@ -98,28 +98,25 @@
                                     <tr>
                                         <td width="120"
                                             style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 500;">
+                                            Completed On:</td>
+                                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px;">
+                                            {{ $booking->updated_at->format('F j, Y') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td width="120"
+                                            style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 500;">
                                             Status:</td>
                                         <td style="padding: 8px 0;">
                                             <span
-                                                style="background: #fecaca; color: #dc2626; padding: 6px 14px; border-radius: 16px; font-size: 12px; font-weight: 600; display: inline-block;">Cancelled</span>
+                                                style="background: #ede9fe; color: #6d28d9; padding: 6px 14px; border-radius: 16px; font-size: 12px; font-weight: 600; display: inline-block;">Completed</span>
                                         </td>
                                     </tr>
-                                    @if ($cancellationReason)
-                                        <tr>
-                                            <td width="120"
-                                                style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 500;">
-                                                Reason:</td>
-                                            <td style="padding: 8px 0; color: #1e293b; font-size: 14px;">
-                                                {{ $cancellationReason }}
-                                            </td>
-                                        </tr>
-                                    @endif
                                 </table>
                             </td>
                         </tr>
                     </table>
 
-                    <!-- Refund Information -->
+                    <!-- Celebration Message -->
                     <table width="100%" cellpadding="0" cellspacing="0"
                         style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; margin: 0 0 32px 0;">
                         <tr>
@@ -129,22 +126,16 @@
                                         <td width="40" style="vertical-align: top;">
                                             <div
                                                 style="background: #0ea5e9; color: #ffffff; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-size: 14px; font-weight: bold;">
-                                                💰</div>
+                                                ⭐</div>
                                         </td>
                                         <td style="padding-left: 12px;">
                                             <p
                                                 style="color: #0369a1; font-size: 14px; font-weight: 600; margin: 0 0 4px 0;">
-                                                Refund Process</p>
+                                                Thank You for Choosing Eventory!</p>
                                             <p style="color: #0c4a6e; font-size: 13px; margin: 0; line-height: 1.5;">
-                                                @if ($booking->amount_paid > 0)
-                                                    A refund of
-                                                    <strong>${{ number_format($booking->amount_paid, 2) }}</strong> will
-                                                    be processed
-                                                    to your original payment method within 5-7 business days.
-                                                @else
-                                                    No payment was processed for this booking, so no refund is
-                                                    necessary.
-                                                @endif
+                                                We hope you had a wonderful experience. Your feedback helps us maintain
+                                                quality
+                                                standards and assists other customers in making informed decisions.
                                             </p>
                                         </td>
                                     </tr>
@@ -153,17 +144,13 @@
                         </tr>
                     </table>
 
-                    <!-- CTA Buttons -->
+                    <!-- CTA Button -->
                     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 32px 0;">
                         <tr>
                             <td align="center">
-                                <a href="{{ route('client.bookings.index') }}"
-                                    style="display: inline-block; padding: 12px 24px; background: #ef4444; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; margin: 0 8px; transition: all 0.2s;">
-                                    View Cancelled Booking
-                                </a>
-                                <a href="{{ route('client.service.index') }}"
-                                    style="display: inline-block; padding: 12px 24px; background: #4f46e5; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; margin: 0 8px; transition: all 0.2s;">
-                                    Find Another Vendor
+                                <a href="{{ route('client.bookings.index', $booking->id) }}"
+                                    style="display: inline-block; padding: 14px 36px; background: #8b5cf6; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 15px; transition: all 0.2s;">
+                                    Leave a Review
                                 </a>
                             </td>
                         </tr>
@@ -173,41 +160,62 @@
                     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 24px 0;">
                         <tr>
                             <td>
-                                <h3 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">What
-                                    You Can Do Next</h3>
+                                <h3 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">Share
+                                    Your Experience</h3>
                                 <ul
                                     style="color: #475569; font-size: 14px; margin: 0; padding-left: 20px; line-height: 1.6;">
-                                    <li style="margin-bottom: 8px;">Browse similar services available for your event
-                                        date</li>
-                                    <li style="margin-bottom: 8px;">Contact our support team if you need assistance
-                                        finding a replacement</li>
-                                    <li style="margin-bottom: 8px;">Review your refund status in your account dashboard
+                                    <li style="margin-bottom: 8px;">Help other customers by sharing your experience with
+                                        this vendor</li>
+                                    <li style="margin-bottom: 8px;">Your review helps vendors improve their services
                                     </li>
-                                    <li>Contact us if you have any questions about the cancellation</li>
+                                    <li style="margin-bottom: 8px;">Rate your overall experience from 1 to 5 stars</li>
+                                    <li>Share photos from your event (optional)</li>
                                 </ul>
                             </td>
                         </tr>
                     </table>
 
-                    <!-- Alternative Options -->
+                    <!-- Vendor Appreciation -->
                     <table width="100%" cellpadding="0" cellspacing="0"
                         style="background: #f8fafc; border-radius: 8px; padding: 20px; margin: 0 0 24px 0;">
                         <tr>
                             <td>
                                 <h4 style="color: #1e293b; font-size: 15px; font-weight: 600; margin: 0 0 12px 0;">
-                                    Need Help Finding a Replacement?</h4>
+                                    Vendor Information</h4>
                                 <p style="color: #475569; font-size: 14px; margin: 0 0 8px 0;">
-                                    Our team can help you find alternative vendors for your event. We'll prioritize
-                                    vendors with availability on your preferred date and similar service offerings.
+                                    <strong>{{ $booking->service->vendor->business_name }}</strong><br>
+                                    @if ($booking->service->vendor->contact_number)
+                                        Phone: {{ $booking->service->vendor->contact_number }}<br>
+                                    @endif
+                                    Email: {{ $booking->service->vendor->user->email }}
+                                </p>
+                                <p style="color: #64748b; font-size: 13px; margin: 8px 0 0 0;">
+                                    Consider keeping this vendor's contact information for future events!
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Future Bookings -->
+                    <table width="100%" cellpadding="0" cellspacing="0"
+                        style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 20px; margin: 0 0 24px 0;">
+                        <tr>
+                            <td>
+                                <h4 style="color: #065f46; font-size: 15px; font-weight: 600; margin: 0 0 8px 0;">
+                                    Planning Another Event?</h4>
+                                <p style="color: #047857; font-size: 14px; margin: 0;">
+                                    Browse our extensive network of vendors for your next celebration. From weddings to
+                                    corporate events,
+                                    we have the perfect services to make your next occasion unforgettable.
                                 </p>
                             </td>
                         </tr>
                     </table>
 
                     <!-- Closing -->
-                    <p style="font-size: 15px; color: #475569; margin: 0 0 8px 0;">We sincerely apologize for this
-                        inconvenience and hope to assist you in finding the perfect vendor for your event.</p>
-                    <p style="font-size: 15px; color: #475569; margin: 0;">Best regards,<br>The Eventory Team</p>
+                    <p style="font-size: 15px; color: #475569; margin: 0 0 8px 0;">Thank you for trusting Eventory with
+                        your special occasion!</p>
+                    <p style="font-size: 15px; color: #475569; margin: 0;">Warm regards,<br>The Eventory Team</p>
                 </td>
             </tr>
         </table>
@@ -217,14 +225,14 @@
             style="background: #f8fafc; border-top: 1px solid #e2e8f0;">
             <tr>
                 <td style="padding: 20px 30px;">
-                    <p style="color: #64748b; font-size: 13px; margin: 0 0 8px 0; font-weight: 500;">Need Immediate
-                        Assistance?</p>
+                    <p style="color: #64748b; font-size: 13px; margin: 0 0 8px 0; font-weight: 500;">Need Assistance
+                        with Your Completed Booking?</p>
                     <p style="color: #475569; font-size: 13px; margin: 0 0 12px 0;">
-                        Our customer support team is here to help you find a replacement vendor or answer any questions
-                        about this cancellation.
+                        Our customer support team is available if you have any questions about your completed service or
+                        need assistance with future bookings.
                     </p>
                     <a href="mailto:support@eventory.com"
-                        style="color: #ef4444; text-decoration: none; font-size: 13px; font-weight: 500;">Contact
+                        style="color: #8b5cf6; text-decoration: none; font-size: 13px; font-weight: 500;">Contact
                         Customer Support →</a>
                 </td>
             </tr>
