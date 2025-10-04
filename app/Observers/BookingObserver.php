@@ -1,6 +1,7 @@
 <?php
 namespace App\Observers;
 
+use App\Mail\Customer\BookingConfirmedMail;
 use App\Mail\Vendor\BookingRequestMail;
 use App\Models\Booking;
 use App\Services\NotificationService;
@@ -28,6 +29,9 @@ class BookingObserver
 
     public function updated(Booking $booking)
     {
+
+        $booking->load(['service.vendor.user', 'user']);
+
         if ($booking->wasChanged('status')) {
             $oldStatus = $booking->getOriginal('status');
             $newStatus = $booking->status;
@@ -36,6 +40,7 @@ class BookingObserver
                 case 'confirmed':
                     if ($oldStatus === 'pending') {
                         $this->notificationService->createBookingConfirmedNotification($booking);
+                        Mail::to($booking->user->email)->send(new BookingConfirmedMail($booking));
                     }
                     break;
                 case 'completed':

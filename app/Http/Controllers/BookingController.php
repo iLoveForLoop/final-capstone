@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\Customer\BookingCancelledMail;
 use App\Mail\Vendor\BookingRequestMail;
 use App\Models\Booking;
 use App\Models\Event;
@@ -211,7 +212,8 @@ class BookingController extends Controller
      */
     public function decline(Request $request, $id)
     {
-        // dd($request->reason);
+        // dd($request->from);
+
         $request->validate([
             'reason' => 'nullable|string|max:500'
         ]);
@@ -229,6 +231,15 @@ class BookingController extends Controller
 
         // Optional: Send notification to user
         // $this->sendBookingCancellationNotification($booking, $request->get('reason'));
+
+        //send email to user
+        $booking->load(['service.vendor.user', 'user']);
+
+        if($request->from === 'vendor'){
+            Mail::to($booking->user->email)->send(new BookingCancelledMail($booking, $request->reason));
+        }
+
+
 
         return back()->with('success', 'Booking has been cancelled.');
     }

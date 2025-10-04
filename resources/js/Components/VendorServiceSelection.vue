@@ -72,6 +72,9 @@ const fetchServices = async () => {
     loading.value = true
     errorMessage.value = null
 
+    console.log('Date: ', props.eventDate);
+
+
     try {
         const response = await axios.get(`/api/services/${currentCategory.value.id}`, {
             params: { event_date: props.eventDate }

@@ -14,6 +14,7 @@ class Booking extends Model
 
     protected $casts = [
         'catering_dishes' => 'array',
+        'booking_date' => 'date'
     ];
 
     public function user()
