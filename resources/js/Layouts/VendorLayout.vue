@@ -3,6 +3,21 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 import VendorSidebar from '@/Components/Vendor/VendorSidebar.vue'
 import VendorTopbar from '@/Components/Vendor/VendorTopbar.vue'
 import { useNotificationStore } from '@/store/notification'
+import {
+    Notivue,
+    Notification,
+    // FIX: This must be NotificationProgress
+    NotificationProgress,
+    pastelTheme
+} from 'notivue';
+
+// Import the required theme CSS
+// import 'notivue/themes/pastel.css';
+
+// IMPORTANT: Also import the required CSS for the progress bar itself
+import 'notivue/notification-progress.css';
+
+
 
 const showingNavigationDropdown = ref(false)
 const showingSidebar = ref(false)
@@ -60,6 +75,14 @@ onBeforeUnmount(() => {
 
 <template>
     <div class="h-screen flex flex-col">
+        <!-- Notivue container -->
+        <Notivue v-slot="item">
+            <Notification :item="item" :theme="pastelTheme">
+                <NotificationProgress :item="item" />
+
+            </Notification>
+        </Notivue>
+
         <!-- Page Heading (optional) -->
         <header class="bg-white shadow dark:bg-gray-800" v-if="$slots.header">
             <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -81,6 +104,7 @@ onBeforeUnmount(() => {
 
                 <!-- Page content slot -->
                 <slot />
+
             </div>
         </main>
     </div>

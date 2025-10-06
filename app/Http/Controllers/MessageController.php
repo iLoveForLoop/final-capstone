@@ -9,10 +9,55 @@ use Inertia\Inertia;
 
 class MessageController extends Controller
 {
-    public function index()
+
+    public function index(Request $request)
     {
         $user = auth()->user();
 
+        $conversationId = null;
+
+        // ✅ Check if the request contains data to create/find a conversation
+        if ($request->has('participants')) {
+            $request->validate([
+                'participants' => 'required|array|min:1',
+                'participants.*' => 'exists:users,id',
+                'title' => 'nullable|string|max:255',
+                'event_id' => 'nullable|exists:events,id',
+                'type' => 'in:direct,support'
+            ]);
+
+            $participants = array_map(
+                'intval',
+                array_unique(array_merge($request->participants, [$user->id]))
+            );
+
+            // Try to find existing conversation with exact same participants, type, and event
+            $existingConversation = Conversation::where('type', $request->type ?? 'direct')
+                ->where('event_id', $request->event_id)
+                ->get()
+                ->filter(function ($conversation) use ($participants) {
+                    return count($conversation->participants) === count($participants)
+                        && empty(array_diff($conversation->participants, $participants));
+                })
+                ->first();
+
+            if ($existingConversation) {
+                $conversationId = $existingConversation->id;
+            } else {
+                // Create new conversation
+                $conversation = Conversation::create([
+                    'title' => $request->title,
+                    'type' => $request->type ?? 'direct',
+                    'event_id' => $request->event_id,
+                    'participants' => $participants,
+                    'last_message_at' => now()
+                ]);
+
+                $conversationId = $conversation->id;
+            }
+        }
+
+        // ✅ Load all conversations for sidebar
         $conversations = Conversation::whereJsonContains('participants', $user->id)
             ->with(['lastMessage.user', 'event'])
             ->orderBy('last_message_at', 'desc')
@@ -29,10 +74,14 @@ class MessageController extends Controller
                 ];
             });
 
+        // ✅ Pass the selected conversation id if one was created or found
         return inertia('Vendor/Messages/Index', [
-            'conversations' => $conversations
+            'conversations' => $conversations,
+            'conversationId' => $conversationId
         ]);
     }
+
+
 
     public function show(Conversation $conversation)
     {

@@ -56,12 +56,13 @@ const showVendorModal = ref(false);
 const showCancellationModal = ref(false)
 const isLoading = ref(false)
 
-const handleConfirmCancellation = (bookingData, reason = null) => {
+const handleConfirmCancellation = (bookingData) => {
     isLoading.value = true
     try {
 
         router.patch(route('client.booking.cancel', props.booking.id), {
-            reason: reason,
+            reason: bookingData.cancellationReason,
+            comment: bookingData.additionalComments
         }, {
             onFinish: () => {
                 showCancellationModal.value = false

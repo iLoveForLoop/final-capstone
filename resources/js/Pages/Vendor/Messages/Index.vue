@@ -22,6 +22,7 @@ import {
 import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 
+
 // Conversations state (no longer from Inertia props)
 const conversations = ref([]);
 const selectedConversation = ref(null);
@@ -78,6 +79,10 @@ const filteredConversations = computed(() => {
 });
 
 const selectConversation = async (conversation) => {
+
+    // console.log('Clicked');
+
+
     if (selectedConversation.value?.id === conversation.id) return;
 
     selectedConversation.value = conversation;
@@ -249,18 +254,36 @@ const scrollToBottom = () => {
 };
 
 // Initialize
+
 onMounted(async () => {
     await fetchConversations();
-    if (!selectedConversation.value && processedConversations.value.length > 0) {
-        selectConversation(processedConversations.value[0]);
+
+    // ✅ Check if backend passed a conversationId prop
+    const conversationId = page.props.conversationId;
+
+    if (conversationId) {
+        const conversation = processedConversations.value.find(c => c.id === conversationId);
+        if (conversation) {
+            await selectConversation(conversation);
+        } else {
+            // If conversation not yet in processedConversations (rare race condition),
+            // wait a tick and try again
+            nextTick(() => {
+                const retryConv = processedConversations.value.find(c => c.id === conversationId);
+                if (retryConv) selectConversation(retryConv);
+            });
+        }
     }
 });
+
+
 
 // Cleanup
 onUnmounted(() => {
     if (echoChannel.value) {
         window.Echo.leave(`conversation.${echoChannel.value}`);
     }
+
 });
 </script>
 
@@ -352,14 +375,14 @@ onUnmounted(() => {
                         </div>
 
                         <div class="flex items-center space-x-1">
-                            <button
+                            <!-- <button
                                 class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                 <Phone class="h-5 w-5" />
                             </button>
                             <button
                                 class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                 <Video class="h-5 w-5" />
-                            </button>
+                            </button> -->
                             <button
                                 class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                 <MoreVertical class="h-5 w-5" />

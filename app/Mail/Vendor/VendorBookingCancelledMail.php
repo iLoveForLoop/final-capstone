@@ -20,13 +20,17 @@ class VendorBookingCancelledMail extends Mailable implements ShouldQueue
 
     public $bookingId;
     public $booking;
-
+    public $additionalComment;
     public $cancellationReason;
 
-    public function __construct(int $bookingId, $cancellationReason)
+    public function __construct(int $bookingId, $cancellationReason, $additionalComment)
     {
         $this->bookingId = $bookingId;
         $this->cancellationReason = $cancellationReason;
+        $this->additionalComment = $additionalComment;
+
+        $this->booking = Booking::with(['service.vendor.user', 'user'])
+        ->findOrFail($this->bookingId);
     }
 
     /**
@@ -35,7 +39,7 @@ class VendorBookingCancelledMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Vendor Booking Cancelled Mail',
+            subject: 'Booking Cancelled by Customer - ' . $this->booking->service->name . ' - Eventory',
         );
     }
 
@@ -44,8 +48,6 @@ class VendorBookingCancelledMail extends Mailable implements ShouldQueue
      */
     public function content(): Content
     {
-        $this->booking = Booking::with(['service.vendor.user', 'user'])
-        ->findOrFail($this->bookingId);
 
         return new Content(
             markdown: 'emails.vendor.booking_cancelled',

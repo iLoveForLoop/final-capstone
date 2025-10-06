@@ -11,9 +11,9 @@ import Toast, { POSITION } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 import '../css/app.css';
 
-//Prime vue
-import 'primeicons/primeicons.css';
-// import 'primevue/resources/primevue.min.css';
+import { createNotivue } from 'notivue';
+import 'notivue/animations.css'; // Only needed if using built-in animations
+import 'notivue/notification.css'; // Only needed if using built-in notifications
 
 //Leaflet
 import L from 'leaflet';
@@ -36,6 +36,19 @@ L.Icon.Default.mergeOptions({
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
+
+//Notivue options
+const notivue = createNotivue({
+    position: 'top-right',
+    limit: 3,
+    enqueue: true,
+    // avoidDuplicates: true,
+    notifications: {
+        global: {
+            duration: 3000,
+        },
+    },
+});
 
 //Toast options
 const options = {
@@ -63,6 +76,7 @@ createInertiaApp({
             .use(plugin)
             .use(pinia)
             .use(Toast, options)
+            .use(notivue)
             .use(ZiggyVue)
             .mount(el);
     },

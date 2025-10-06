@@ -183,10 +183,24 @@ onMounted(async () => {
 
 const bookingDetailsModal = ref(null)
 
+
+
+import { push } from 'notivue'
+
+const testSuccess = () => {
+    console.log('Here');
+
+    push.success('Vendor booked successfully 🎉')
+}
+const testError = () => push.error('Something went wrong ❌')
+const testWarn = () => push.warn('Please check your details ⚠️')
+const testInfo = () => push.info('Info message 💡')
+
 </script>
 
 <template>
     <VendorLayout>
+        <!-- <button @click="testError">Success</button> -->
         <BookingDetailsModal ref="bookingDetailsModal" />
         <div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
             <div class="max-w-7xl mx-auto">

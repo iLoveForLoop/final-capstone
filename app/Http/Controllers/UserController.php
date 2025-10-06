@@ -136,8 +136,6 @@ class UserController extends Controller
             $user->assignRole('client');
         }
 
-        // $user->addMediaFromRequest('profile_image')->toMediaCollection('images');
-
 
         return back()->with('success', 'Vendor added with successfully');
     }
@@ -189,50 +187,64 @@ class UserController extends Controller
      * Update the specified resource in storage.
      */
     public function update(User $user, Request $request)
-{
-    $rules = [
-        'full_name' => 'required|string|max:255',
-        'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
-        'password' => 'nullable|confirmed|min:8',
-        'profile_image' => 'nullable|image|max:2048',
-    ];
+    {
 
-    $validated = $request->validate($rules);
-
-    // Update user
-    $user->update([
-        'name' => $validated['full_name'],
-        'email' => $validated['email'],
-        'password' => isset($validated['password']) ? Hash::make($validated['password']) : $user->password
-    ]);
-
-    // Handle profile image
-    if ($request->hasFile('profile_image')) {
-        // Clear existing media first if you want to replace
-        $user->clearMediaCollection('images');
-        $user->addMediaFromRequest('profile_image')->toMediaCollection('avatar', 'public');
-    }
-
-    // Handle vendor/client specific updates
-    if ($request->selected_role === 'vendor') {
-        $vendorData = [
-            'business_name' => $request->business_name,
-            'description' => $request->description,
-            'contact_number' => $request->contact_number,
-            'location' => $request->location,
-            'full_name' => $request->full_name
+        $rules = [
+            'full_name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
+            'password' => 'nullable|confirmed|min:8',
+            'profile_image' => 'nullable|image|max:2048',
         ];
 
-        $user->vendor()->updateOrCreate([], $vendorData);
+        $validated = $request->validate($rules);
 
-        // Sync service categories
-        if ($request->has('service_categories')) {
-            $user->vendor->serviceCategories()->sync($request->service_categories);
+        // Update user
+        $user->update([
+            'name' => $validated['full_name'],
+            'email' => $validated['email'],
+            'password' => isset($validated['password']) ? Hash::make($validated['password']) : $user->password
+        ]);
+
+        // Handle profile image
+        if ($request->hasFile('profile_image')) {
+            // Clear existing media first if you want to replace
+            $user->clearMediaCollection('images');
+            $user->addMediaFromRequest('profile_image')->toMediaCollection('avatar', 'public');
         }
-    }
 
-    return redirect()->back()->with('success', 'User updated successfully');
-}
+        // Handle vendor/client specific updates
+        if ($request->selected_role === 'vendor') {
+            $vendorData = [
+                'business_name' => $request->business_name,
+                'description' => $request->description,
+                'contact_number' => $request->contact_number,
+                'location' => $request->location,
+                'full_name' => $request->full_name
+            ];
+
+            $user->vendor()->updateOrCreate([], $vendorData);
+
+
+            if ($request->has('service_categories')) {
+                $user->vendor->serviceCategories()->sync($request->service_categories);
+            }
+        }
+
+        if ($request->selected_role === 'client') {
+            $clientData = [
+                'contact_number' => $request->contact_number,
+                'location' => $request->location,
+                'full_name' => $request->full_name
+            ];
+
+            $user->client()->updateOrCreate([], $clientData);
+
+        }
+
+
+
+        return redirect()->back()->with('success', 'User updated successfully');
+    }
 
     /**
      * Remove the specified resource from storage.

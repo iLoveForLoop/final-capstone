@@ -5,6 +5,7 @@ import {
     CheckCircle, MessageCircle, Package, CreditCard,
     MapPin, Mail, Phone, Clock, Users, ChefHat
 } from 'lucide-vue-next'
+import BookingDetailsModalFooter from './Vendor/BookingDetailsModalFooter.vue'
 
 const isOpen = ref(false)
 const booking = ref(null)
@@ -512,27 +513,7 @@ onUnmounted(() => {
                         </div>
 
                         <!-- Footer with Actions -->
-                        <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex-shrink-0">
-                            <div class="flex justify-end space-x-3">
-                                <button @click="close"
-                                    class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm">
-                                    Close
-                                </button>
-                                <button v-if="booking?.status === 'pending'"
-                                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-sm">
-                                    Accept Booking
-                                </button>
-                                <button v-if="booking?.status === 'confirmed'"
-                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm">
-                                    Mark as Complete
-                                </button>
-                                <button
-                                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm flex items-center space-x-2">
-                                    <MessageCircle :size="16" />
-                                    <span>Contact Client</span>
-                                </button>
-                            </div>
-                        </div>
+                        <BookingDetailsModalFooter :booking="booking" @close="close" />
                     </div>
                 </Transition>
             </div>

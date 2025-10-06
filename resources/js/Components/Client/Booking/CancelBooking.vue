@@ -89,6 +89,7 @@ const handleConfirmCancellation = () => {
         cancellationReason: selectedReason.value,
         additionalComments: cancellationReason.value
     }
+    // console.log('Cancel Reason', cancellationData.additionalComments)
     emit('confirm', cancellationData)
 }
 
@@ -178,7 +179,7 @@ const formatTime = (timeString) => {
                 <div class="space-y-2">
                     <div class="flex items-center gap-1.5">
                         <MessageSquare class="w-3 h-3 text-gray-600" />
-                        <Label class="text-xs font-medium text-gray-700">Reason (Optional)</Label>
+                        <Label class="text-xs font-medium text-gray-700">Reason</Label>
                     </div>
 
                     <Select v-model="selectedReason">
@@ -194,7 +195,8 @@ const formatTime = (timeString) => {
                     </Select>
 
                     <div class="space-y-1.5">
-                        <Label for="additional-comments" class="text-xs text-gray-600">Additional comments</Label>
+                        <Label for="additional-comments" class="text-xs text-gray-600">Additional comments
+                            (Optional)</Label>
                         <Textarea id="additional-comments" v-model="cancellationReason"
                             placeholder="Any additional details..." class="min-h-[60px] text-sm resize-none"
                             maxlength="500" />

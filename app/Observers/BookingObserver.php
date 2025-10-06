@@ -19,7 +19,7 @@ class BookingObserver
 
     public function created(Booking $booking)
     {
-        $booking->load(['service.vendor.user', 'user']);
+        $booking->load(['service.vendor.user', 'user.client']);
 
         $this->notificationService->createBookingReceivedNotification($booking);
 

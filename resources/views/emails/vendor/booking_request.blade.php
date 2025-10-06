@@ -178,6 +178,7 @@
                                 <p style="color: #475569; font-size: 14px; margin: 0 0 8px 0;">
                                     <strong>{{ $booking->user->name }}</strong><br>
                                     Email: {{ $booking->user->email }}
+                                    Contact Number: {{ $booking->user->client->contact_number }}
                                 </p>
                             </td>
                         </tr>

@@ -123,6 +123,16 @@
                                             </td>
                                         </tr>
                                     @endif
+                                    @if ($additionalComment)
+                                        <tr>
+                                            <td width="120"
+                                                style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 500;">
+                                                Comment:</td>
+                                            <td style="padding: 8px 0; color: #1e293b; font-size: 14px;">
+                                                {{ $additionalComment }}
+                                            </td>
+                                        </tr>
+                                    @endif
                                 </table>
                             </td>
                         </tr>

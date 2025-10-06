@@ -510,7 +510,8 @@ class ClientController extends Controller
             'reason' => 'nullable|string|max:500'
         ]);
 
-        dd($request->reason);
+        // dd($request->comment);
+        // dd($request->comment);
 
         $user = auth()->user();
 
@@ -519,14 +520,14 @@ class ClientController extends Controller
             // ->where('status', 'pending')
             ->firstOrFail();
 
-        // $booking->update([
-        //     'status' => 'cancelled'
-        // ]);
+        $booking->update([
+            'status' => 'cancelled'
+        ]);
 
         // Optional: Send notification to user
         // $this->sendBookingCancellationNotification($booking, $request->get('reason'));
 
-        Mail::to($booking->service->vendor->user->email)->queue(new VendorBookingCancelledMail($booking->id, $request->reason));
+        Mail::to($booking->service->vendor->user->email)->queue(new VendorBookingCancelledMail($booking->id, $request->reason, $request->comment));
 
         return back()->with('success', 'Booking has been cancelled.');
     }
