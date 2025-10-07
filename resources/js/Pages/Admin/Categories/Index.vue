@@ -7,6 +7,7 @@ import CategoryEditModal from '@/Components/Admin/CategoryEditModal.vue';
 import { router } from '@inertiajs/vue3';
 import { useToast } from 'vue-toastification';
 import Pagination from '@/Components/Pagination.vue';
+import { push } from 'notivue';
 
 const toast = useToast();
 
@@ -31,10 +32,14 @@ const deleteCategory = (categoryId) => {
     if (confirm('Are you sure do you want to delete this category?')) {
         router.delete(route('admin.categories.destroy', categoryId), {
             onSuccess: () => {
-                toast.success('Category deleted successfully');
+                // toast.success('Category deleted successfully');
+                push.success('Category deleted successfully')
+
             },
             onError: () => {
-                toast.error('Failed to delete category');
+                // toast.error('Failed to delete category');
+                push.error('Failed to delete category')
+
             }
         })
     }

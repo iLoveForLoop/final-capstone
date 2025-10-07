@@ -11,6 +11,7 @@ import { Link } from '@inertiajs/vue3';
 
 import TestSidebar from '@/Components/Admin/TestSidebar.vue';
 import MyDropdown from '@/Components/MyDropdown.vue';
+import { Notification, NotificationProgress, Notivue, pastelTheme } from 'notivue';
 
 
 const showingNavigationDropdown = ref(false);
@@ -36,7 +37,13 @@ onBeforeUnmount(() => {
 <template>
 
     <div class="h-screen bg-blue-800 dark:bg-gray-900 flex flex-col">
+        <!-- Notivue container -->
+        <Notivue v-slot="item">
+            <Notification :item="item" :theme="pastelTheme">
+                <NotificationProgress :item="item" />
 
+            </Notification>
+        </Notivue>
 
         <!-- Page Heading -->
         <header class="bg-white shadow dark:bg-gray-800" v-if="$slots.header">

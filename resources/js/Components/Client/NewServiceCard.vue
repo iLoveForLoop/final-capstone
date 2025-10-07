@@ -45,7 +45,6 @@ const isPricePackage = () => {
 </script>
 
 <template>
-    <!-- <BookingForm ref="bookingForm" :service="service" /> -->
     <BookingModal ref="bookingModal" :service="service" />
     <div class="relative">
         <slot name="favorite"></slot>

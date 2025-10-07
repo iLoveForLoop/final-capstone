@@ -1,5 +1,5 @@
 <script setup>
-import PendingApplicatinCard from '@/Components/Admin/PendingApplicatinCard.vue';
+import PendingApplicationCard from '@/Components/Admin/PendingApplicationCard.vue';
 import TestLayout from '@/Layouts/TestLayout.vue';
 import { router } from '@inertiajs/vue3';
 import { useToast } from 'vue-toastification';
@@ -34,7 +34,7 @@ defineProps({
             <div v-if="pending_applications.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div v-for="application in pending_applications" :key="application.id"
                     class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
-                    <PendingApplicatinCard :application="application" />
+                    <PendingApplicationCard :application="application" />
                 </div>
             </div>
 

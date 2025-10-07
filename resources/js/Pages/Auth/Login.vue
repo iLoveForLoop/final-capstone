@@ -29,64 +29,59 @@
             <!-- Left Side - Branding -->
             <div class="text-center lg:text-left space-y-8">
                 <!-- Logo -->
-                <!-- <div class="flex items-center justify-center lg:justify-start">
-                    <div
-                        class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path
-                                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L20.41 8 12 17z" />
-                        </svg>
-                    </div>
-                    <span class="ml-4 text-3xl font-bold text-gray-900">Eventory</span>
-                </div> -->
+                <div class="flex items-center justify-center lg:justify-start reveal-animation animation-delay-100">
+                    <span class="text-3xl font-bold text-gray-900">Eventory</span>
+                </div>
 
                 <div class="space-y-6">
-                    <h1 class="text-4xl lg:text-5xl font-bold leading-tight text-gray-900">
+                    <h1
+                        class="text-4xl lg:text-5xl font-bold leading-tight text-gray-900 reveal-animation animation-delay-200">
                         Plan Events<br />
                         <span class="text-blue-600">Like a Pro</span>
                     </h1>
 
-                    <p class="text-lg text-gray-700 leading-relaxed max-w-lg">
+                    <p class="text-lg text-gray-700 leading-relaxed max-w-lg reveal-animation animation-delay-300">
                         Connect with the best vendors in your area. From catering to photography, we've got your event
                         covered.
                     </p>
                 </div>
 
                 <!-- Stats -->
-                <!-- <div class="grid grid-cols-3 gap-8 pt-8">
-                    <div class="text-center">
+                <div class="grid grid-cols-3 gap-8 pt-8">
+                    <div class="text-center reveal-animation animation-delay-400">
                         <div class="text-2xl font-bold text-gray-900">10K+</div>
                         <div class="text-sm text-gray-600">Vendors</div>
                     </div>
-                    <div class="text-center">
+                    <div class="text-center reveal-animation animation-delay-500">
                         <div class="text-2xl font-bold text-gray-900">50K+</div>
                         <div class="text-sm text-gray-600">Events</div>
                     </div>
-                    <div class="text-center">
+                    <div class="text-center reveal-animation animation-delay-600">
                         <div class="text-2xl font-bold text-gray-900">99%</div>
                         <div class="text-sm text-gray-600">Satisfaction</div>
                     </div>
-                </div> -->
+                </div>
             </div>
 
             <!-- Right Side - Login Form -->
             <div class="w-full max-w-md mx-auto lg:mx-0">
                 <!-- Card -->
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/60">
-                    <div class="text-center mb-8">
+                    <div class="text-center mb-8 reveal-animation animation-delay-300">
                         <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome back</h2>
                         <p class="text-gray-600">Sign in to continue your journey</p>
                     </div>
 
                     <!-- Status Message -->
-                    <div v-if="status" class="mb-6 p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl">
+                    <div v-if="status"
+                        class="mb-6 p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl reveal-animation animation-delay-400">
                         <p class="text-sm font-medium text-blue-700">{{ status }}</p>
                     </div>
 
                     <!-- Login Form -->
                     <form @submit.prevent="submit" class="space-y-6">
                         <!-- Email Field -->
-                        <div class="space-y-2">
+                        <div class="space-y-2 reveal-animation animation-delay-500">
                             <label for="email" class="block text-sm font-medium text-gray-700">
                                 Email address
                             </label>
@@ -108,7 +103,7 @@
                         </div>
 
                         <!-- Password Field -->
-                        <div class="space-y-2">
+                        <div class="space-y-2 reveal-animation animation-delay-600">
                             <label for="password" class="block text-sm font-medium text-gray-700">
                                 Password
                             </label>
@@ -130,7 +125,7 @@
                         </div>
 
                         <!-- Remember Me & Forgot Password -->
-                        <div class="flex items-center justify-between">
+                        <div class="flex items-center justify-between reveal-animation animation-delay-700">
                             <label class="flex items-center">
                                 <input type="checkbox" v-model="form.remember"
                                     class="w-4 h-4 text-blue-500 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2" />
@@ -145,7 +140,7 @@
 
                         <!-- Submit Button -->
                         <button type="submit" :disabled="form.processing"
-                            class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed">
+                            class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed reveal-animation animation-delay-800">
                             <span v-if="!form.processing" class="flex items-center justify-center">
                                 <span>Sign in to Eventory</span>
                                 <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -168,7 +163,7 @@
                     </form>
 
                     <!-- Sign up link -->
-                    <p class="mt-6 text-center text-sm text-gray-600">
+                    <p class="mt-6 text-center text-sm text-gray-600 reveal-animation animation-delay-900">
                         Don't have an account?
                         <Link :href="route('register')"
                             class="font-semibold text-blue-600 hover:text-blue-700 transition-colors duration-200">
@@ -183,6 +178,7 @@
 
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { onMounted, ref } from 'vue';
 
 defineProps({
     canResetPassword: {
@@ -204,6 +200,29 @@ const submit = () => {
         onFinish: () => form.reset('password'),
     });
 };
+
+// Animation observer
+const animatedElements = ref([]);
+
+onMounted(() => {
+    animatedElements.value = document.querySelectorAll('.reveal-animation');
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animated');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
+
+    animatedElements.value.forEach(element => {
+        observer.observe(element);
+    });
+});
 </script>
 
 <style scoped>
@@ -236,5 +255,66 @@ const submit = () => {
 
 .animation-delay-4000 {
     animation-delay: 4s;
+}
+
+/* Reveal Animation */
+.reveal-animation {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal-animation.animated {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Animation Delays */
+.animation-delay-100 {
+    transition-delay: 100ms;
+}
+
+.animation-delay-200 {
+    transition-delay: 200ms;
+}
+
+.animation-delay-300 {
+    transition-delay: 300ms;
+}
+
+.animation-delay-400 {
+    transition-delay: 400ms;
+}
+
+.animation-delay-500 {
+    transition-delay: 500ms;
+}
+
+.animation-delay-600 {
+    transition-delay: 600ms;
+}
+
+.animation-delay-700 {
+    transition-delay: 700ms;
+}
+
+.animation-delay-800 {
+    transition-delay: 800ms;
+}
+
+.animation-delay-900 {
+    transition-delay: 900ms;
+}
+
+/* Smooth transitions */
+* {
+    transition-property: color, background-color, border-color, box-shadow;
+    transition-duration: 300ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Performance optimizations */
+.reveal-animation {
+    will-change: transform, opacity;
 }
 </style>

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useForm } from '@inertiajs/vue3';
+import { push } from 'notivue';
 
 const show = ref(false);
 const currentCategoryId = ref(null);
@@ -39,6 +40,7 @@ const submit = () => {
         onSuccess: () => {
             show.value = false;
             form.reset();
+            push.success('Category Edited Successfully')
         }
     });
 };

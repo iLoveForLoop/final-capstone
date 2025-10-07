@@ -11,7 +11,7 @@ import {
 } from '@/Components/ui/dialog';
 
 import ServiceCard from '@/Components/Client/ServiceCard.vue';
-import { Search, ArrowUpDown, ChevronDown, Filter, Database, X, Grid3X3, List, Star, Check, Sliders } from 'lucide-vue-next';
+import { Search, ArrowUpDown, ChevronDown, Filter, Database, X, Grid3X3, List, Star, Check, Sliders, ChevronLeft, ChevronRight } from 'lucide-vue-next';
 
 // Props from backend
 const props = defineProps({
@@ -77,7 +77,7 @@ const applyFilters = () => {
         sort: sortBy.value !== 'relevance' ? sortBy.value : undefined,
     }, {
         preserveState: true,
-        preserveScroll: true
+        preserveScroll: true,
     });
 };
 
@@ -124,15 +124,51 @@ const getCategoryName = (id) => {
     return category ? category.name : '';
 };
 
-console.log(props.filters.categories)
+// Pagination functions
+const goToPage = (url) => {
+    if (url) {
+        router.visit(url, {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                // Scroll to top of services section
+                const servicesSection = document.querySelector('.services-section');
+                if (servicesSection) {
+                    servicesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        });
+    }
+};
+
+// Generate page numbers for pagination
+const pageNumbers = computed(() => {
+    const current = props.services.current_page;
+    const last = props.services.last_page;
+    const delta = 2; // number of pages to show on each side of current
+    const range = [];
+
+    for (let i = Math.max(2, current - delta); i <= Math.min(last - 1, current + delta); i++) {
+        range.push(i);
+    }
+
+    if (current - delta > 2) {
+        range.unshift('...');
+    }
+    if (current + delta < last - 1) {
+        range.push('...');
+    }
+
+    range.unshift(1);
+    if (last > 1) range.push(last);
+
+    return range;
+});
 </script>
-
-
 
 <template>
     <ClientNavbar />
     <div class="min-h-screen bg-gray-50">
-
 
         <!-- Enhanced Filters Section -->
         <div class="bg-white border-b border-gray-100 shadow-sm">
@@ -278,11 +314,67 @@ console.log(props.filters.categories)
         </div>
 
         <!-- Services Section -->
-        <div class="max-w-7xl mx-auto px-6 py-8">
+        <div class="max-w-7xl mx-auto px-6 py-8 services-section">
             <!-- Services Grid/List -->
             <div v-if="services.data.length > 0">
                 <ServiceCard :services="services" :viewMode="viewMode" />
-                <!-- Pagination Component Here-->
+
+                <!-- Modern Pagination -->
+                <div v-if="services.last_page > 1" class="mt-12">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <!-- Results Info -->
+                        <div class="text-sm text-gray-600">
+                            Showing
+                            <span class="font-semibold text-gray-900">{{ services.from }}-{{ services.to }}</span>
+                            of
+                            <span class="font-semibold text-gray-900">{{ services.total }}</span>
+                            results
+                        </div>
+
+                        <!-- Pagination Controls -->
+                        <div class="flex items-center space-x-1">
+                            <!-- Previous Button -->
+                            <button @click="goToPage(services.prev_page_url)" :disabled="!services.prev_page_url"
+                                :class="[
+                                    'flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border transition-all duration-200',
+                                    services.prev_page_url
+                                        ? 'text-gray-700 bg-white border-gray-300 hover:bg-gray-50 hover:border-gray-400 hover:shadow-sm'
+                                        : 'text-gray-400 bg-gray-100 border-gray-200 cursor-not-allowed'
+                                ]">
+                                <ChevronLeft :size="16" />
+                                <span class="hidden sm:inline">Previous</span>
+                            </button>
+
+                            <!-- Page Numbers -->
+                            <div class="flex items-center space-x-1">
+                                <button v-for="page in pageNumbers" :key="page"
+                                    @click="typeof page === 'number' ? goToPage(services.path + '?page=' + page) : null"
+                                    :disabled="typeof page !== 'number'" :class="[
+                                        'min-w-[40px] h-10 px-3 text-sm font-medium rounded-lg border transition-all duration-200',
+                                        typeof page !== 'number'
+                                            ? 'text-gray-500 bg-transparent border-transparent cursor-default'
+                                            : page === services.current_page
+                                                ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                                                : 'text-gray-700 bg-white border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                                    ]">
+                                    {{ page }}
+                                </button>
+                            </div>
+
+                            <!-- Next Button -->
+                            <button @click="goToPage(services.next_page_url)" :disabled="!services.next_page_url"
+                                :class="[
+                                    'flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border transition-all duration-200',
+                                    services.next_page_url
+                                        ? 'text-gray-700 bg-white border-gray-300 hover:bg-gray-50 hover:border-gray-400 hover:shadow-sm'
+                                        : 'text-gray-400 bg-gray-100 border-gray-200 cursor-not-allowed'
+                                ]">
+                                <span class="hidden sm:inline">Next</span>
+                                <ChevronRight :size="16" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Empty State -->
@@ -331,7 +423,6 @@ console.log(props.filters.categories)
                                             : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
                                     ]">
                                     <span class="font-medium">{{ category.name }}</span>
-                                    {{ console.log(selectedCategories) }}
                                     <div :class="[
                                         'w-5 h-5 rounded border-2 flex items-center justify-center transition-colors',
                                         selectedCategories.includes(category.id)

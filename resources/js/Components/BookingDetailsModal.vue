@@ -242,7 +242,7 @@ onUnmounted(() => {
                                                     <div class="min-w-0">
                                                         <p class="text-sm font-medium text-gray-900 truncate">{{
                                                             booking?.user?.client?.full_name || booking?.client || 'N/A'
-                                                        }}</p>
+                                                            }}</p>
                                                         <p class="text-xs text-gray-500">Full Name</p>
                                                     </div>
                                                 </div>
@@ -318,7 +318,7 @@ onUnmounted(() => {
                                                     <div class="min-w-0">
                                                         <p class="text-sm font-medium text-gray-900">{{
                                                             booking?.event?.location || booking?.event_location || 'N/A'
-                                                        }}</p>
+                                                            }}</p>
                                                         <p class="text-xs text-gray-500">Event Location</p>
                                                     </div>
                                                 </div>
@@ -413,7 +413,7 @@ onUnmounted(() => {
                                                 </div>
                                                 <div class="text-center">
                                                     <span class="text-3xl font-bold text-blue-900">{{ booking.pax
-                                                    }}</span>
+                                                        }}</span>
                                                     <p class="text-sm text-blue-700 mt-1">people</p>
                                                 </div>
                                             </div>
@@ -438,7 +438,7 @@ onUnmounted(() => {
                                                         :key="category"
                                                         class="bg-white rounded-lg p-3 border border-orange-100">
                                                         <h5 class="text-sm font-medium text-orange-800 mb-2">{{ category
-                                                        }}</h5>
+                                                            }}</h5>
                                                         <div class="flex flex-wrap gap-2">
                                                             <span v-for="(dishName, index) in dishes" :key="index"
                                                                 class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200">
@@ -467,7 +467,7 @@ onUnmounted(() => {
                                                             {{ formatCurrency(booking?.raw_amount ||
                                                                 booking?.service?.price) }}
                                                             <span v-if="booking?.is_per_pax"> × {{ booking?.pax || 1
-                                                            }}</span>
+                                                                }}</span>
                                                         </span>
                                                     </div>
 

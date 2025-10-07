@@ -2,10 +2,13 @@
 import VendorLayout from '@/Layouts/VendorLayout.vue'
 import { ref, computed, watch, onMounted, onBeforeMount, onBeforeUnmount } from 'vue'
 import { router } from '@inertiajs/vue3'
-import { ChevronDown, Search, Filter, Calendar, Eye, Check, X, CircleCheck, Download } from 'lucide-vue-next'
+import { ChevronDown, Search, Filter, Calendar, Eye, Check, X, CircleCheck, Download, AlertTriangle, Info, Clock, User, MapPin, CreditCard } from 'lucide-vue-next'
 import axios from 'axios'
 import BookingDetailsModal from '@/Components/BookingDetailsModal.vue'
 import { useNotificationStore } from '@/store/notification'
+import AcceptBookingModal from '@/Components/Vendor/Booking/AcceptBookingModal.vue'
+import DeclineBookingModal from '@/Components/Vendor/Booking/DeclineBookingModal.vue'
+import CompleteBookingModal from '@/Components/Vendor/Booking/CompleteBookingModal.vue'
 
 const props = defineProps({
     bookings: {
@@ -52,7 +55,12 @@ const selectedStatus = ref(props.filters.status || 'all')
 const selectedDateRange = ref(props.filters.date_range || 'all')
 const selectedSort = ref(props.filters.sort || 'date_desc')
 
-// Loading states
+// Modal states
+const showAcceptModal = ref(false)
+const showDeclineModal = ref(false)
+const showCompleteModal = ref(false)
+const selectedBooking = ref(null)
+const declineReason = ref('')
 const loadingActions = ref({})
 
 // Watch for filter changes and update URL
@@ -81,55 +89,78 @@ const updateFilters = () => {
     })
 }
 
-// Action functions with loading states
-const acceptBooking = (bookingId) => {
-    if (loadingActions.value[bookingId]) return
-    loadingActions.value[bookingId] = 'accepting'
+// Modal functions
+const openAcceptModal = (booking) => {
+    selectedBooking.value = booking
+    showAcceptModal.value = true
+}
 
-    router.patch(route('vendor.bookings.accept', bookingId), {}, {
+const openDeclineModal = (booking) => {
+    selectedBooking.value = booking
+    declineReason.value = ''
+    showDeclineModal.value = true
+}
+
+const openCompleteModal = (booking) => {
+    selectedBooking.value = booking
+    showCompleteModal.value = true
+}
+
+const closeModals = () => {
+    showAcceptModal.value = false
+    showDeclineModal.value = false
+    showCompleteModal.value = false
+    selectedBooking.value = null
+    declineReason.value = ''
+}
+
+// Action functions with loading states
+const acceptBooking = () => {
+    if (!selectedBooking.value || loadingActions.value[selectedBooking.value.raw_id]) return
+
+    loadingActions.value[selectedBooking.value.raw_id] = 'accepting'
+
+    router.patch(route('vendor.bookings.accept', selectedBooking.value.raw_id), {}, {
         onFinish: () => {
-            delete loadingActions.value[bookingId]
+            delete loadingActions.value[selectedBooking.value.raw_id]
+            closeModals()
         },
         onError: () => {
-            delete loadingActions.value[bookingId]
+            delete loadingActions.value[selectedBooking.value.raw_id]
         }
     })
 }
 
-const declineBooking = (bookingId, reason = null) => {
-    if (loadingActions.value[bookingId]) return
+const declineBooking = () => {
+    if (!selectedBooking.value || loadingActions.value[selectedBooking.value.raw_id]) return
 
-    const confirmed = confirm('Are you sure you want to cancel this booking?')
-    if (!confirmed) return
+    loadingActions.value[selectedBooking.value.raw_id] = 'declining'
 
-    loadingActions.value[bookingId] = 'declining'
-
-    router.patch(route('vendor.bookings.decline', bookingId), {
-        reason: reason,
+    router.patch(route('vendor.bookings.decline', selectedBooking.value.raw_id), {
+        reason: declineReason.value || 'No reason provided',
     }, {
         onFinish: () => {
-            delete loadingActions.value[bookingId]
+            delete loadingActions.value[selectedBooking.value.raw_id]
+            closeModals()
         },
         onError: () => {
-            delete loadingActions.value[bookingId]
+            delete loadingActions.value[selectedBooking.value.raw_id]
         }
     })
 }
 
-const completeBooking = (bookingId) => {
-    if (loadingActions.value[bookingId]) return
+const completeBooking = () => {
+    if (!selectedBooking.value || loadingActions.value[selectedBooking.value.raw_id]) return
 
-    const confirmed = confirm('Mark this booking as completed?')
-    if (!confirmed) return
+    loadingActions.value[selectedBooking.value.raw_id] = 'completing'
 
-    loadingActions.value[bookingId] = 'completing'
-
-    router.patch(route('vendor.bookings.complete', bookingId), {}, {
+    router.patch(route('vendor.bookings.complete', selectedBooking.value.raw_id), {}, {
         onFinish: () => {
-            delete loadingActions.value[bookingId]
+            delete loadingActions.value[selectedBooking.value.raw_id]
+            closeModals()
         },
         onError: () => {
-            delete loadingActions.value[bookingId]
+            delete loadingActions.value[selectedBooking.value.raw_id]
         }
     })
 }
@@ -183,25 +214,26 @@ onMounted(async () => {
 
 const bookingDetailsModal = ref(null)
 
-
-
-import { push } from 'notivue'
-
-const testSuccess = () => {
-    console.log('Here');
-
-    push.success('Vendor booked successfully 🎉')
-}
-const testError = () => push.error('Something went wrong ❌')
-const testWarn = () => push.warn('Please check your details ⚠️')
-const testInfo = () => push.info('Info message 💡')
-
 </script>
 
 <template>
     <VendorLayout>
-        <!-- <button @click="testError">Success</button> -->
         <BookingDetailsModal ref="bookingDetailsModal" />
+
+        <!-- Accept Booking Modal -->
+        <AcceptBookingModal :showAcceptModal="showAcceptModal" :selectedBooking="selectedBooking" :isLoading="isLoading"
+            @close-modals="closeModals" @accept-booking="acceptBooking" :formatDate="formatDate" />
+
+        <!-- Decline Booking Modal -->
+        <DeclineBookingModal :showDeclineModal="showDeclineModal" :selectedBooking="selectedBooking"
+            :isLoading="isLoading" @close-modals="closeModals" @decline-booking="declineBooking"
+            :formatDate="formatDate" v-model:declineReason="declineReason" />
+
+        <!-- Complete Booking Modal -->
+        <CompleteBookingModal :showCompleteModal=showCompleteModal :selectedBooking="selectedBooking"
+            :isLoading="isLoading" @close-modals="closeModals" :formatDate="formatDate"
+            @complete-booking="completeBooking" />
+
         <div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
             <div class="max-w-7xl mx-auto">
                 <!-- Header -->
@@ -225,7 +257,7 @@ const testInfo = () => push.info('Info message 💡')
                 </div>
 
                 <!-- Stats Cards -->
-                <!-- <div v-if="stats" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div v-if="stats" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <div class="bg-white rounded-lg shadow-sm border p-4">
                         <div class="flex items-center">
                             <div class="flex-1">
@@ -258,7 +290,7 @@ const testInfo = () => push.info('Info message 💡')
                             </div>
                         </div>
                     </div>
-                </div> -->
+                </div>
 
                 <!-- Filters -->
                 <div class="mb-6 bg-white rounded-xl shadow-xs border border-gray-200 p-4">
@@ -391,7 +423,7 @@ const testInfo = () => push.info('Info message 💡')
 
                                             <!-- Accept Button -->
                                             <button v-if="booking.status === 'pending'"
-                                                @click="acceptBooking(booking.raw_id)"
+                                                @click="openAcceptModal(booking)"
                                                 :disabled="isLoading(booking.raw_id, 'accepting')"
                                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-md hover:bg-green-100 hover:border-green-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
                                                 title="Accept booking">
@@ -404,7 +436,7 @@ const testInfo = () => push.info('Info message 💡')
 
                                             <!-- Decline Button -->
                                             <button v-if="booking.status === 'pending'"
-                                                @click="declineBooking(booking.raw_id)"
+                                                @click="openDeclineModal(booking)"
                                                 :disabled="isLoading(booking.raw_id, 'declining')"
                                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 hover:border-red-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
                                                 title="Decline booking">
@@ -417,7 +449,7 @@ const testInfo = () => push.info('Info message 💡')
 
                                             <!-- Complete Button -->
                                             <button v-if="booking.status === 'confirmed'"
-                                                @click="completeBooking(booking.raw_id)"
+                                                @click="openCompleteModal(booking)"
                                                 :disabled="isLoading(booking.raw_id, 'completing')"
                                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 hover:border-blue-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
                                                 title="Mark booking as completed">

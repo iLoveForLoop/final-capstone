@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import VendorViewModal from '@/Components/Admin/VendorViewModal.vue'
 import { router } from '@inertiajs/vue3'
+import { push } from 'notivue'
 
 const props = defineProps({
     application: Object
@@ -16,11 +17,11 @@ const approveVendor = (vendorId) => {
     if (confirm('Are you sure you want to approve this vendor?')) {
         router.put(route('admin.vendor-application.approve', vendorId), {}, {
             onSuccess: () => {
-                toast.success('Vendor approved successfully');
+                push.success('Vendor approved successfully');
                 emit('approved', vendorId)
             },
             onError: () => {
-                toast.error('Failed to approve vendor');
+                push.error('Failed to approve vendor')
             }
         });
     }
@@ -30,11 +31,11 @@ const rejectVendor = (vendorId) => {
     if (confirm('Are you sure you want to reject this vendor?')) {
         router.delete(route('admin.vendor-application.reject', vendorId), {
             onSuccess: () => {
-                toast.success('Vendor rejected successfully');
+                push.success('Vendor rejected successfully')
                 emit('rejected', vendorId)
             },
             onError: () => {
-                toast.error('Failed to reject vendor');
+                push.error('Failed to reject vendor')
             }
         });
     }

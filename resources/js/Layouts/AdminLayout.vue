@@ -8,6 +8,7 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
 import Sidebar from '@/Components/Admin/Sidebar.vue';
 
+
 const showingNavigationDropdown = ref(false);
 const showingSidebar = ref(true)
 

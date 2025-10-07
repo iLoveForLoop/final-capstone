@@ -214,7 +214,7 @@ class BookingController extends Controller
      */
     public function decline(Request $request, $id)
     {
-        // dd($request->from);
+        // dd($request->reason);
 
         $request->validate([
             'reason' => 'nullable|string|max:500'

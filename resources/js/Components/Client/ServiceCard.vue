@@ -1,6 +1,7 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
 import NewServiceCard from './NewServiceCard.vue';
+import { onMounted, watch } from 'vue';
 
 const props = defineProps({
     services: {
@@ -66,42 +67,57 @@ const getServiceInfo = (service) => {
     };
 };
 
-// Function to render star rating
-const renderStars = (rating) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
+// Animation observer
+onMounted(() => {
+    initializeAnimations();
+});
 
-    for (let i = 0; i < fullStars; i++) {
-        stars.push('★');
-    }
+const initializeAnimations = () => {
+    const animatedElements = document.querySelectorAll('.service-card-reveal');
 
-    if (hasHalfStar) {
-        stars.push('☆');
-    }
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animated');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
 
-    while (stars.length < 5) {
-        stars.push('☆');
-    }
-
-    return stars;
+    animatedElements.forEach(element => {
+        observer.observe(element);
+    });
 };
+
+// Re-initialize animations when services change
+watch(() => props.services.data, () => {
+    // Wait for next tick to ensure DOM is updated
+    nextTick(() => {
+        setTimeout(() => {
+            initializeAnimations();
+        }, 100);
+    });
+});
 </script>
 
 <template>
     <!-- Grid View -->
     <div v-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div v-for="service in services.data" :key="service.id"
-            class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-
+        <div v-for="(service, index) in services.data" :key="service.id"
+            class="service-card-reveal bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300"
+            :style="{ transitionDelay: `${index * 100}ms` }">
             <NewServiceCard :service="service" />
         </div>
     </div>
 
     <!-- List View -->
     <div v-else class="space-y-4">
-        <div v-for="service in services.data" :key="service.id"
-            class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+        <div v-for="(service, index) in services.data" :key="service.id"
+            class="service-card-reveal bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300"
+            :style="{ transitionDelay: `${index * 100}ms` }">
             <div class="flex">
                 <img v-if="service.image_url" :src="service.image_url" :alt="service.name"
                     class="w-48 h-32 object-cover">
@@ -193,5 +209,22 @@ const renderStars = (rating) => {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+/* Service Card Reveal Animation */
+.service-card-reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.service-card-reveal.animated {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Performance optimizations */
+.service-card-reveal {
+    will-change: transform, opacity;
 }
 </style>
