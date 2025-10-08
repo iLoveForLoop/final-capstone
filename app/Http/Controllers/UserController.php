@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\Admin\UserBanMail;
 use App\Models\ServiceCategory;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules;
 
 class UserController extends Controller
@@ -338,7 +341,7 @@ class UserController extends Controller
                             'ban_reason' => null,
                         ]);
 
-                        // dd($user->status);
+
 
                         // Log the suspension
                         activity()
@@ -362,6 +365,12 @@ class UserController extends Controller
                             'ban_reason' => $request->reason,
                         ]);
 
+                        $user->load('roles');
+                        $role = $user->getRoleNames()->first(); // e.g. "vendor"
+
+                        // dd($user->email);
+
+                        Mail::to($user->email)->queue(new UserBanMail($user, $role));
                         // Log the ban
                         activity()
                             ->causedBy(auth()->user())

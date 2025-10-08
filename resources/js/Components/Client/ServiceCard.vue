@@ -1,7 +1,7 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
 import NewServiceCard from './NewServiceCard.vue';
-import { onMounted, watch } from 'vue';
+import { nextTick, onMounted, watch } from 'vue';
 
 const props = defineProps({
     services: {
@@ -67,38 +67,61 @@ const getServiceInfo = (service) => {
     };
 };
 
+let observer = null;
+
 // Animation observer
 onMounted(() => {
     initializeAnimations();
 });
 
 const initializeAnimations = () => {
-    const animatedElements = document.querySelectorAll('.service-card-reveal');
+    // Clean up existing observer
+    if (observer) {
+        observer.disconnect();
+    }
+    // Remove animated class from all service cards to reset animations
+    const existingElements = document.querySelectorAll('.service-card-reveal');
+    existingElements.forEach(element => {
+        element.classList.remove('animated');
+    });
 
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animated');
-                observer.unobserve(entry.target);
-            }
+    // Wait a bit for DOM to update
+    setTimeout(() => {
+        const animatedElements = document.querySelectorAll('.service-card-reveal');
+
+        observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animated');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
         });
-    }, {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    });
 
-    animatedElements.forEach(element => {
-        observer.observe(element);
-    });
+        animatedElements.forEach(element => {
+            observer.observe(element);
+        });
+    }, 50);
 };
 
 // Re-initialize animations when services change
 watch(() => props.services.data, () => {
-    // Wait for next tick to ensure DOM is updated
     nextTick(() => {
         setTimeout(() => {
             initializeAnimations();
         }, 100);
+    });
+});
+
+// Re-initialize animations when view mode changes
+watch(() => props.viewMode, () => {
+    nextTick(() => {
+        setTimeout(() => {
+            initializeAnimations();
+        }, 150); // Slightly longer delay for view mode changes
     });
 });
 </script>
@@ -215,7 +238,7 @@ watch(() => props.services.data, () => {
 .service-card-reveal {
     opacity: 0;
     transform: translateY(20px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
+    transition: opacity 0.6s ease, transform 0.5s ease;
 }
 
 .service-card-reveal.animated {

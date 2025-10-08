@@ -172,7 +172,6 @@ const performBan = async () => {
             reason: banForm.value.reason
         }, {
             onSuccess: () => {
-                // toast.success('User banned successfully');
                 push.success('User banned successfully')
                 closeActionModal();
             },
