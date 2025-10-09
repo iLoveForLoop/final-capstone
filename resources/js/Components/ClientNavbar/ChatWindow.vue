@@ -18,15 +18,27 @@ const emit = defineEmits(['toggle-chat-window', 'close-chat-window', 'send-chat-
             <div class="flex items-center justify-between p-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white cursor-pointer"
                 @click="emit('toggle-chat-window', chat.id)">
                 <div class="flex items-center space-x-2">
-                    <div class="relative">
+                    <div class="relative flex-shrink-0">
+                        <!-- Avatar -->
                         <div
-                            class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-white font-medium text-xs">
-                            {{ chat.avatar }}
+                            class="w-9 h-9 rounded-full overflow-hidden shadow-sm border border-gray-200 bg-gray-100 flex items-center justify-center text-white font-semibold text-xs">
+                            <!-- If user has an avatar image -->
+                            <img v-if="chat.avatar" :src="chat.avatar" alt="User avatar"
+                                class="w-full h-full object-cover" />
+
+                            <!-- Fallback: initials with gradient -->
+                            <span v-else
+                                class="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-700">
+                                {{ chat.initials }}
+                            </span>
                         </div>
+
+                        <!-- Online Indicator -->
                         <div v-if="chat.online"
-                            class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white rounded-full">
+                            class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full shadow-sm">
                         </div>
                     </div>
+
                     <div>
                         <p class="font-medium text-sm">{{ chat.sender }}</p>
                         <p class="text-xs opacity-80">{{ chat.online ? 'Active now' : 'Last seen recently' }}</p>

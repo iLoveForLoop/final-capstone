@@ -11,7 +11,14 @@ import { Link } from '@inertiajs/vue3';
 
 import TestSidebar from '@/Components/Admin/TestSidebar.vue';
 import MyDropdown from '@/Components/MyDropdown.vue';
-import { Notification, NotificationProgress, Notivue, pastelTheme } from 'notivue';
+import {
+    Notivue,
+    Notification,
+    // FIX: This must be NotificationProgress
+    NotificationProgress,
+    pastelTheme
+} from 'notivue';
+import 'notivue/notification-progress.css';
 
 
 const showingNavigationDropdown = ref(false);

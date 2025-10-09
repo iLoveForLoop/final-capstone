@@ -24,6 +24,8 @@ defineExpose({
     close
 })
 
+const emit = defineEmits(['accept-booking', 'decline-booking', 'complete-booking'])
+
 const getStatusBadgeClass = (status) => {
     if (!status) return 'bg-gray-100 text-gray-800 border-gray-200'
 
@@ -161,6 +163,19 @@ const handleEscape = (event) => {
     if (event.key === 'Escape' && isOpen.value) {
         close()
     }
+}
+
+const acceptBooking = (booking) => {
+    emit('accept-booking', booking)
+}
+
+const declineBooking = (booking) => {
+    emit('decline-booking', booking)
+}
+
+const completeBooking = (booking) => {
+    console.log('Here');
+    emit('complete-booking', booking)
 }
 
 // Add event listener for escape key
@@ -513,7 +528,8 @@ onUnmounted(() => {
                         </div>
 
                         <!-- Footer with Actions -->
-                        <BookingDetailsModalFooter :booking="booking" @close="close" />
+                        <BookingDetailsModalFooter :booking="booking" @close="close" @accept-booking="acceptBooking"
+                            @decline-booking="declineBooking" @complete-booking="completeBooking" />
                     </div>
                 </Transition>
             </div>

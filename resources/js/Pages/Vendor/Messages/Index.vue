@@ -54,10 +54,12 @@ const processedConversations = computed(() => {
         const otherParticipant = conv.participants?.find(p => p.id !== user.value?.id);
         const clientName = conv.title || otherParticipant?.name || 'Unknown';
 
+        console.log('participants: ', conv);
+
         return {
             id: conv.id,
             clientName,
-            clientAvatar: null, // You can add avatar logic here
+            clientAvatar: conv.otherUserAvatar, // You can add avatar logic here
             lastMessage: conv.last_message?.content || 'No messages yet',
             timestamp: formatTimestamp(conv.last_message?.created_at),
             unreadCount: conv.unread_count || 0,
@@ -69,6 +71,9 @@ const processedConversations = computed(() => {
         };
     });
 });
+
+
+
 
 const filteredConversations = computed(() => {
     if (!searchQuery.value) return processedConversations.value;
@@ -317,14 +322,23 @@ onUnmounted(() => {
                         <div class="flex items-start space-x-3">
                             <!-- Avatar -->
                             <div class="relative flex-shrink-0">
+                                <!-- Avatar -->
                                 <div
-                                    class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-medium shadow-sm">
-                                    {{ getInitials(conversation.clientName) }}
+                                    class="w-12 h-12 rounded-full overflow-hidden shadow-md border-2 border-white bg-gray-200 flex items-center justify-center text-white font-semibold text-lg">
+                                    <img v-if="conversation.clientAvatar" :src="conversation.clientAvatar"
+                                        alt="User avatar" class="w-full h-full object-cover" />
+                                    <span v-else
+                                        class="bg-gradient-to-br from-blue-400 to-blue-600 w-full h-full flex items-center justify-center">
+                                        {{ getInitials(conversation.clientName) }}
+                                    </span>
                                 </div>
+
+                                <!-- Online Indicator -->
                                 <div v-if="conversation.isOnline"
-                                    class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full">
+                                    class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full">
                                 </div>
                             </div>
+
 
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center justify-between mb-1">
@@ -351,13 +365,25 @@ onUnmounted(() => {
 
             <!-- Main Chat Area -->
             <div class="flex-1 flex flex-col" v-if="selectedConversation">
+
                 <!-- Chat Header -->
                 <div class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-3">
-                            <div
+
+                            <!-- <div
                                 class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-medium shadow-sm">
                                 {{ getInitials(selectedConversation.clientName) }}
+                            </div> -->
+                            <div
+                                class="w-12 h-12 rounded-full overflow-hidden shadow-md border-2 border-white bg-gray-200 flex items-center justify-center text-white font-semibold text-lg">
+                                {{ console.log('Avatar: ', selectedConversation.clientAvatar) }}
+                                <img v-if="selectedConversation.clientAvatar" :src="selectedConversation.clientAvatar"
+                                    alt="User avatar" class="w-full h-full object-cover" />
+                                <span v-else
+                                    class="bg-gradient-to-br from-blue-400 to-blue-600 w-full h-full flex items-center justify-center">
+                                    {{ getInitials(selectedConversation.clientName) }}
+                                </span>
                             </div>
                             <div>
                                 <h3 class="font-semibold text-gray-900">{{ selectedConversation.clientName }}</h3>

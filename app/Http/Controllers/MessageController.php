@@ -293,6 +293,11 @@ class MessageController extends Controller
             ->orderBy('last_message_at', 'desc')
             ->get()
             ->map(function ($conversation) use ($user) {
+
+                $otherUser = $conversation->users()
+                ->where('id', '!=', $user->id)
+                ->first();
+
                 return [
                     'id' => $conversation->id,
                     'title' => $conversation->getDisplayName($user->id),
@@ -300,7 +305,8 @@ class MessageController extends Controller
                     'event' => $conversation->event,
                     'last_message' => $conversation->lastMessage,
                     'unread_count' => $conversation->getUnreadCountForUser($user->id),
-                    'participants' => $conversation->users()->get(['id', 'name', 'email'])
+                    'participants' => $conversation->users()->get(['id', 'name', 'email']),
+                    'otherUserAvatar' => $otherUser?->getFirstMediaUrl('avatar')
                 ];
             });
 

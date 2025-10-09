@@ -10,12 +10,9 @@ import {
     NotificationProgress,
     pastelTheme
 } from 'notivue';
-
-// Import the required theme CSS
-// import 'notivue/themes/pastel.css';
-
-// IMPORTANT: Also import the required CSS for the progress bar itself
 import 'notivue/notification-progress.css';
+
+
 
 
 

@@ -262,13 +262,13 @@ class BookingController extends Controller
             'status' => 'completed'
         ]);
 
-        $booking->load(['service.vendor.user', 'user']);
+        // $booking->load(['service.vendor.user', 'user']);
 
         // Optional: Generate invoice or receipt
         // $this->generateInvoice($booking);
 
 
-        Mail::to($booking->user->email)->queue(new BookingCompletedMail($booking));
+        // Mail::to($booking->user->email)->queue(new BookingCompletedMail($booking));
 
 
         return back()->with('success', 'Booking has been marked as completed!');

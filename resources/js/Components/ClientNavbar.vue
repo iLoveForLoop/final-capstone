@@ -32,7 +32,8 @@ const processedMessages = computed(() => {
         return {
             id: conv.id,
             sender: conv.title,
-            avatar: getInitials(conv.title),
+            avatar: conv.otherUserAvatar,
+            initials: getInitials(conv.title),
             message: conv.last_message?.content || 'No messages yet',
             time: formatTimestamp(conv.last_message?.created_at),
             read: conv.unread_count === 0,
@@ -373,7 +374,7 @@ onMounted(() => {
             const message = {
                 id: conv.id,
                 sender: conv.title,
-                avatar: getInitials(conv.title),
+                initials: getInitials(conv.title),
                 message: conv.last_message?.content || 'No messages yet',
                 time: formatTimestamp(conv.last_message?.created_at),
                 read: conv.unread_count === 0,
@@ -536,15 +537,27 @@ onUnmounted(() => {
                                                 class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-150"
                                                 :class="{ 'bg-blue-50/50': !message.read }">
                                                 <div class="flex items-start space-x-3">
-                                                    <div class="relative">
+                                                    <div class="relative flex-shrink-0">
+                                                        <!-- Avatar -->
                                                         <div
-                                                            class="w-9 h-9 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-xs flex-shrink-0">
-                                                            {{ message.avatar }}
+                                                            class="w-9 h-9 rounded-full overflow-hidden shadow-sm border border-gray-200 bg-gray-100 flex items-center justify-center text-white font-semibold text-xs">
+                                                            <!-- If user has an avatar image -->
+                                                            <img v-if="message.avatar" :src="message.avatar"
+                                                                alt="User avatar" class="w-full h-full object-cover" />
+
+                                                            <!-- Fallback: initials with gradient -->
+                                                            <span v-else
+                                                                class="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-700">
+                                                                {{ message.initials }}
+                                                            </span>
                                                         </div>
+
+                                                        <!-- Online Indicator -->
                                                         <div v-if="message.online"
-                                                            class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white rounded-full">
+                                                            class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full shadow-sm">
                                                         </div>
                                                     </div>
+
                                                     <div class="flex-1 min-w-0">
                                                         <div class="flex items-center justify-between">
                                                             {{ console.log("Message: ", message) }}
@@ -737,7 +750,7 @@ onUnmounted(() => {
                         <div class="relative">
                             <div
                                 class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-white font-medium text-xs">
-                                {{ chat.avatar }}
+                                {{ chat.initials }}
                             </div>
                             <div v-if="chat.online"
                                 class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white rounded-full">
