@@ -28,26 +28,6 @@ const notifications = ref([])
 const isLoading = ref(false)
 const isLoadingNotifications = ref(false)
 
-// Add this line after your existing refs
-const unreadCount = ref(0)
-
-// Add this function after your existing functions
-const loadUnreadCount = async () => {
-    if (!page.props.auth.user) return
-
-    try {
-        const response = await axios.get('/client/notifications/unread-count')
-        unreadCount.value = response.data.unread_count
-    } catch (error) {
-        console.error('Failed to load unread count:', error)
-    }
-}
-
-// Update the computed property to use backend count
-const unreadNotifications = computed(() => {
-    return unreadCount.value > 0 ? unreadCount.value : notifications.value.filter(n => !n.is_read).length
-})
-
 // Computed for processed conversations
 const processedMessages = computed(() => {
     return conversations.value.map(conv => {
@@ -66,7 +46,7 @@ const processedMessages = computed(() => {
 })
 
 // Count unread items
-// const unreadNotifications = computed(() => notifications.value.filter(n => !n.is_read).length)
+const unreadNotifications = computed(() => notifications.value.filter(n => !n.is_read).length)
 const unreadMessages = computed(() => {
     return conversations.value.reduce((total, conv) => total + (conv.unread_count || 0), 0)
 })
@@ -95,12 +75,12 @@ const loadNotifications = async () => {
         isLoadingNotifications.value = true
         const response = await axios.get('/client/notifications', {
             params: {
-                limit: 10
+                limit: 10,
+                unread_only: false
             }
         })
-        // FIX: Your controller returns 'data' not 'notifications'
-        notifications.value = response.data.data
-        console.log("Client notifications loaded: ", response)
+        notifications.value = response.data.notifications
+        console.log("Notifications loaded: ", notifications.value)
     } catch (error) {
         console.error('Failed to load notifications:', error)
     } finally {
@@ -248,8 +228,7 @@ const subscribeToNotifications = () => {
     if (!window.Echo || !page.props.auth.user) return
 
     // Listen for new notifications
-    console.log('My id: ', page.props.auth.clientId)
-    window.Echo.private(`client.${page.props.auth.clientId}`)
+    window.Echo.private(`client.${page.props.auth.user.id}`)
         .listen('.NotificationCreated', (e) => {
             console.log('New notification received:', e)
             // Add new notification to the top
@@ -265,9 +244,6 @@ const subscribeToNotifications = () => {
                 read_at: null,
                 is_read: false
             })
-
-            // Refresh unread count
-            loadUnreadCount()
 
             // Play notification sound (optional)
             playNotificationSound()
@@ -439,7 +415,6 @@ onMounted(() => {
     document.addEventListener('click', closeDrawers)
     loadConversations()
     loadNotifications()
-    loadUnreadCount()
     subscribeToNotifications()
 
     emitter.on('chat-vendor', async (payload) => {

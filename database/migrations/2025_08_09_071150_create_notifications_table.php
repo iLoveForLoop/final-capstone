@@ -6,14 +6,11 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('vendor_id')->constrained()->onDelete('cascade');
+            $table->foreignId('vendor_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('type');
             $table->string('title');
             $table->text('message');
@@ -23,10 +20,17 @@ return new class extends Migration
             $table->string('action_url')->nullable();
             $table->timestamps();
 
-            // Indexes for better performance
+            // New for clients
+            $table->foreignId('client_id')->nullable()->constrained()->onDelete('cascade');
+            $table->string('recipient_type')->default('vendor'); // 'vendor' or 'client'
+
+            // Updated indexes for better performance
             $table->index(['vendor_id', 'created_at']);
             $table->index(['vendor_id', 'read_at']);
             $table->index(['vendor_id', 'type']);
+            $table->index(['client_id', 'created_at']);
+            $table->index(['client_id', 'read_at']);
+            $table->index(['recipient_type', 'created_at']);
         });
     }
 

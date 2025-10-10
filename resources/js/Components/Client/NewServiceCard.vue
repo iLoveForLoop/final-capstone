@@ -2,7 +2,8 @@
 import { ref } from 'vue';
 // import BookingForm from './BookingForm.vue';
 import BookingModal from './BookingModal.vue';
-import { Link, router } from '@inertiajs/vue3'
+import { Link, router, usePage } from '@inertiajs/vue3'
+import LoginModal from '../LoginModal.vue';
 
 
 const props = defineProps({
@@ -13,7 +14,7 @@ const props = defineProps({
 
 
 
-const bookingForm = ref(null)
+const page = usePage()
 
 // console.log('Service: ', props.service)
 
@@ -25,6 +26,7 @@ const formatPrice = (price) => {
 };
 
 const bookingModal = ref(null);
+const loginModal = ref(null)
 
 const handleViewDetails = () => {
     router.get(route('client.service.show', props.service.id))
@@ -42,10 +44,23 @@ const isPricePackage = () => {
     return ''
 }
 
+const tryToBook = () => {
+
+    if (!page.props.auth.user) {
+        console.log('Log in First');
+        loginModal.value.show()
+        return
+
+    }
+
+    bookingModal.value.openModal()
+}
+
 </script>
 
 <template>
     <BookingModal ref="bookingModal" :service="service" />
+    <LoginModal ref="loginModal" />
     <div class="relative">
         <slot name="favorite"></slot>
         <img :src="service.image_url" :alt="service.title" class="w-full h-48 object-cover">
@@ -86,7 +101,7 @@ const isPricePackage = () => {
                 service.vendor.location }}
         </div>
         <div class="flex space-x-2">
-            <button @click="bookingModal.openModal"
+            <button @click="tryToBook"
                 class="flex-1 bg-blue-600 text-white py-2 px-4 rounded text-sm hover:bg-blue-700 transition-colors">
                 Book Now
             </button>

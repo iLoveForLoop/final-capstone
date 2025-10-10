@@ -3,6 +3,7 @@ import BookingCard from '@/Components/Client/Booking/BookingCard.vue';
 import BookingFilters from '@/Components/Client/Booking/BookingFilters.vue';
 import StatsSection from '@/Components/Client/Booking/StatsSection.vue';
 import ClientNavbar from '@/Components/ClientNavbar.vue';
+import ClientLayout from '@/Layouts/ClientLayout.vue';
 import { ref, computed } from 'vue';
 
 
@@ -179,81 +180,83 @@ const getPaymentStatusColor = (status) => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-50">
-        <ClientNavbar />
+    <ClientLayout>
+        <div class="min-h-screen bg-gray-50">
 
-        <!-- Header Section -->
-        <div class="bg-white border-b border-gray-200">
+            <!-- Header Section -->
+            <div class="bg-white border-b border-gray-200">
+                <div class="max-w-7xl mx-auto px-6 py-8">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-900 mb-2">My Bookings</h1>
+                            <p class="text-gray-600">Manage your service bookings and reservations</p>
+                        </div>
+                        <div>
+                            <button
+                                class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                                New Booking
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Section -->
+            <StatsSection :bookingStats="bookingStats" />
+
+            <!-- Filters Section -->
+            <BookingFilters v-model:searchQuery="searchQuery" v-model:selectedCategory="selectedCategory"
+                v-model:selectedStatus="selectedStatus" v-model:selectedDateRange="selectedDateRange"
+                :categories="categories" :bookingStatuses="bookingStatuses" :totalBookings="filteredBookings.total"
+                @clear-filters="clearFilters" />
+
+            <!-- Bookings List -->
             <div class="max-w-7xl mx-auto px-6 py-8">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-900 mb-2">My Bookings</h1>
-                        <p class="text-gray-600">Manage your service bookings and reservations</p>
+                <div v-if="filteredBookings.data.length > 0" class="space-y-6">
+                    <div v-for="booking in filteredBookings.data" :key="booking.id"
+                        class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                        <BookingCard :booking="booking" />
                     </div>
-                    <div>
-                        <button
-                            class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                            New Booking
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Stats Section -->
-        <StatsSection :bookingStats="bookingStats" />
-
-        <!-- Filters Section -->
-        <BookingFilters v-model:searchQuery="searchQuery" v-model:selectedCategory="selectedCategory"
-            v-model:selectedStatus="selectedStatus" v-model:selectedDateRange="selectedDateRange"
-            :categories="categories" :bookingStatuses="bookingStatuses" :totalBookings="filteredBookings.total"
-            @clear-filters="clearFilters" />
-
-        <!-- Bookings List -->
-        <div class="max-w-7xl mx-auto px-6 py-8">
-            <div v-if="filteredBookings.data.length > 0" class="space-y-6">
-                <div v-for="booking in filteredBookings.data" :key="booking.id"
-                    class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-                    <BookingCard :booking="booking" />
                 </div>
 
+                <!-- Empty State -->
+                <div v-else-if="bookings.data.length === 0" class="text-center py-16">
+                    <svg class="mx-auto h-16 w-16 text-gray-400 mb-6" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                            d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                        </path>
+                    </svg>
+                    <h3 class="text-xl font-medium text-gray-900 mb-3">No bookings yet</h3>
+                    <p class="text-gray-600 mb-6 max-w-sm mx-auto">
+                        You haven't made any bookings yet. Start browsing our services to make your first reservation.
+                    </p>
+                    <button
+                        class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        Browse Services
+                    </button>
+                </div>
+
+                <!-- No Results State -->
+                <div v-else class="text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                        </path>
+                    </svg>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No bookings found</h3>
+                    <p class="text-gray-600 mb-4">Try adjusting your search or filter criteria.</p>
+                    <button @click="clearFilters"
+                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+                        Clear filters
+                    </button>
+                </div>
             </div>
 
-            <!-- Empty State -->
-            <div v-else-if="bookings.data.length === 0" class="text-center py-16">
-                <svg class="mx-auto h-16 w-16 text-gray-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
-                        d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
-                    </path>
-                </svg>
-                <h3 class="text-xl font-medium text-gray-900 mb-3">No bookings yet</h3>
-                <p class="text-gray-600 mb-6 max-w-sm mx-auto">
-                    You haven't made any bookings yet. Start browsing our services to make your first reservation.
-                </p>
-                <button
-                    class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                    Browse Services
-                </button>
-            </div>
-
-            <!-- No Results State -->
-            <div v-else class="text-center py-12">
-                <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                    </path>
-                </svg>
-                <h3 class="text-lg font-medium text-gray-900 mb-2">No bookings found</h3>
-                <p class="text-gray-600 mb-4">Try adjusting your search or filter criteria.</p>
-                <button @click="clearFilters"
-                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
-                    Clear filters
-                </button>
-            </div>
-        </div>
-
-        <!-- Quick Actions Footer -->
-        <!-- <div class="bg-white border-t border-gray-200">
+            <!-- Quick Actions Footer -->
+            <!-- <div class="bg-white border-t border-gray-200">
             <div class="max-w-7xl mx-auto px-6 py-6">
                 <div class="flex items-center justify-between">
                     <div class="text-sm text-gray-600">
@@ -273,5 +276,6 @@ const getPaymentStatusColor = (status) => {
                 </div>
             </div>
         </div> -->
-    </div>
+        </div>
+    </ClientLayout>
 </template>

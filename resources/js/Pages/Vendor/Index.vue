@@ -118,6 +118,8 @@ const markNotificationAsRead = async (notificationId) => {
         // Navigate to action URL if available
         const notification = notifications.value.find(n => n.id === notificationId);
         if (notification && notification.action_url) {
+            console.log('Clicked here');
+
             window.location.href = notification.action_url;
         }
     } catch (error) {

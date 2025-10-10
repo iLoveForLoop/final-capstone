@@ -33,3 +33,8 @@ Broadcast::channel('vendor.{vendorId}', function ($user, $vendorId) {
     // Check if the authenticated user owns the vendor account
     return $user->vendor && (int) $user->vendor->id === (int) $vendorId;
 });
+
+Broadcast::channel('client.{clientId}', function ($user, $clientId) {
+    // Check if the authenticated user owns the client account
+    return $user->client && (int) $user->client->id === (int) $clientId;
+});

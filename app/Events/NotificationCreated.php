@@ -25,7 +25,11 @@ class NotificationCreated implements ShouldBroadcastNow
 
     public function broadcastOn()
     {
+        if ($this->notification->recipient_type === 'vendor') {
         return new PrivateChannel('vendor.' . $this->notification->vendor_id);
+    }
+
+    return new PrivateChannel('client.' . $this->notification->client_id);
     }
 
     public function broadcastAs()

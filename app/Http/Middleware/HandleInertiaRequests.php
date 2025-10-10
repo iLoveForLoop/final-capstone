@@ -35,6 +35,7 @@ class HandleInertiaRequests extends Middleware
         $user = Auth::user();
         $hasCatering = false;
         $avatar = null;
+        $clientId = null;
 
 
 
@@ -51,12 +52,21 @@ class HandleInertiaRequests extends Middleware
             $avatar = $user->getFirstMediaUrl('avatar');
         }
 
+        if ($user && $user->hasRole('client')) {
+
+
+            $user->load('client');
+            $clientId = $user->client->id;
+
+        }
+
 
 
         return [
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
+                'clientId' => $clientId,
                 'avatar' => $avatar,
                 'hasCatering' => $hasCatering,
                 'routeName' => \Route::currentRouteName()

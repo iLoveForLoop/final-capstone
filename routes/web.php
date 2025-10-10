@@ -118,13 +118,13 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'role:vendor', 'user
     Route::resource('photography-services', PhotographyServiceController::class);
 
     //notifications from booking controller
-    Route::post('/notifications/{notification}/read', [VendorController::class, 'markNotificationAsRead'])->name('notifications.read');
+    Route::post('/notifications/{notification}/read', [VendorController::class, 'markNotificationAsRead'])->name('notifications.read'); //check
     Route::post('/notifications/read-all', [VendorController::class, 'markAllNotificationsAsRead'])->name('notifications.readAll');
     Route::get('/notifications', [VendorController::class, 'getNotificationsList'])->name('notifications.list');
 
     // notifications from notificatons controller
-    Route::get('/notifications', [NotificationController::class, 'index']);
-    Route::post('/notifications/mark-read', [NotificationController::class, 'markAllRead']);
+    Route::get('/notifications', [NotificationController::class, 'index']); //check
+    Route::post('/notifications/mark-read', [NotificationController::class, 'markAllRead']); //check
     Route::post('/bookings/notifications/mark-read', [NotificationController::class, 'markBookingRead']);
 
     //bookings
@@ -254,6 +254,25 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client', 'user
     return inertia('Client/Vendor/Temp3');
 
    })->name('temp3');
+
+
+
+   //NOTIFICAIONS
+   // Get client notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])
+        ->name('client.notifications.index');
+
+    // Mark specific notification as read
+    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])
+        ->name('client.notifications.markAsRead');
+
+    // Mark all client notifications as read
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])
+        ->name('client.notifications.markAllAsRead');
+
+    // Get client unread count
+    Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])
+        ->name('client.notifications.unreadCount');
 
 
 });

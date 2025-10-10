@@ -12,7 +12,7 @@ class NotificationService
     public function createBookingReceivedNotification($booking)
     {
         $vendor = $booking->service->vendor;
-        $client = $booking->user;
+        $client = $booking->user->client;
         $service = $booking->service;
 
         $notification = Notification::createForVendor(
@@ -39,7 +39,7 @@ class NotificationService
     public function createBookingCompletedNotification($booking)
     {
         $vendor = $booking->service->vendor;
-        $client = $booking->user;
+        $client = $booking->user->client;
         $service = $booking->service;
 
         $notification = Notification::createForVendor(
@@ -66,7 +66,7 @@ class NotificationService
     public function createBookingConfirmedNotification($booking)
     {
         $vendor = $booking->service->vendor;
-        $client = $booking->user;
+        $client = $booking->user->client;
         $service = $booking->service;
 
         $notification = Notification::createForVendor(
@@ -93,7 +93,7 @@ class NotificationService
     public function createBookingCancelledNotification($booking)
     {
         $vendor = $booking->service->vendor;
-        $client = $booking->user;
+        $client = $booking->user->client;
         $service = $booking->service;
 
         $notification = Notification::createForVendor(
@@ -140,7 +140,7 @@ class NotificationService
     public function createPaymentReceivedNotification($booking, $amount)
     {
         $vendor = $booking->service->vendor;
-        $client = $booking->user;
+        $client = $booking->user->client;
 
         $notification = Notification::createForVendor(
             $vendor->id,
@@ -239,6 +239,234 @@ class NotificationService
     public function deleteOldNotifications($days = 90)
     {
         return Notification::where('created_at', '<', now()->subDays($days))->delete();
+    }
+
+
+    // Add client notification methods
+    public function createBookingConfirmedClientNotification($booking)
+    {
+        $client = $booking->user->client;
+        $vendor = $booking->service->vendor;
+        $service = $booking->service;
+
+        $notification = Notification::createForUser(
+            $client->id,
+            Notification::TYPE_BOOKING_CONFIRMED_CLIENT,
+            'Booking Confirmed! 🎉',
+            "Your booking for {$service->name} with {$vendor->business_name} has been confirmed.",
+            [
+                'booking_id' => $booking->id,
+                'vendor_name' => $vendor->business_name,
+                'service_name' => $service->name,
+                'event_date' => $booking->event->event_date ?? null,
+                'vendor_id' => $vendor->id
+            ],
+            'normal',
+            "/client/bookings/{$booking->id}"
+        );
+
+        broadcast(new NotificationCreated($notification));
+        return $notification;
+    }
+
+    public function createBookingUpdatedClientNotification($booking)
+    {
+        $client = $booking->user->client;
+        $vendor = $booking->service->vendor;
+        $service = $booking->service;
+
+        $notification = Notification::createForUser(
+            $client->id,
+            Notification::TYPE_BOOKING_UPDATED,
+            'Booking Updated',
+            "Your booking for {$service->name} has been updated.",
+            [
+                'booking_id' => $booking->id,
+                'vendor_name' => $vendor->business_name,
+                'service_name' => $service->name,
+                'vendor_id' => $vendor->id
+            ],
+            'normal',
+            "/client/bookings/{$booking->id}"
+        );
+
+        broadcast(new NotificationCreated($notification));
+        return $notification;
+    }
+
+    public function createPaymentConfirmedClientNotification($booking, $amount)
+    {
+        $client = $booking->user->client;
+        $vendor = $booking->service->vendor;
+
+        $notification = Notification::createForUser(
+            $client->id,
+            Notification::TYPE_PAYMENT_CONFIRMED,
+            'Payment Confirmed ✅',
+            "Your payment of ₱{$amount} for booking #{$booking->id} has been confirmed.",
+            [
+                'booking_id' => $booking->id,
+                'vendor_name' => $vendor->business_name,
+                'amount' => $amount,
+                'vendor_id' => $vendor->id
+            ],
+            'normal',
+            "/client/bookings/{$booking->id}"
+        );
+
+        broadcast(new NotificationCreated($notification));
+        return $notification;
+    }
+
+    public function createBookingCompletedClientNotification($booking)
+    {
+        $client = $booking->user->client;
+        $vendor = $booking->service->vendor;
+        $service = $booking->service;
+
+        $notification = Notification::createForUser(
+            $client->id,
+            Notification::TYPE_BOOKING_COMPLETED_CLIENT,
+            'Service Completed!',
+            "Your booking for {$service->name} has been completed. Thank you for your business!",
+            [
+                'booking_id' => $booking->id,
+                'vendor_name' => $vendor->business_name,
+                'service_name' => $service->name,
+                'vendor_id' => $vendor->id
+            ],
+            'normal',
+            "/client/bookings/{$booking->id}"
+        );
+
+        broadcast(new NotificationCreated($notification));
+        return $notification;
+    }
+
+    public function createVendorMessageNotification($clientId, $vendor, $message)
+    {
+        $notification = Notification::createForUser(
+            $clientId,
+            Notification::TYPE_VENDOR_MESSAGE,
+            "Message from {$vendor->business_name}",
+            $message,
+            [
+                'vendor_id' => $vendor->id,
+                'vendor_name' => $vendor->business_name
+            ],
+            'normal',
+            "/client/messages?vendor_id={$vendor->id}"
+        );
+
+        broadcast(new NotificationCreated($notification));
+        return $notification;
+    }
+
+    // Client-specific query methods
+    public function getNotificationsForClient($clientId, $limit = 10, $unreadOnly = false)
+    {
+        $query = Notification::forUser($clientId)
+            ->orderBy('created_at', 'desc')
+            ->take($limit);
+
+        if ($unreadOnly) {
+            $query->unread();
+        }
+
+        return $query->get();
+    }
+
+    public function getUnreadCountForClient($clientId)
+    {
+        return Notification::forUser($clientId)->unread()->count();
+    }
+
+    public function markAllAsReadForClient($clientId)
+    {
+        return Notification::forUser($clientId)
+            ->unread()
+            ->update(['read_at' => now()]);
+    }
+
+    // Add these methods to your existing NotificationService class
+
+    public function createBookingSubmittedClientNotification($booking)
+    {
+        $client = $booking->user->client;
+        $vendor = $booking->service->vendor;
+        $service = $booking->service;
+
+        // dd($client);
+
+        $notification = Notification::createForUser(
+            $client->id,
+            Notification::TYPE_BOOKING_SUBMITTED,
+            'Booking Submitted Successfully!',
+            "Your booking request for {$service->name} with {$vendor->business_name} has been submitted and is pending confirmation.",
+            [
+                'booking_id' => $booking->id,
+                'vendor_name' => $vendor->business_name,
+                'service_name' => $service->name,
+                'vendor_id' => $vendor->id,
+                'event_date' => $booking->event->event_date ?? null
+            ],
+            'normal',
+            "/client/bookings/{$booking->id}"
+        );
+
+        broadcast(new NotificationCreated($notification));
+        return $notification;
+    }
+
+    public function createBookingInProgressClientNotification($booking)
+    {
+        $client = $booking->user->client;
+        $vendor = $booking->service->vendor;
+        $service = $booking->service;
+
+        $notification = Notification::createForUser(
+            $client->id,
+            Notification::TYPE_BOOKING_IN_PROGRESS,
+            'Service Started!',
+            "{$vendor->business_name} has started working on your booking for {$service->name}.",
+            [
+                'booking_id' => $booking->id,
+                'vendor_name' => $vendor->business_name,
+                'service_name' => $service->name,
+                'vendor_id' => $vendor->id
+            ],
+            'normal',
+            "/client/bookings/{$booking->id}"
+        );
+
+        broadcast(new NotificationCreated($notification));
+        return $notification;
+    }
+
+    public function createBookingCancelledClientNotification($booking)
+    {
+        $client = $booking->user->client;
+        $vendor = $booking->service->vendor;
+        $service = $booking->service;
+
+        $notification = Notification::createForUser(
+            $client->id,
+            Notification::TYPE_BOOKING_CANCELLED_CLIENT,
+            'Booking Cancelled',
+            "Your booking for {$service->name} with {$vendor->business_name} has been cancelled.",
+            [
+                'booking_id' => $booking->id,
+                'vendor_name' => $vendor->business_name,
+                'service_name' => $service->name,
+                'vendor_id' => $vendor->id,
+                'cancellation_reason' => $booking->cancellation_reason ?? null
+            ],
+            'high',
+            "/client/bookings/{$booking->id}"
+        );
+
+        broadcast(new NotificationCreated($notification));
+        return $notification;
     }
 
 
