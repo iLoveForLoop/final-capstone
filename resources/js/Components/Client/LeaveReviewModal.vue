@@ -33,8 +33,6 @@ const toast = useToast()
 // Emits
 const emit = defineEmits(['close', 'submit'])
 
-console.log('vendor id: ', props.serviceData.vendorId);
-
 // Reactive data
 const rating = ref(0)
 const hoverRating = ref(0)

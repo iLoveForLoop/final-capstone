@@ -4,6 +4,7 @@ import { usePage } from '@inertiajs/vue3';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue';
+import { useNavbarStore } from '@/store/navbarStore';
 import MyDropdown from './MyDropdown.vue';
 import {
     Bell, MessageSquare, Menu, X, Home, Calendar, Heart,
@@ -16,99 +17,36 @@ import DesktopNavs from './ClientNavbar/DesktopNavs.vue';
 import ChatWindow from './ClientNavbar/ChatWindow.vue';
 
 const page = usePage()
+const navbarStore = useNavbarStore()
+
+// Local UI state only (these stay as refs)
 const isDropdownShowing = ref(false)
 const isMobileMenuOpen = ref(false)
 const isNotificationsOpen = ref(false)
 const isMessagesOpen = ref(false)
 const openChats = ref([])
 
-// Backend data
-const conversations = ref([])
-const notifications = ref([])
-const isLoading = ref(false)
-const isLoadingNotifications = ref(false)
+// Create computed properties that map to store properties
+// This ensures your template works exactly the same
+const conversations = computed(() => navbarStore.conversations)
+const notifications = computed(() => navbarStore.notifications)
+const isLoading = computed(() => navbarStore.isLoading)
+const isLoadingNotifications = computed(() => navbarStore.isLoadingNotifications)
+const unreadCount = computed(() => navbarStore.unreadCount)
+const unreadNotifications = computed(() => navbarStore.unreadNotifications)
+const unreadMessages = computed(() => navbarStore.unreadMessages)
+const processedMessages = computed(() => navbarStore.processedMessages)
 
-// Add this line after your existing refs
-const unreadCount = ref(0)
+console.log('Unread Notifications: ', unreadNotifications.value);
 
-// Add this function after your existing functions
-const loadUnreadCount = async () => {
+
+// Load initial data using store
+const loadInitialData = async () => {
     if (!page.props.auth.user) return
-
-    try {
-        const response = await axios.get('/client/notifications/unread-count')
-        unreadCount.value = response.data.unread_count
-    } catch (error) {
-        console.error('Failed to load unread count:', error)
-    }
+    await navbarStore.initialize()
 }
 
-// Update the computed property to use backend count
-const unreadNotifications = computed(() => {
-    return unreadCount.value > 0 ? unreadCount.value : notifications.value.filter(n => !n.is_read).length
-})
-
-// Computed for processed conversations
-const processedMessages = computed(() => {
-    return conversations.value.map(conv => {
-        return {
-            id: conv.id,
-            sender: conv.title,
-            avatar: conv.otherUserAvatar,
-            initials: getInitials(conv.title),
-            message: conv.last_message?.content || 'No messages yet',
-            time: formatTimestamp(conv.last_message?.created_at),
-            read: conv.unread_count === 0,
-            online: false, // You can implement online status later
-            chatMessages: [] // Will be loaded when chat is opened
-        }
-    })
-})
-
-// Count unread items
-// const unreadNotifications = computed(() => notifications.value.filter(n => !n.is_read).length)
-const unreadMessages = computed(() => {
-    return conversations.value.reduce((total, conv) => total + (conv.unread_count || 0), 0)
-})
-
-// Load conversations from backend
-const loadConversations = async () => {
-    if (!page.props.auth.user) return
-
-    try {
-        isLoading.value = true
-        const response = await axios.get('/conversations')
-        conversations.value = response.data.conversations
-        console.log("Conversations: ", conversations.value)
-    } catch (error) {
-        console.error('Failed to load conversations:', error)
-    } finally {
-        isLoading.value = false
-    }
-}
-
-// Load notifications from backend
-const loadNotifications = async () => {
-    if (!page.props.auth.user) return
-
-    try {
-        isLoadingNotifications.value = true
-        const response = await axios.get('/client/notifications', {
-            params: {
-                limit: 10
-            }
-        })
-        // FIX: Your controller returns 'data' not 'notifications'
-        notifications.value = response.data.data
-        console.log("Client notifications loaded: ", response)
-    } catch (error) {
-        console.error('Failed to load notifications:', error)
-    } finally {
-        isLoadingNotifications.value = false
-    }
-}
-
-// Load messages for a specific conversation
+// Load messages for a specific conversation (keep this local as it's chat-specific)
 const loadChatMessages = async (conversationId) => {
     try {
         const response = await axios.get(`/conversations/${conversationId}/messages`)
@@ -130,44 +68,10 @@ const loadChatMessages = async (conversationId) => {
     }
 }
 
-// Mark notification as read
-const markNotificationRead = async (notificationId) => {
-    try {
-        await axios.patch(`/client/notifications/${notificationId}/read`)
-
-        // Update local state
-        const notification = notifications.value.find(n => n.id === notificationId)
-        if (notification) {
-            notification.read_at = new Date().toISOString()
-            notification.is_read = true
-        }
-    } catch (error) {
-        console.error('Failed to mark notification as read:', error)
-    }
-}
-
-// Mark all notifications as read
-const markAllNotificationsAsRead = async () => {
-    try {
-        await axios.post('/client/notifications/mark-all-read')
-
-        // Update local state
-        notifications.value.forEach(notification => {
-            notification.read_at = new Date().toISOString()
-            notification.is_read = true
-        })
-    } catch (error) {
-        console.error('Failed to mark all notifications as read:', error)
-    }
-}
-
-// Chat window functions
+// Chat window functions (keep these local as they're UI-specific)
 const openChatWindow = async (message) => {
-    // Mark conversation as read (update unread count)
-    const conversation = conversations.value.find(c => c.id === message.id)
-    if (conversation) {
-        conversation.unread_count = 0
-    }
+    // Mark conversation as read (update unread count in store)
+    navbarStore.updateConversation(message.id, { unread_count: 0 })
 
     // Close messages dropdown
     isMessagesOpen.value = false
@@ -227,33 +131,43 @@ const subscribeToConversation = (conversationId) => {
                 // If the user is looking at this chat and message is NOT their own
                 if (!e.message.is_own) {
                     await axios.post(`/conversations/${conversationId}/mark-as-read`)
-                    const conversation = conversations.value.find(c => c.id === conversationId)
-                    if (conversation) {
-                        conversation.unread_count = 0
-                    }
+                    navbarStore.updateConversation(conversationId, { unread_count: 0 })
                 }
             } else {
                 // Chat window is closed → increase unread
-                const conversation = conversations.value.find(c => c.id === conversationId)
+                const conversation = navbarStore.conversations.find(c => c.id === conversationId)
                 if (conversation && !e.message.is_own) {
-                    conversation.last_message = e.message
-                    conversation.unread_count = (conversation.unread_count || 0) + 1
+                    navbarStore.updateConversation(conversationId, {
+                        last_message: e.message,
+                        unread_count: (conversation.unread_count || 0) + 1
+                    })
                 }
             }
         })
 }
 
-// Subscribe to real-time notifications
+// Subscribe to real-time notifications - FIXED to await the store action
 const subscribeToNotifications = () => {
-    if (!window.Echo || !page.props.auth.user) return
+    console.log('🔔 Setting up notification listener...');
 
-    // Listen for new notifications
-    console.log('My id: ', page.props.auth.clientId)
-    window.Echo.private(`client.${page.props.auth.clientId}`)
-        .listen('.NotificationCreated', (e) => {
-            console.log('New notification received:', e)
-            // Add new notification to the top
-            notifications.value.unshift({
+    if (!window.Echo || !page.props.auth.user) {
+        console.log('❌ Echo not available or user not authenticated');
+        return;
+    }
+
+    const clientId = page.props.auth.clientId;
+    console.log('👂 Listening for notifications for client:', clientId);
+
+    window.Echo.private(`client.${clientId}`)
+        .listen('.notification.created', async (e) => {
+            console.log('📨 Real-time notification received:', {
+                id: e.id,
+                title: e.title,
+                type: e.type
+            });
+
+            // FIXED: Await the store action to ensure it completes
+            await navbarStore.addNotification({
                 id: e.id,
                 type: e.type,
                 title: e.title,
@@ -264,14 +178,13 @@ const subscribeToNotifications = () => {
                 time_ago: e.time_ago,
                 read_at: null,
                 is_read: false
-            })
+            });
 
-            // Refresh unread count
-            loadUnreadCount()
-
-            // Play notification sound (optional)
-            playNotificationSound()
+            playNotificationSound();
         })
+        .error((error) => {
+            console.error('❌ Echo subscription error:', error);
+        });
 }
 
 // Play notification sound
@@ -344,10 +257,12 @@ const sendChatMessage = async (chatId) => {
             }
         }
 
-        // Update conversation in list
-        const conversation = conversations.value.find(c => c.id === chat.conversationId)
+        // Update conversation in store
+        const conversation = navbarStore.conversations.find(c => c.id === chat.conversationId)
         if (conversation) {
-            conversation.last_message = response.data.message
+            navbarStore.updateConversation(chat.conversationId, {
+                last_message: response.data.message
+            })
         }
 
     } catch (error) {
@@ -375,23 +290,13 @@ const closeDrawers = (event) => {
     }
 }
 
-// Utility functions
+// Utility functions (keep local versions that use store utilities)
 const getInitials = (name) => {
-    if (!name) return 'U'
-    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+    return navbarStore.getInitials(name)
 }
 
 const formatTimestamp = (timestamp) => {
-    if (!timestamp) return ''
-    const date = new Date(timestamp)
-    const now = new Date()
-    const diff = now - date
-
-    if (diff < 60000) return 'Just now'
-    if (diff < 3600000) return `${Math.floor(diff / 60000)} min ago`
-    if (diff < 86400000) return `${Math.floor(diff / 3600000)} hour ago`
-    if (diff < 604800000) return `${Math.floor(diff / 86400000)} day ago`
-    return date.toLocaleDateString()
+    return navbarStore.formatTimestamp(timestamp)
 }
 
 const formatTime = (timestamp) => {
@@ -437,9 +342,7 @@ const getNotificationIconColor = (type) => {
 // Lifecycle hooks
 onMounted(() => {
     document.addEventListener('click', closeDrawers)
-    loadConversations()
-    loadNotifications()
-    loadUnreadCount()
+    loadInitialData()
     subscribeToNotifications()
 
     emitter.on('chat-vendor', async (payload) => {
@@ -472,11 +375,12 @@ onMounted(() => {
         }
     })
 
-    // Refresh data periodically
+    // Refresh data periodically using store (keep conversations refresh, remove notifications refresh)
+    // In your onMounted hook, replace the interval with:
     const interval = setInterval(() => {
-        loadConversations()
-        loadNotifications()
-    }, 60000) // Every 60 seconds
+        // Only refresh conversations (notifications are handled by real-time)
+        navbarStore.refreshData();
+    }, 60000); // Every 60 seconds
 
     // Cleanup interval on unmount
     onUnmounted(() => {
@@ -544,7 +448,7 @@ onUnmounted(() => {
                                             <div class="flex items-center justify-between">
                                                 <h3 class="font-semibold text-gray-900">Notifications</h3>
                                                 <button v-if="unreadNotifications > 0"
-                                                    @click="markAllNotificationsAsRead"
+                                                    @click="navbarStore.markAllNotificationsAsRead"
                                                     class="text-xs text-purple-600 hover:text-purple-800 font-medium">
                                                     Mark all read
                                                 </button>
@@ -564,7 +468,7 @@ onUnmounted(() => {
                                                     arrives</p>
                                             </div>
                                             <div v-else v-for="notification in notifications" :key="notification.id"
-                                                @click="markNotificationRead(notification.id)"
+                                                @click="navbarStore.markNotificationRead(notification.id)"
                                                 class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-150 group"
                                                 :class="{ 'bg-purple-50/50': !notification.is_read }">
                                                 <div class="flex items-start space-x-3">
@@ -667,7 +571,7 @@ onUnmounted(() => {
                                                             {{ console.log("Message: ", message) }}
                                                             <p class="font-medium text-gray-900 truncate">{{
                                                                 message.sender
-                                                                }}</p>
+                                                            }}</p>
                                                             <div class="flex items-center space-x-1">
                                                                 <span v-if="!message.read"
                                                                     class="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></span>

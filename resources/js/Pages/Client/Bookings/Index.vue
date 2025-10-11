@@ -2,7 +2,6 @@
 import BookingCard from '@/Components/Client/Booking/BookingCard.vue';
 import BookingFilters from '@/Components/Client/Booking/BookingFilters.vue';
 import StatsSection from '@/Components/Client/Booking/StatsSection.vue';
-import ClientNavbar from '@/Components/ClientNavbar.vue';
 import ClientLayout from '@/Layouts/ClientLayout.vue';
 import { ref, computed } from 'vue';
 

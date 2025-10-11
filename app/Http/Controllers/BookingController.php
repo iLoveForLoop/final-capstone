@@ -238,7 +238,7 @@ class BookingController extends Controller
         $booking->load(['service.vendor.user', 'user']);
 
 
-        Mail::to($booking->user->email)->queue(new BookingCancelledMail($booking, $request->reason));
+        // Mail::to($booking->user->email)->queue(new BookingCancelledMail($booking, $request->reason));
 
 
 

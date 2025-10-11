@@ -1,5 +1,4 @@
 <script setup>
-import ClientNavbar from '@/Components/ClientNavbar.vue';
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { Calendar } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';

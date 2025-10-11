@@ -237,23 +237,23 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client', 'user
 
 
     //ui testing
-    Route::get('/temp', function () {
+//     Route::get('/temp', function () {
 
-    return inertia('Client/Vendor/Temp');
+//     return inertia('Client/Vendor/Temp');
 
-   })->name('temp');
+//    })->name('temp');
 
-   Route::get('/temp2', function () {
+//    Route::get('/temp2', function () {
 
-    return inertia('Client/Vendor/Temp2');
+//     return inertia('Client/Vendor/Temp2');
 
-   })->name('temp2');
+//    })->name('temp2');
 
-   Route::get('/temp3', function () {
+//    Route::get('/temp3', function () {
 
-    return inertia('Client/Vendor/Temp3');
+//     return inertia('Client/Vendor/Temp3');
 
-   })->name('temp3');
+//    })->name('temp3');
 
 
 
@@ -267,8 +267,8 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client', 'user
         ->name('client.notifications.markAsRead');
 
     // Mark all client notifications as read
-    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])
-        ->name('client.notifications.markAllAsRead');
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead'])
+        ->name('client.notifications.markAllRead');
 
     // Get client unread count
     Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])
