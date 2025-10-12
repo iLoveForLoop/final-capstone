@@ -11,6 +11,7 @@ import {
     pastelTheme
 } from 'notivue';
 import 'notivue/notification-progress.css';
+import AIChatbot from '@/Components/AIChatbot.vue';
 
 
 
@@ -71,6 +72,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+    <AIChatbot />
     <div class="h-screen flex flex-col">
         <!-- Notivue container -->
         <Notivue v-slot="item">

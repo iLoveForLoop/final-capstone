@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AIChatController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CateringServiceController;
@@ -278,6 +279,7 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client', 'user
 });
 
 
+//AI
 
 
 

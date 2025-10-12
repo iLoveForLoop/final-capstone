@@ -20,35 +20,6 @@ const props = defineProps({
 const showGalleryModal = ref(false)
 const galleryIndex = ref(0)
 
-const calendarEvents = ref([
-    {
-        title: 'Available',
-        start: new Date(),
-        end: new Date(new Date().setDate(new Date().getDate() + 5)),
-        color: '#10b981',
-        display: 'background',
-    },
-    {
-        title: 'Booked - Wedding Event',
-        start: new Date(new Date().setDate(new Date().getDate() + 6)),
-        end: new Date(new Date().setDate(new Date().getDate() + 6)),
-        color: '#ef4444',
-    },
-    {
-        title: 'Available',
-        start: new Date(new Date().setDate(new Date().getDate() + 7)),
-        end: new Date(new Date().setDate(new Date().getDate() + 10)),
-        color: '#10b981',
-        display: 'background',
-    },
-    {
-        title: 'Booked - Corporate Event',
-        start: new Date(new Date().setDate(new Date().getDate() + 12)),
-        end: new Date(new Date().setDate(new Date().getDate() + 12)),
-        color: '#ef4444',
-    },
-])
-
 const handleDateClick = (arg) => {
     if (arg.event) return
     bookingForm.value.date = arg.dateStr
@@ -66,8 +37,14 @@ const calendarOptions = {
         right: 'dayGridMonth,dayGridWeek',
     },
     eventDisplay: 'block',
-    eventColor: '#3b82f6',
+    eventColor: '#ef4444',
     height: 'auto',
+    eventDidMount: (info) => {
+        info.el.style.border = 'none'
+        info.el.style.borderLeft = '3px solid #dc2626'
+        info.el.style.fontWeight = '500'
+        info.el.style.borderRadius = '4px'
+    },
 }
 
 const openGallery = (index) => {
@@ -85,9 +62,6 @@ const nextImage = () => {
         galleryIndex.value < props.vendor.gallery.length - 1 ? galleryIndex.value + 1 : 0
 }
 </script>
-
-
-
 
 <template>
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-8">
@@ -131,7 +105,7 @@ const nextImage = () => {
                                 class="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-full transition-colors duration-200">
                                 <div class="w-2 h-2 bg-indigo-600 rounded-full"></div>
                                 <span class="text-sm font-medium text-gray-700">{{ specialty
-                                    }}</span>
+                                }}</span>
                             </div>
                         </div>
                     </div>
@@ -156,18 +130,29 @@ const nextImage = () => {
             <Card>
                 <CardHeader>
                     <CardTitle>Availability Calendar</CardTitle>
+                    <p class="text-sm text-gray-600 mt-1">Check available dates for booking</p>
                 </CardHeader>
                 <CardContent>
                     <div class="calendar-container">
                         <FullCalendar :options="calendarOptions" class="vendor-calendar" />
-                        <div class="calendar-legend mt-4">
-                            <div class="legend-item">
-                                <div class="w-3 h-3 bg-green-200 rounded-full"></div>
-                                <span class="text-sm">Available</span>
+                        <div class="calendar-info mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <div class="flex items-center gap-3">
+                                <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                <p class="text-sm text-blue-700 font-medium">Click on available dates to book</p>
                             </div>
-                            <div class="legend-item">
-                                <div class="w-3 h-3 bg-red-200 rounded-full"></div>
-                                <span class="text-sm">Booked</span>
+                        </div>
+                        <div class="calendar-legend mt-4 flex justify-center gap-6">
+                            <div class="legend-item flex items-center gap-2">
+                                <div class="w-3 h-3 bg-white rounded-sm border border-gray-300"></div>
+                                <span class="text-sm text-gray-600">Available</span>
+                            </div>
+                            <div class="legend-item flex items-center gap-2">
+                                <div class="w-3 h-3 bg-red-500 rounded-sm"></div>
+                                <span class="text-sm text-gray-600">Booked</span>
+                            </div>
+                            <div class="legend-item flex items-center gap-2">
+                                <div class="w-3 h-3 bg-blue-100 rounded-sm border-2 border-blue-500"></div>
+                                <span class="text-sm text-gray-600">Today</span>
                             </div>
                         </div>
                     </div>
@@ -273,7 +258,6 @@ const nextImage = () => {
     </Dialog>
 </template>
 
-
 <style scoped>
 /* Gallery */
 .gallery-item {
@@ -284,45 +268,13 @@ const nextImage = () => {
     @apply absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 flex items-center justify-center;
 }
 
-/* Calendar */
+/* Calendar Container */
 .calendar-container {
-    @apply bg-white rounded-xl overflow-hidden shadow-md p-2;
+    @apply bg-white rounded-xl overflow-hidden;
 }
 
 .vendor-calendar {
     @apply w-full;
-}
-
-:deep(.fc) {
-    @apply text-sm;
-}
-
-:deep(.fc-toolbar-title) {
-    @apply text-base font-semibold;
-}
-
-:deep(.fc-day) {
-    @apply cursor-pointer;
-}
-
-:deep(.fc-day-other) {
-    @apply bg-gray-50;
-}
-
-:deep(.fc-daygrid-day-number) {
-    @apply p-2 text-sm;
-}
-
-:deep(.fc-event) {
-    @apply cursor-pointer border-none text-xs p-1;
-}
-
-.calendar-legend {
-    @apply flex justify-center gap-4 md:gap-6 text-xs;
-}
-
-.legend-item {
-    @apply flex items-center gap-2;
 }
 
 /* Contact */
@@ -339,14 +291,208 @@ const nextImage = () => {
     @apply relative rounded-2xl overflow-hidden shadow-lg;
 }
 
+/* Calendar Legend */
+.calendar-legend {
+    @apply flex justify-center gap-6 text-sm;
+}
+
+.legend-item {
+    @apply flex items-center gap-2;
+}
+
 /* Responsive */
-@media (max-width: 640px) {
-    :deep(.fc-header-toolbar) {
-        @apply flex-col gap-2;
+@media (max-width: 768px) {
+    .calendar-legend {
+        @apply flex-col gap-3 items-start;
+    }
+}
+</style>
+
+<style>
+/* Enhanced Calendar Styles */
+.vendor-calendar .fc {
+    @apply text-sm font-sans;
+}
+
+.vendor-calendar .fc-toolbar {
+    @apply p-4 pb-3 border-b border-gray-200 bg-white;
+}
+
+.vendor-calendar .fc-toolbar-title {
+    @apply text-lg font-semibold text-gray-900;
+}
+
+.vendor-calendar .fc-button {
+    @apply bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 hover:text-gray-900 transition-all duration-200 font-medium py-2 px-3 text-sm rounded-lg;
+}
+
+.vendor-calendar .fc-button:focus {
+    @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+}
+
+.vendor-calendar .fc-button-active {
+    @apply bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-700;
+}
+
+.vendor-calendar .fc-today-button {
+    @apply bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-700;
+}
+
+.vendor-calendar .fc-prev-button,
+.vendor-calendar .fc-next-button {
+    @apply hover:bg-gray-100 hover:border-gray-400 transition-all duration-200;
+}
+
+.vendor-calendar .fc-prev-button:hover,
+.vendor-calendar .fc-next-button:hover {
+    @apply bg-gray-100 border-gray-400 transform scale-105;
+}
+
+.vendor-calendar .fc-scrollgrid {
+    @apply border border-gray-200 rounded-lg overflow-hidden shadow-sm;
+}
+
+.vendor-calendar .fc-col-header {
+    @apply bg-gradient-to-b from-gray-50 to-gray-100;
+}
+
+.vendor-calendar .fc-col-header-cell {
+    @apply border-r border-b border-gray-200 py-3 last:border-r-0;
+}
+
+.vendor-calendar .fc-col-header-cell-cushion {
+    @apply text-sm font-semibold text-gray-700 py-2 no-underline;
+}
+
+.vendor-calendar .fc-daygrid-day {
+    @apply border-r border-b border-gray-200 bg-white transition-all duration-200 cursor-pointer;
+}
+
+.vendor-calendar .fc-daygrid-day:hover {
+    @apply bg-blue-50 transform scale-[1.02] z-10 relative shadow-md;
+}
+
+.vendor-calendar .fc-daygrid-day:last-child {
+    @apply border-r-0;
+}
+
+.vendor-calendar .fc-daygrid-day-number {
+    @apply p-2 text-sm font-medium text-gray-900 m-1;
+}
+
+.vendor-calendar .fc-day-other {
+    @apply bg-gray-50;
+}
+
+.vendor-calendar .fc-day-other .fc-daygrid-day-number {
+    @apply text-gray-400;
+}
+
+.vendor-calendar .fc-day-today {
+    @apply bg-blue-50 relative;
+}
+
+.vendor-calendar .fc-day-today::before {
+    content: '';
+    @apply absolute inset-1 border-2 border-blue-500 rounded-lg pointer-events-none;
+}
+
+.vendor-calendar .fc-day-today .fc-daygrid-day-number {
+    @apply text-blue-700 font-semibold;
+}
+
+.vendor-calendar .fc-event {
+    @apply cursor-default border-none text-xs font-medium px-2 py-1 m-1 bg-red-500 text-white rounded shadow-sm;
+    border-left: 3px solid #dc2626 !important;
+}
+
+.vendor-calendar .fc-event:hover {
+    @apply bg-red-600 transform translate-y-[-1px] shadow-md;
+}
+
+.vendor-calendar .fc-day-disabled {
+    @apply bg-gray-100 cursor-not-allowed;
+}
+
+.vendor-calendar .fc-day-disabled .fc-daygrid-day-number {
+    @apply text-gray-400;
+}
+
+.vendor-calendar .fc-day-disabled:hover {
+    @apply bg-gray-100 transform-none shadow-none;
+}
+
+.vendor-calendar .fc-daygrid-more-link {
+    @apply text-xs text-blue-600 hover:text-blue-800 font-medium;
+}
+
+.vendor-calendar .fc-popover {
+    @apply shadow-lg border border-gray-200 rounded-lg;
+}
+
+.vendor-calendar .fc-popover-header {
+    @apply bg-gray-50 border-b border-gray-200 py-2 px-3;
+}
+
+.vendor-calendar .fc-popover-title {
+    @apply text-sm font-semibold text-gray-700;
+}
+
+.vendor-calendar .fc-more-popover {
+    @apply z-20;
+}
+
+/* Smooth animations */
+.vendor-calendar .fc-daygrid-day,
+.vendor-calendar .fc-event,
+.vendor-calendar .fc-button {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Focus states for accessibility */
+.vendor-calendar .fc-button:focus,
+.vendor-calendar .fc-daygrid-day:focus {
+    @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+}
+
+/* Responsive Calendar */
+@media (max-width: 768px) {
+    .vendor-calendar .fc-header-toolbar {
+        @apply flex-col gap-3;
     }
 
-    :deep(.fc-toolbar-chunk) {
-        @apply mb-2;
+    .vendor-calendar .fc-toolbar-chunk {
+        @apply mb-2 w-full justify-center;
+    }
+
+    .vendor-calendar .fc-toolbar-title {
+        @apply text-base text-center;
+    }
+
+    .vendor-calendar .fc-button {
+        @apply text-xs px-2 py-1;
+    }
+
+    .vendor-calendar .fc-daygrid-day-number {
+        @apply text-xs p-1 m-0.5;
+    }
+
+    .vendor-calendar .fc-event {
+        @apply text-xs px-1 py-0.5 m-0.5;
+    }
+}
+
+@media (max-width: 640px) {
+    .vendor-calendar .fc-toolbar {
+        @apply p-3;
+    }
+
+    .vendor-calendar .fc-col-header-cell-cushion {
+        @apply text-xs py-1;
+    }
+
+    .vendor-calendar .fc-daygrid-day-number {
+        @apply text-xs p-1;
     }
 }
 </style>

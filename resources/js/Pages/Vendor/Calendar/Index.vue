@@ -22,6 +22,7 @@ const showModal = ref(false)
 const selectedBookings = ref([])
 const selectedDate = ref(null)
 const currentView = ref('dayGridMonth')
+const currentMonthYear = ref('')
 
 // FullCalendar options
 const calendarOptions = ref({
@@ -40,7 +41,7 @@ const calendarOptions = ref({
     eventClick: handleEventClick,
     dateClick: handleDateClick,
     eventDidMount: handleEventDidMount,
-    dayCellDidMount: handleDayCellDidMount
+    datesSet: handleDatesSet
 })
 
 // Convert bookings to FullCalendar events
@@ -63,36 +64,36 @@ const calendarEvents = computed(() => {
 
 function getEventBackgroundColor(status) {
     const colors = {
-        'confirmed': '#10b981', // green-500
-        'pending': '#f59e0b',   // yellow-500
-        'completed': '#3b82f6', // blue-500
-        'cancelled': '#ef4444'  // red-500
+        'confirmed': '#10b981',
+        'pending': '#f59e0b',
+        'completed': '#3b82f6',
+        'cancelled': '#ef4444'
     }
-    return colors[status] || '#6b7280' // gray-500
+    return colors[status] || '#6b7280'
 }
 
 function getEventBorderColor(status) {
     const colors = {
-        'confirmed': '#059669', // green-600
-        'pending': '#d97706',   // yellow-600
-        'completed': '#2563eb', // blue-600
-        'cancelled': '#dc2626'  // red-600
+        'confirmed': '#059669',
+        'pending': '#d97706',
+        'completed': '#2563eb',
+        'cancelled': '#dc2626'
     }
-    return colors[status] || '#4b5563' // gray-600
+    return colors[status] || '#4b5563'
 }
 
 function getEventTextColor(status) {
-    return '#ffffff' // white text for all events
+    return '#ffffff'
 }
 
 function getBookingStatusColor(status) {
     const colors = {
-        'confirmed': 'bg-green-100 text-green-800',
-        'pending': 'bg-yellow-100 text-yellow-800',
-        'completed': 'bg-blue-100 text-blue-800',
-        'cancelled': 'bg-red-100 text-red-800'
+        'confirmed': 'bg-green-50 text-green-700 border border-green-200',
+        'pending': 'bg-amber-50 text-amber-700 border border-amber-200',
+        'completed': 'bg-blue-50 text-blue-700 border border-blue-200',
+        'cancelled': 'bg-red-50 text-red-700 border border-red-200'
     }
-    return colors[status] || 'bg-gray-100 text-gray-800'
+    return colors[status] || 'bg-gray-50 text-gray-700 border border-gray-200'
 }
 
 function handleEventClick(info) {
@@ -114,20 +115,21 @@ function handleDateClick(info) {
 }
 
 function handleEventDidMount(info) {
-    // Add custom styling or tooltips if needed
     const booking = info.event.extendedProps.booking
     info.el.setAttribute('title', `${booking.service_name} - ${booking.client_name} (${booking.status})`)
+
+    // Clean event styling with subtle enhancements
+    info.el.style.fontWeight = '500'
+    info.el.style.border = 'none'
+    info.el.style.borderLeft = `3px solid ${getEventBorderColor(booking.status)}`
 }
 
-function handleDayCellDidMount(info) {
-    // Add custom day cell styling if needed
-    const dateStr = info.date.toISOString().split('T')[0]
-    const dayBookings = props.bookings.filter(booking => booking.event_date === dateStr)
-
-    if (dayBookings.length > 0) {
-        info.el.classList.add('has-bookings')
-        info.el.style.cursor = 'pointer'
-    }
+function handleDatesSet(dateInfo) {
+    const currentDate = dateInfo.view.currentStart
+    currentMonthYear.value = currentDate.toLocaleDateString('en-US', {
+        month: 'long',
+        year: 'numeric'
+    })
 }
 
 function closeModal() {
@@ -180,6 +182,13 @@ onMounted(() => {
             const calendarApi = calendarRef.value.getApi()
             calendarApi.removeAllEvents()
             calendarApi.addEventSource(calendarEvents.value)
+
+            // Set initial month/year
+            const currentDate = calendarApi.getDate()
+            currentMonthYear.value = currentDate.toLocaleDateString('en-US', {
+                month: 'long',
+                year: 'numeric'
+            })
         }
     })
 })
@@ -197,119 +206,119 @@ watch(() => props.bookings, (newBookings) => {
 
 <template>
     <VendorLayout title="Calendar">
-        <div class="min-h-screen bg-gray-50 py-4 md:py-8">
-            <div class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+        <div class="min-h-screen bg-gray-50 py-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <!-- Header Section -->
-                <div class="mb-6 md:mb-8">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="mb-8">
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                         <div>
-                            <h1 class="text-2xl font-bold text-gray-800">Calendar</h1>
-                            <p class="text-gray-500 text-sm mt-1">View your bookings and schedule overview</p>
+                            <h1 class="text-2xl font-bold text-gray-900">Booking Calendar</h1>
+                            <p class="text-gray-600 mt-1">Manage your appointments and schedule</p>
                         </div>
 
                         <!-- Stats Cards -->
-                        <!-- <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                            <div
-                                class="bg-white px-3 py-2 md:px-4 md:py-2 rounded-lg shadow-sm border flex-1 sm:flex-initial">
-                                <div class="text-center sm:text-left">
-                                    <span class="text-lg md:text-xl font-semibold text-gray-900">{{ bookingStats.total
-                                    }}</span>
-                                    <p class="text-xs text-gray-500">Total Bookings</p>
+                        <div class="flex gap-4">
+                            <div class="bg-white px-5 py-3 rounded-lg border border-gray-200 shadow-sm">
+                                <div class="text-center">
+                                    <span class="text-xl font-bold text-gray-900">{{ bookingStats.total }}</span>
+                                    <p class="text-sm text-gray-600 mt-1">Total Bookings</p>
                                 </div>
                             </div>
-                            <div
-                                class="bg-white px-3 py-2 md:px-4 md:py-2 rounded-lg shadow-sm border flex-1 sm:flex-initial">
-                                <div class="text-center sm:text-left">
-                                    <span class="text-lg md:text-xl font-semibold text-gray-900">{{
-                                        bookingStats.thisMonth }}</span>
-                                    <p class="text-xs text-gray-500">This Month</p>
+                            <div class="bg-white px-5 py-3 rounded-lg border border-gray-200 shadow-sm">
+                                <div class="text-center">
+                                    <span class="text-xl font-bold text-gray-900">{{ bookingStats.thisMonth }}</span>
+                                    <p class="text-sm text-gray-600 mt-1">This Month</p>
                                 </div>
-                            </div>
-                        </div> -->
-                    </div>
-                </div>
-
-                <!-- Custom Toolbar -->
-                <div class="bg-white rounded-xl shadow-sm border mb-4 md:mb-6">
-                    <div class="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100">
-                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                            <!-- View Toggle -->
-                            <div class="flex items-center space-x-2">
-                                <button @click="changeView('dayGridMonth')" :class="[
-                                    'px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200',
-                                    currentView === 'dayGridMonth'
-                                        ? 'bg-blue-600 text-white'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                ]">
-                                    Month
-                                </button>
-                                <button @click="changeView('listWeek')" :class="[
-                                    'px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200',
-                                    currentView === 'listWeek'
-                                        ? 'bg-blue-600 text-white'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                ]">
-                                    List
-                                </button>
-                            </div>
-
-                            <!-- Navigation -->
-                            <div class="flex items-center space-x-2">
-                                <button @click="goToPrev"
-                                    class="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-                                    aria-label="Previous">
-                                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 19l-7-7 7-7" />
-                                    </svg>
-                                </button>
-
-                                <button @click="goToToday"
-                                    class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200">
-                                    Today
-                                </button>
-
-                                <button @click="goToNext"
-                                    class="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-                                    aria-label="Next">
-                                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Legend -->
-                    <div class="px-3 md:px-6 py-3 bg-gray-50 border-b border-gray-100">
-                        <div class="flex flex-wrap items-center gap-3 md:gap-6 text-xs justify-center sm:justify-start">
-                            <div class="flex items-center space-x-2">
-                                <div class="w-3 h-3 bg-green-500 rounded-sm"></div>
-                                <span class="text-gray-600">Confirmed</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <div class="w-3 h-3 bg-yellow-500 rounded-sm"></div>
-                                <span class="text-gray-600">Pending</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <div class="w-3 h-3 bg-blue-500 rounded-sm"></div>
-                                <span class="text-gray-600">Completed</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <div class="w-3 h-3 bg-red-500 rounded-sm"></div>
-                                <span class="text-gray-600">Cancelled</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- FullCalendar Component -->
-                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-                    <div class="p-4 md:p-6">
-                        <FullCalendar ref="calendarRef" :options="calendarOptions" class="fullcalendar-custom" />
+                <!-- Calendar Container -->
+                <div class="space-y-4">
+                    <!-- Control Panel -->
+                    <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+                        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                            <!-- Current Month & Navigation -->
+                            <div class="flex items-center gap-4">
+                                <div>
+                                    <h2 class="text-lg font-semibold text-gray-900">{{ currentMonthYear }}</h2>
+                                </div>
+
+                                <div class="flex items-center gap-2">
+                                    <button @click="goToPrev"
+                                        class="p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-300"
+                                        aria-label="Previous month">
+                                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
+
+                                    <button @click="goToToday"
+                                        class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                        Today
+                                    </button>
+
+                                    <button @click="goToNext"
+                                        class="p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-300"
+                                        aria-label="Next month">
+                                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- View Toggle & Legend -->
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                <!-- View Toggle -->
+                                <div class="flex items-center space-x-1 bg-gray-100 p-1 rounded-lg">
+                                    <button @click="changeView('dayGridMonth')" :class="[
+                                        'px-4 py-2 text-sm font-medium rounded-md transition-colors',
+                                        currentView === 'dayGridMonth'
+                                            ? 'bg-white text-blue-600 shadow-sm'
+                                            : 'text-gray-600 hover:text-gray-900'
+                                    ]">
+                                        Month
+                                    </button>
+                                    <button @click="changeView('listWeek')" :class="[
+                                        'px-4 py-2 text-sm font-medium rounded-md transition-colors',
+                                        currentView === 'listWeek'
+                                            ? 'bg-white text-blue-600 shadow-sm'
+                                            : 'text-gray-600 hover:text-gray-900'
+                                    ]">
+                                        List
+                                    </button>
+                                </div>
+
+                                <!-- Legend -->
+                                <div class="flex items-center gap-3 text-sm">
+                                    <div class="flex items-center space-x-1">
+                                        <div class="w-3 h-3 bg-green-500 rounded-sm"></div>
+                                        <span class="text-gray-700">Confirmed</span>
+                                    </div>
+                                    <div class="flex items-center space-x-1">
+                                        <div class="w-3 h-3 bg-yellow-500 rounded-sm"></div>
+                                        <span class="text-gray-700">Pending</span>
+                                    </div>
+                                    <div class="flex items-center space-x-1">
+                                        <div class="w-3 h-3 bg-blue-500 rounded-sm"></div>
+                                        <span class="text-gray-700">Completed</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Calendar -->
+                    <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                        <div class="p-2">
+                            <FullCalendar ref="calendarRef" :options="calendarOptions" class="fullcalendar-custom" />
+                        </div>
                     </div>
                 </div>
 
@@ -320,32 +329,35 @@ watch(() => props.bookings, (newBookings) => {
                         </div>
 
                         <div
-                            class="inline-block align-bottom bg-white rounded-t-lg sm:rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full w-full">
+                            class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full w-full">
                             <!-- Modal Header -->
-                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 border-b border-gray-100">
+                            <div class="bg-white px-6 pt-5 pb-4 border-b border-gray-200">
                                 <div class="flex items-center justify-between">
-                                    <h3 class="text-lg leading-6 font-medium text-gray-900">
-                                        {{ selectedDate ? formatDate(selectedDate) : '' }}
-                                    </h3>
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-900">
+                                            {{ selectedDate ? formatDate(selectedDate) : '' }}
+                                        </h3>
+                                        <p class="text-sm text-gray-600 mt-1">
+                                            {{ selectedBookings.length }} booking{{ selectedBookings.length !== 1 ? 's'
+                                            : '' }}
+                                        </p>
+                                    </div>
                                     <button @click="closeModal"
-                                        class="rounded-md text-gray-400 hover:text-gray-600 focus:outline-none">
-                                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        class="rounded-md p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </button>
                                 </div>
-                                <p class="text-sm text-gray-500 mt-1">
-                                    {{ selectedBookings.length }} booking{{ selectedBookings.length !== 1 ? 's' : '' }}
-                                </p>
                             </div>
 
                             <!-- Modal Body -->
-                            <div class="bg-white px-4 pb-4 sm:p-6 max-h-96 overflow-y-auto">
+                            <div class="bg-white px-6 pb-4 sm:p-6 max-h-96 overflow-y-auto">
                                 <div class="space-y-3" v-if="selectedBookings.length > 0">
                                     <div v-for="booking in selectedBookings" :key="booking.id"
-                                        class="border rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition-colors duration-200">
-                                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                        class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                             <div class="flex-1">
                                                 <h4 class="font-medium text-gray-900 text-sm sm:text-base">{{
                                                     booking.service_name }}</h4>
@@ -356,7 +368,7 @@ watch(() => props.bookings, (newBookings) => {
                                             <div
                                                 class="flex items-center justify-between sm:justify-end sm:flex-col sm:items-end gap-2">
                                                 <span :class="[
-                                                    'px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap',
+                                                    'px-3 py-1 text-xs font-medium rounded-full',
                                                     getBookingStatusColor(booking.status)
                                                 ]">
                                                     {{ booking.status.charAt(0).toUpperCase() + booking.status.slice(1)
@@ -374,16 +386,15 @@ watch(() => props.bookings, (newBookings) => {
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
-                                    <h3 class="mt-2 text-sm font-medium text-gray-900">No bookings</h3>
-                                    <p class="mt-1 text-sm text-gray-500">No bookings scheduled for this day.</p>
+                                    <h3 class="mt-4 text-sm font-medium text-gray-900">No bookings scheduled</h3>
+                                    <p class="mt-2 text-sm text-gray-500">No appointments for this day.</p>
                                 </div>
                             </div>
 
                             <!-- Modal Footer -->
-                            <div
-                                class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-100">
+                            <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
                                 <button type="button"
-                                    class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm"
+                                    class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm"
                                     @click="closeModal">
                                     Close
                                 </button>
@@ -397,64 +408,171 @@ watch(() => props.bookings, (newBookings) => {
 </template>
 
 <style>
-/* Custom FullCalendar Styles */
+/* Enhanced FullCalendar Styles - Clean but Professional */
 .fullcalendar-custom {
     font-family: inherit;
+    --fc-border-color: #e2e8f0;
+    --fc-today-bg-color: #f0f9ff;
+    --fc-neutral-bg-color: #f8fafc;
 }
 
 .fullcalendar-custom .fc-toolbar {
     display: none !important;
-    /* Hide default toolbar since we have custom one */
 }
 
-.fullcalendar-custom .fc-daygrid-day.has-bookings {
-    background-color: #f8fafc;
+/* Calendar Grid Improvements */
+.fullcalendar-custom .fc-scrollgrid {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
-.fullcalendar-custom .fc-daygrid-day:hover {
-    background-color: #f1f5f9;
-}
-
-.fullcalendar-custom .fc-event {
-    border-radius: 6px;
-    font-size: 12px;
-    padding: 2px 6px;
-    margin-bottom: 2px;
-    cursor: pointer;
-}
-
-.fullcalendar-custom .fc-event:hover {
-    opacity: 0.8;
-}
-
-.fullcalendar-custom .fc-day-today {
-    background-color: #dbeafe !important;
+.fullcalendar-custom .fc-scrollgrid thead {
+    background: #f8fafc;
 }
 
 .fullcalendar-custom .fc-col-header-cell {
-    background-color: #f9fafb;
+    border-right: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    background: transparent !important;
+    padding: 12px 8px;
+}
+
+.fullcalendar-custom .fc-col-header-cell:last-child {
+    border-right: none;
+}
+
+.fullcalendar-custom .fc-col-header-cell-cushion {
+    padding: 12px 8px;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.05em;
     font-weight: 600;
     color: #374151;
+}
+
+/* Day Cells - Clean hover effect */
+.fullcalendar-custom .fc-daygrid-day {
+    border-right: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    background: white;
+    transition: background-color 0.15s ease;
+    position: relative;
+}
+
+.fullcalendar-custom .fc-daygrid-day:hover {
+    background: #f8fafc !important;
+}
+
+.fullcalendar-custom .fc-daygrid-day:last-child {
+    border-right: none;
+}
+
+.fullcalendar-custom .fc-daygrid-day.fc-day-other {
+    background-color: #fafafa;
+}
+
+.fullcalendar-custom .fc-daygrid-day.fc-day-other .fc-daygrid-day-number {
+    color: #9ca3af;
 }
 
 .fullcalendar-custom .fc-daygrid-day-number {
     color: #1f2937;
     font-weight: 500;
+    padding: 8px;
+    font-size: 14px;
+    position: relative;
 }
 
+/* Today Highlight - Clean but clear */
+.fullcalendar-custom .fc-day-today {
+    background: #eff6ff !important;
+    position: relative;
+}
+
+.fullcalendar-custom .fc-day-today::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    border: 2px solid #3b82f6;
+    border-radius: 6px;
+    pointer-events: none;
+}
+
+.fullcalendar-custom .fc-day-today .fc-daygrid-day-number {
+    color: #1e40af;
+    font-weight: 600;
+}
+
+/* Events Styling - Professional but clean */
+.fullcalendar-custom .fc-event {
+    border-radius: 4px;
+    font-size: 11px;
+    padding: 4px 6px;
+    margin: 1px 2px;
+    cursor: pointer;
+    border: none;
+    font-weight: 500;
+    transition: opacity 0.15s ease;
+    border-left: 3px solid transparent;
+    line-height: 1.2;
+}
+
+.fullcalendar-custom .fc-event:hover {
+    opacity: 0.9;
+}
+
+.fullcalendar-custom .fc-event-main {
+    padding: 0;
+}
+
+/* More Events Popover */
+.fullcalendar-custom .fc-more-popover {
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+}
+
+.fullcalendar-custom .fc-popover-header {
+    background: #f9fafb;
+    font-weight: 600;
+    border-radius: 8px 8px 0 0;
+    padding: 12px 16px;
+    color: #374151;
+}
+
+/* List View */
 .fullcalendar-custom .fc-list-event:hover {
-    background-color: #f3f4f6;
+    background-color: #f9fafb;
 }
 
-/* Responsive adjustments */
+.fullcalendar-custom .fc-list-day-cushion {
+    background: #f9fafb !important;
+    font-weight: 600;
+    color: #374151;
+    padding: 12px 16px;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
     .fullcalendar-custom .fc-event {
         font-size: 10px;
-        padding: 1px 4px;
+        padding: 3px 5px;
+        border-radius: 3px;
     }
 
-    .fullcalendar-custom .fc-col-header-cell {
+    .fullcalendar-custom .fc-col-header-cell-cushion {
+        font-size: 11px;
+        padding: 8px 4px;
+    }
+
+    .fullcalendar-custom .fc-daygrid-day-number {
         font-size: 12px;
+        padding: 6px 4px;
     }
 }
 </style>

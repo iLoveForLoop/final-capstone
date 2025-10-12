@@ -18,7 +18,6 @@ class ClientController extends Controller
     public function index()
     {
 
-
         $query = Service::with(['category', 'vendor', 'cateringService']);
         $categories = ServiceCategory::all();
 

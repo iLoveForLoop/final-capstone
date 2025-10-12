@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Report;
+use App\Models\Review;
 use App\Models\Service;
 use App\Models\ServiceCategory;
 use App\Models\User;
@@ -174,8 +175,24 @@ class AdminController extends Controller
         ]);
     }
 
-    public function reviewsPage(){
-        return inertia('Admin/Reviews/Index');
+    public function reviewsPage(Request $request){
+        $search = $request->get('search');
+
+        $reviews = Review::with(['user', 'vendor'])
+            ->when($search, function ($query, $search) {
+                $query->whereHas('user', fn($q) => $q->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('vendor', fn($q) => $q->where('business_name', 'like', "%{$search}%"));
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return inertia('Admin/Reviews/Index', [
+            'reviews' => $reviews,
+            'filters' => [
+                'search' => $search
+            ],
+        ]);
     }
 
     public function reportsPage(Request $request){
