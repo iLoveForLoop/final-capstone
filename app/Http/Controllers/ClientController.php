@@ -450,7 +450,7 @@ class ClientController extends Controller
             ->map(fn($booking) => [
                 'title' => 'Booked',
                 'start' => $booking->event?->event_date?->format('Y-m-d'),
-                'color' => '#ef4444', // green for confirmed
+                // 'color' => '#ef4444',
                 'status' => $booking->status
             ]),
 

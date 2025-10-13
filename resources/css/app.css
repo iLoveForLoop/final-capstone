@@ -385,3 +385,14 @@
     }
   }
 }
+
+
+:root {
+  --dp-primary-color: #00c896;
+  --dp-background-color: #ffffff;
+  --dp-hover-color: #f3f3f3;
+  --dp-border-radius: 12px;
+  --dp-font-family: 'Inter', sans-serif;
+  --dp-cell-size: 40px;
+}
+

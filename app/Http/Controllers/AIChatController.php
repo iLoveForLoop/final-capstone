@@ -138,4 +138,27 @@ EOT
         // Store for 2 hours
         Cache::put("chat_{$conversationId}", $messages, 7200);
     }
+
+    public function clearConversation(Request $request)
+    {
+        $validated = $request->validate([
+            'conversation_id' => 'required|string'
+        ]);
+
+        try {
+            Cache::forget("chat_{$validated['conversation_id']}");
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Conversation cleared successfully'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Clear conversation error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to clear conversation'
+            ], 500);
+        }
+    }
 }

@@ -1,143 +1,3 @@
-<script setup>
-import { ref, nextTick, onMounted } from 'vue';
-import { MessageCircle, X, Send, Sparkles, BotMessageSquare, Bot } from 'lucide-vue-next';
-import axios from 'axios';
-
-const isOpen = ref(false);
-const userInput = ref('');
-const messages = ref([]);
-const isTyping = ref(false);
-const unreadCount = ref(0);
-const messagesContainer = ref(null);
-const conversationId = ref(null);
-const error = ref(null);
-
-const suggestions = [
-    'How do I find vendors?',
-    'Tell me about bookings',
-    'What are bundled deals?',
-    'How does pricing work?'
-];
-
-// Load conversation ID from localStorage on mount
-onMounted(() => {
-    const savedConversationId = localStorage.getItem('eventory_chat_conversation_id');
-    const savedMessages = localStorage.getItem('eventory_chat_messages');
-
-    if (savedConversationId) {
-        conversationId.value = savedConversationId;
-    }
-
-    if (savedMessages) {
-        try {
-            messages.value = JSON.parse(savedMessages);
-        } catch (e) {
-            console.error('Failed to load messages:', e);
-        }
-    }
-});
-
-const openChat = () => {
-    isOpen.value = true;
-    unreadCount.value = 0;
-    nextTick(() => scrollToBottom());
-};
-
-const closeChat = () => {
-    isOpen.value = false;
-};
-
-const handleSuggestion = (text) => {
-    userInput.value = text;
-    sendMessage();
-};
-
-const sendMessage = async () => {
-    if (!userInput.value.trim() || isTyping.value) return;
-
-    const userMessage = userInput.value.trim();
-    const now = new Date();
-    const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-
-    // Add user message to chat
-    messages.value.push({
-        type: 'user',
-        text: userMessage,
-        time: time
-    });
-
-    userInput.value = '';
-    error.value = null;
-    scrollToBottom();
-    saveMessages();
-
-    // Show typing indicator
-    isTyping.value = true;
-
-    try {
-        // Call backend API
-        const response = await axios.post('/api/ai/message', {
-            message: userMessage,
-            conversation_id: conversationId.value
-        });
-
-        // Hide typing indicator
-        isTyping.value = false;
-
-        if (response.data.success) {
-            // Save conversation ID if this is the first message
-            if (!conversationId.value && response.data.conversation_id) {
-                conversationId.value = response.data.conversation_id;
-                localStorage.setItem('eventory_chat_conversation_id', conversationId.value);
-            }
-
-            // Add bot response
-            messages.value.push({
-                type: 'bot',
-                text: response.data.message,
-                time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-            });
-
-            saveMessages();
-            scrollToBottom();
-        } else {
-            throw new Error('Failed to get response');
-        }
-    } catch (err) {
-        isTyping.value = false;
-        console.error('Chat error:', err);
-
-        error.value = 'Sorry, I couldn\'t process your message. Please try again.';
-
-        // Show error in chat
-        messages.value.push({
-            type: 'bot',
-            text: 'Sorry, I encountered an error. Please try again in a moment.',
-            time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-        });
-
-        saveMessages();
-        scrollToBottom();
-    }
-};
-
-const saveMessages = () => {
-    try {
-        localStorage.setItem('eventory_chat_messages', JSON.stringify(messages.value));
-    } catch (e) {
-        console.error('Failed to save messages:', e);
-    }
-};
-
-const scrollToBottom = () => {
-    nextTick(() => {
-        if (messagesContainer.value) {
-            messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
-        }
-    });
-};
-</script>
-
 <template>
     <div class="chatbot-container">
         <!-- Chat Window -->
@@ -151,12 +11,16 @@ const scrollToBottom = () => {
                         </div>
                         <div>
                             <h3>Eve</h3>
-                            <!-- <p><span class="status-dot"></span>Online now</p> -->
                         </div>
                     </div>
-                    <button @click="closeChat" class="close-btn">
-                        <X :size="20" />
-                    </button>
+                    <div class="header-actions">
+                        <button @click="startNewChat" class="new-chat-btn" title="Start new conversation">
+                            <Sparkles :size="16" />
+                        </button>
+                        <button @click="closeChat" class="close-btn">
+                            <X :size="20" />
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Messages -->
@@ -247,13 +111,189 @@ const scrollToBottom = () => {
     </div>
 </template>
 
+<script setup>
+import { ref, nextTick, onMounted, onBeforeUnmount } from 'vue';
+import { MessageCircle, X, Send, Sparkles, BotMessageSquare, Bot } from 'lucide-vue-next';
+import axios from 'axios';
+
+// State
+const isOpen = ref(false);
+const userInput = ref('');
+const messages = ref([]);
+const isTyping = ref(false);
+const unreadCount = ref(0);
+const messagesContainer = ref(null);
+const conversationId = ref(null);
+const error = ref(null);
+
+// Suggestions
+const suggestions = [
+    'How do I find vendors?',
+    'Tell me about bookings',
+    'What are bundled deals?',
+    'How does pricing work?'
+];
+
+// Lifecycle hooks
+onMounted(() => {
+    loadConversation();
+    window.addEventListener('user-logged-out', handleLogout);
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener('user-logged-out', handleLogout);
+});
+
+// Load conversation from sessionStorage
+const loadConversation = () => {
+    const savedConversationId = sessionStorage.getItem('eventory_chat_conversation_id');
+    const savedMessages = sessionStorage.getItem('eventory_chat_messages');
+
+    if (savedConversationId) {
+        conversationId.value = savedConversationId;
+    }
+
+    if (savedMessages) {
+        try {
+            messages.value = JSON.parse(savedMessages);
+        } catch (e) {
+            console.error('Failed to load messages:', e);
+        }
+    }
+};
+
+// Chat controls
+const openChat = () => {
+    isOpen.value = true;
+    unreadCount.value = 0;
+    nextTick(() => scrollToBottom());
+};
+
+const closeChat = () => {
+    isOpen.value = false;
+};
+
+const startNewChat = () => {
+    if (messages.value.length === 0) return;
+
+    if (confirm('Start a new conversation? This will clear your current chat history.')) {
+        clearChat();
+    }
+};
+
+const clearChat = () => {
+    messages.value = [];
+    conversationId.value = null;
+    error.value = null;
+    sessionStorage.removeItem('eventory_chat_messages');
+    sessionStorage.removeItem('eventory_chat_conversation_id');
+};
+
+const handleLogout = () => {
+    clearChat();
+};
+
+// Message handling
+const handleSuggestion = (text) => {
+    userInput.value = text;
+    sendMessage();
+};
+
+const sendMessage = async () => {
+    if (!userInput.value.trim() || isTyping.value) return;
+
+    const userMessage = userInput.value.trim();
+    const now = new Date();
+    const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    // Add user message
+    messages.value.push({
+        type: 'user',
+        text: userMessage,
+        time: time
+    });
+
+    userInput.value = '';
+    error.value = null;
+    scrollToBottom();
+    saveMessages();
+
+    // Show typing indicator
+    isTyping.value = true;
+
+    try {
+        // Call backend API
+        const response = await axios.post('/api/ai/message', {
+            message: userMessage,
+            conversation_id: conversationId.value
+        });
+
+        isTyping.value = false;
+
+        if (response.data.success) {
+            // Save conversation ID
+            if (!conversationId.value && response.data.conversation_id) {
+                conversationId.value = response.data.conversation_id;
+                sessionStorage.setItem('eventory_chat_conversation_id', conversationId.value);
+            }
+
+            // Add bot response
+            messages.value.push({
+                type: 'bot',
+                text: response.data.message,
+                time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+            });
+
+            saveMessages();
+            scrollToBottom();
+        } else {
+            throw new Error('Failed to get response');
+        }
+    } catch (err) {
+        isTyping.value = false;
+        console.error('Chat error:', err);
+        console.error('Response data:', err.response?.data);
+
+        const errorMessage = err.response?.data?.message || 'Sorry, I encountered an error. Please try again in a moment.';
+
+        messages.value.push({
+            type: 'bot',
+            text: errorMessage,
+            time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+        });
+
+        saveMessages();
+        scrollToBottom();
+    }
+};
+
+// Utility functions
+const saveMessages = () => {
+    try {
+        sessionStorage.setItem('eventory_chat_messages', JSON.stringify(messages.value));
+        if (conversationId.value) {
+            sessionStorage.setItem('eventory_chat_conversation_id', conversationId.value);
+        }
+    } catch (e) {
+        console.error('Failed to save messages:', e);
+    }
+};
+
+const scrollToBottom = () => {
+    nextTick(() => {
+        if (messagesContainer.value) {
+            messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+        }
+    });
+};
+</script>
+
 <style scoped>
 .chatbot-container {
     position: fixed;
     bottom: 20px;
     right: 20px;
     z-index: 9999;
-    /* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; */
 }
 
 /* Float Button */
@@ -321,6 +361,12 @@ const scrollToBottom = () => {
     gap: 12px;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .bot-avatar {
     width: 40px;
     height: 40px;
@@ -339,36 +385,7 @@ const scrollToBottom = () => {
     font-weight: 600;
 }
 
-.chat-header p {
-    margin: 4px 0 0 0;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    opacity: 0.95;
-}
-
-.status-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #10b981;
-    display: inline-block;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.5;
-    }
-}
-
+.new-chat-btn,
 .close-btn {
     width: 32px;
     height: 32px;
@@ -384,8 +401,10 @@ const scrollToBottom = () => {
     transition: all 0.2s;
 }
 
+.new-chat-btn:hover,
 .close-btn:hover {
     background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.05);
 }
 
 /* Messages */
@@ -537,6 +556,12 @@ const scrollToBottom = () => {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border-bottom-right-radius: 4px;
+}
+
+.error-bubble {
+    background: #fee;
+    border: 1px solid #fcc;
+    color: #c33;
 }
 
 .timestamp {

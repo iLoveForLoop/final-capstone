@@ -81,10 +81,6 @@ export const useNavbarStore = defineStore('navbar', () => {
                 '/client/notifications/unread-count',
             );
             unreadCount.value = response.data.unread_count;
-            console.log(
-                '🔄 Unread count loaded from server:',
-                unreadCount.value,
-            );
         } catch (error) {
             console.error('Failed to load unread count:', error);
         }
@@ -121,18 +117,10 @@ export const useNavbarStore = defineStore('navbar', () => {
                 }
             });
 
-            console.log('📥 Notifications loaded:', notifications.value.length);
-
             // Debug: Show what we have
             const localUnread = notifications.value.filter(
                 (n) => !n.is_read,
             ).length;
-            console.log(
-                '🔍 After loading - Local unread:',
-                localUnread,
-                'Server unread:',
-                unreadCount.value,
-            );
         } catch (error) {
             console.error('Failed to load notifications:', error);
         } finally {
@@ -178,10 +166,6 @@ export const useNavbarStore = defineStore('navbar', () => {
     const addNotification = async (notification) => {
         // Check if notification already exists
         if (notificationIds.value.has(notification.id)) {
-            console.log(
-                '🚫 Notification already exists, skipping:',
-                notification.id,
-            );
             return;
         }
 
@@ -191,13 +175,6 @@ export const useNavbarStore = defineStore('navbar', () => {
 
         // FIXED: Always sync with server to get accurate count
         await loadUnreadCount();
-
-        console.log(
-            '✅ New notification added. Total notifications:',
-            notifications.value.length,
-            'Unread count from server:',
-            unreadCount.value,
-        );
 
         // Keep only latest 10 notifications
         if (notifications.value.length > 10) {
@@ -233,17 +210,7 @@ export const useNavbarStore = defineStore('navbar', () => {
 
     // Initialize
     const initialize = async () => {
-        console.log('🚀 Initializing navbar store...');
         await initialData();
-        console.log('✅ Navbar store initialized');
-        console.log(
-            '📊 Final state - Notifications:',
-            notifications.value.length,
-            'Unread count:',
-            unreadCount.value,
-            'Computed unread:',
-            unreadNotifications.value,
-        );
     };
 
     return {

@@ -10,6 +10,7 @@ use App\Models\Booking;
 use App\Models\Event;
 use App\Models\Service;
 use App\Models\ServiceCategory;
+use App\Models\Vendor;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -571,5 +572,27 @@ class BookingController extends Controller
     public function destroy(Booking $booking)
     {
         //
+    }
+
+
+    public function getBookedDates(Vendor $vendor){
+
+        $bookedDates = $vendor->bookings()
+            ->where('status', 'confirmed')
+            ->whereHas('event', fn($q) => $q->whereDate('event_date', '>=', now()))
+            ->with('event:id,event_date')
+            ->get()
+            ->pluck('event.event_date')
+            ->filter()
+            ->map(fn($date) => $date->format('Y-m-d'))
+            ->values();
+
+
+
+
+        return response()->json([
+            'bookedDates' => $bookedDates
+            ]);
+
     }
 }

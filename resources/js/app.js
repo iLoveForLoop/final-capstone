@@ -6,6 +6,11 @@ import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
+
+//Date Picker
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
+
 // Import the CSS or use your own!
 import Toast, { POSITION } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
@@ -78,6 +83,7 @@ createInertiaApp({
             .use(Toast, options)
             .use(notivue)
             .use(ZiggyVue)
+            .component('VueDatePicker', VueDatePicker)
             .mount(el);
     },
     progress: {
