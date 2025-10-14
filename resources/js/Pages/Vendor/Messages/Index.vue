@@ -21,6 +21,7 @@ import {
 } from 'lucide-vue-next';
 import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
+import { useUIStore } from '@/store/ui';
 
 
 // Conversations state (no longer from Inertia props)
@@ -37,6 +38,8 @@ const messagesContainer = ref(null);
 // Current user (still from Inertia auth props)
 const page = usePage();
 const user = computed(() => page.props.auth?.user);
+
+const ui = useUIStore()
 
 // Fetch conversations from API
 const fetchConversations = async () => {
@@ -86,7 +89,7 @@ const filteredConversations = computed(() => {
 const selectConversation = async (conversation) => {
 
     // console.log('Clicked');
-
+    ui.isInMessage = true
 
     if (selectedConversation.value?.id === conversation.id) return;
 
@@ -261,6 +264,7 @@ const scrollToBottom = () => {
 // Initialize
 
 onMounted(async () => {
+    ui.isInMessage = false
     await fetchConversations();
 
     // ✅ Check if backend passed a conversationId prop
@@ -285,6 +289,7 @@ onMounted(async () => {
 
 // Cleanup
 onUnmounted(() => {
+    ui.isInMessage = false
     if (echoChannel.value) {
         window.Echo.leave(`conversation.${echoChannel.value}`);
     }

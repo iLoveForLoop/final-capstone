@@ -501,7 +501,7 @@ const getActionIcon = (action) => {
                 <StatusAction :currentUser="currentUser" :availableActions="availableActions"
                     @close-action-modal="closeActionModal" @perform-suspend="performSuspend"
                     @perform-delete="performDelete" @perform-ban="performBan" v-model:suspendForm="suspendForm"
-                    v-model:banForm="banForm" v-model:currentAction="currentAction" />
+                    v-model:banForm="banForm" v-model:currentAction="currentAction" v-model:deleteForm="deleteForm" />
             </div>
         </transition>
     </TestLayout>

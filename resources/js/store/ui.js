@@ -5,6 +5,7 @@ export const useUIStore = defineStore('ui', {
         sidebarCollapsed: false,
         isEventCalendarView: false,
         isVendorNotificationOpen: false,
+        isInMessage: false,
     }),
 
     actions: {
@@ -17,6 +18,9 @@ export const useUIStore = defineStore('ui', {
         toggleVendorNotificationOpen() {
             console.log('event');
             this.isVendorNotificationOpen = !this.isVendorNotificationOpen;
+        },
+        toggleInMessage() {
+            this.isInMessage = !this.isInMessage;
         },
     },
 

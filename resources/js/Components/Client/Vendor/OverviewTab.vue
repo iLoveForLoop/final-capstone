@@ -105,7 +105,7 @@ const nextImage = () => {
                                 class="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-full transition-colors duration-200">
                                 <div class="w-2 h-2 bg-indigo-600 rounded-full"></div>
                                 <span class="text-sm font-medium text-gray-700">{{ specialty
-                                }}</span>
+                                    }}</span>
                             </div>
                         </div>
                     </div>
@@ -135,12 +135,12 @@ const nextImage = () => {
                 <CardContent>
                     <div class="calendar-container">
                         <FullCalendar :options="calendarOptions" class="vendor-calendar" />
-                        <div class="calendar-info mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <!-- <div class="calendar-info mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
                             <div class="flex items-center gap-3">
                                 <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
                                 <p class="text-sm text-blue-700 font-medium">Click on available dates to book</p>
                             </div>
-                        </div>
+                        </div> -->
                         <div class="calendar-legend mt-4 flex justify-center gap-6">
                             <div class="legend-item flex items-center gap-2">
                                 <div class="w-3 h-3 bg-white rounded-sm border border-gray-300"></div>

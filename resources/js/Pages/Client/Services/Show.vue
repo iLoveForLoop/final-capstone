@@ -4,9 +4,11 @@ import ClientNavbar from '@/Components/ClientNavbar.vue'
 import { Link, router } from '@inertiajs/vue3'
 import { Heart, Share2 } from 'lucide-vue-next'
 import { Toggle } from 'reka-ui'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useToast } from 'vue-toastification'
 import emitter from '@/utils/eventBus'
+import VueDatePicker from '@vuepic/vue-datepicker';
+import axios from 'axios'
 // Reactive data
 
 const props = defineProps({
@@ -15,7 +17,7 @@ const props = defineProps({
     }
 })
 
-console.log(props.service)
+
 
 const currentImageIndex = ref(0)
 const selectedDate = ref('')
@@ -24,6 +26,53 @@ const guestCount = ref(props.service.minimumGuests ?? 50)
 const activeTab = ref('overview')
 const bookingModal = ref(null)
 const toast = useToast()
+
+// Local date/time state for the picker (Date objects)
+const pickerDate = ref(null);
+const pickerTime = ref(null);
+
+const booked = ref([])
+
+const updateEventDate = (date) => {
+    if (date) {
+        // Convert Date object to YYYY-MM-DD string (same format as input type="date")
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        selectedDate.value = `${year}-${month}-${day}`;
+    } else {
+        selectedDate.value = null;
+    }
+};
+
+const updateEventTime = (time) => {
+    if (time) {
+        // Convert time object to HH:MM format (24-hour, same as input type="time")
+        const hours = String(time.hours).padStart(2, '0');
+        const minutes = String(time.minutes).padStart(2, '0');
+        selectedTime.value = `${hours}:${minutes}`;
+    } else {
+        selectedTime.value = null;
+    }
+};
+
+// Disable booked or past dates
+const isDateDisabled = (date) => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    return (
+        date < today ||
+        booked.value.some((b) => {
+            const bookedDate = new Date(b)
+            return (
+                date.getFullYear() === bookedDate.getFullYear() &&
+                date.getMonth() === bookedDate.getMonth() &&
+                date.getDate() === bookedDate.getDate()
+            )
+        })
+    )
+}
 
 
 // Navigation tabs
@@ -91,6 +140,16 @@ const goBack = () => {
         router.visit('/client')
     }
 }
+
+onMounted(async () => {
+    try {
+        const res = await axios.get(`/api/vendor/${props.service.vendor.id}/booked-dates`);
+        booked.value = res.data.bookedDates || []
+    } catch (error) {
+        console.error('Failed to fetch booked dates:', error)
+    }
+
+});
 </script>
 
 <template>
@@ -353,22 +412,18 @@ const goBack = () => {
                             <form @submit.prevent="handleBooking" class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Event Date</label>
-                                    <input v-model="selectedDate" type="date"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        required>
+                                    <VueDatePicker v-model="pickerDate" @update:model-value="updateEventDate"
+                                        :disabled-dates="isDateDisabled" :enable-time-picker="false"
+                                        :min-date="new Date()" placeholder="Select date" class="w-full" auto-apply
+                                        :teleport="true"
+                                        :markers="booked.map(date => ({ date, type: 'dot', color: 'red' }))" />
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Event Time</label>
-                                    <select v-model="selectedTime"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        required>
-                                        <option value="">Select time</option>
-                                        <option value="11:00">11:00 AM - Brunch</option>
-                                        <option value="12:00">12:00 PM - Lunch</option>
-                                        <option value="18:00">6:00 PM - Dinner</option>
-                                        <option value="19:00">7:00 PM - Evening</option>
-                                    </select>
+                                    <VueDatePicker v-model="pickerTime" @update:model-value="updateEventTime"
+                                        time-picker placeholder="Select time" class="w-full" auto-apply :teleport="true"
+                                        :is-24="false" />
                                 </div>
 
                                 <div v-if="service.category_name === 'Catering'">

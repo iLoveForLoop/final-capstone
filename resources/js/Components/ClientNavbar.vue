@@ -15,9 +15,11 @@ import emitter from '@/utils/eventBus';
 import axios from 'axios';
 import DesktopNavs from './ClientNavbar/DesktopNavs.vue';
 import ChatWindow from './ClientNavbar/ChatWindow.vue';
+import { useUIStore } from '@/store/ui';
 
 const page = usePage()
 const navbarStore = useNavbarStore()
+const ui = useUIStore()
 
 // Local UI state only (these stay as refs)
 const isDropdownShowing = ref(false)
@@ -70,6 +72,9 @@ const loadChatMessages = async (conversationId) => {
 
 // Chat window functions (keep these local as they're UI-specific)
 const openChatWindow = async (message) => {
+
+    ui.isInMessage = true
+
     // Mark conversation as read (update unread count in store)
     navbarStore.updateConversation(message.id, { unread_count: 0 })
 
@@ -194,6 +199,7 @@ const playNotificationSound = () => {
 }
 
 const closeChatWindow = (chatId) => {
+    ui.isInMessage = false
     const index = openChats.value.findIndex(chat => chat.id === chatId)
     if (index !== -1) {
         // Leave the Echo channel
@@ -341,6 +347,9 @@ const getNotificationIconColor = (type) => {
 
 // Lifecycle hooks
 onMounted(() => {
+
+    ui.isInMessage = false
+
     document.addEventListener('click', closeDrawers)
     loadInitialData()
     subscribeToNotifications()
@@ -571,7 +580,7 @@ onUnmounted(() => {
                                                             {{ console.log("Message: ", message) }}
                                                             <p class="font-medium text-gray-900 truncate">{{
                                                                 message.sender
-                                                            }}</p>
+                                                                }}</p>
                                                             <div class="flex items-center space-x-1">
                                                                 <span v-if="!message.read"
                                                                     class="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></span>

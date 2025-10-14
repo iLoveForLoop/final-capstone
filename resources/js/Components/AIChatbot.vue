@@ -1,120 +1,8 @@
-<template>
-    <div class="chatbot-container">
-        <!-- Chat Window -->
-        <Transition name="chat">
-            <div v-if="isOpen" class="chat-window">
-                <!-- Header -->
-                <div class="chat-header">
-                    <div class="header-left">
-                        <div class="bot-avatar">
-                            <Bot :size="20" />
-                        </div>
-                        <div>
-                            <h3>Eve</h3>
-                        </div>
-                    </div>
-                    <div class="header-actions">
-                        <button @click="startNewChat" class="new-chat-btn" title="Start new conversation">
-                            <Sparkles :size="16" />
-                        </button>
-                        <button @click="closeChat" class="close-btn">
-                            <X :size="20" />
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Messages -->
-                <div ref="messagesContainer" class="messages">
-                    <!-- Welcome -->
-                    <div v-if="messages.length === 0" class="welcome">
-                        <div class="bot-avatar-large">
-                            <Bot :size="28" />
-                        </div>
-                        <h4>Hi! I'm your Eventory AI assistant 👋</h4>
-                        <p>I can help you with finding vendors, bookings, and answering questions about the platform.
-                        </p>
-
-                        <div class="suggestions">
-                            <button v-for="suggestion in suggestions" :key="suggestion"
-                                @click="handleSuggestion(suggestion)" class="suggestion-btn">
-                                {{ suggestion }}
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Message List -->
-                    <div v-for="(msg, idx) in messages" :key="idx" :class="['message', msg.type]">
-                        <div v-if="msg.type === 'bot'" class="bot-avatar-small">
-                            <Bot :size="14" />
-                        </div>
-                        <div class="bubble-wrapper">
-                            <div class="bubble">
-                                {{ msg.text }}
-                            </div>
-                            <span class="timestamp">{{ msg.time }}</span>
-                        </div>
-                    </div>
-
-                    <!-- Typing -->
-                    <div v-if="isTyping" class="message bot">
-                        <div class="bot-avatar-small">
-                            <Bot :size="14" />
-                        </div>
-                        <div class="bubble-wrapper">
-                            <div class="bubble typing">
-                                <div class="typing-indicator">
-                                    <span></span>
-                                    <span></span>
-                                    <span></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Error Message -->
-                    <div v-if="error" class="message bot error">
-                        <div class="bot-avatar-small">
-                            <Bot :size="14" />
-                        </div>
-                        <div class="bubble-wrapper">
-                            <div class="bubble error-bubble">
-                                {{ error }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Input -->
-                <div class="input-area">
-                    <div class="input-wrapper">
-                        <input v-model="userInput" @keypress.enter="sendMessage" type="text"
-                            placeholder="Ask me anything..." :disabled="isTyping" />
-                        <button @click="sendMessage" :disabled="!userInput.trim() || isTyping" class="send-btn">
-                            <Send :size="18" />
-                        </button>
-                    </div>
-                    <div class="powered-by">
-                        <Sparkles :size="10" />
-                        <span>AI assistant powered by Eventory. Responses may vary.</span>
-                    </div>
-                </div>
-            </div>
-        </Transition>
-
-        <!-- Float Button -->
-        <Transition name="button">
-            <button v-if="!isOpen" @click="openChat" class="float-btn">
-                <BotMessageSquare :size="24" />
-                <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
-            </button>
-        </Transition>
-    </div>
-</template>
-
 <script setup>
 import { ref, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { MessageCircle, X, Send, Sparkles, BotMessageSquare, Bot } from 'lucide-vue-next';
 import axios from 'axios';
+import { useUIStore } from '@/store/ui';
 
 // State
 const isOpen = ref(false);
@@ -125,6 +13,7 @@ const unreadCount = ref(0);
 const messagesContainer = ref(null);
 const conversationId = ref(null);
 const error = ref(null);
+const ui = useUIStore()
 
 // Suggestions
 const suggestions = [
@@ -288,11 +177,123 @@ const scrollToBottom = () => {
 };
 </script>
 
+<template>
+    <div class="chatbot-container" :class="ui.isInMessage ? 'left-5' : 'right-5'">
+        <!-- Chat Window -->
+        <Transition name="chat">
+            <div v-if="isOpen" class="chat-window">
+                <!-- Header -->
+                <div class="chat-header">
+                    <div class="header-left">
+                        <div class="bot-avatar">
+                            <Bot :size="20" />
+                        </div>
+                        <div>
+                            <h3>Eve</h3>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <button @click="startNewChat" class="new-chat-btn" title="Start new conversation">
+                            <Sparkles :size="16" />
+                        </button>
+                        <button @click="closeChat" class="close-btn">
+                            <X :size="20" />
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div ref="messagesContainer" class="messages">
+                    <!-- Welcome -->
+                    <div v-if="messages.length === 0" class="welcome">
+                        <div class="bot-avatar-large">
+                            <Bot :size="28" />
+                        </div>
+                        <h4>Hi! I'm your Eventory AI assistant 👋</h4>
+                        <p>I can help you with finding vendors, bookings, and answering questions about the platform.
+                        </p>
+
+                        <div class="suggestions">
+                            <button v-for="suggestion in suggestions" :key="suggestion"
+                                @click="handleSuggestion(suggestion)" class="suggestion-btn">
+                                {{ suggestion }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Message List -->
+                    <div v-for="(msg, idx) in messages" :key="idx" :class="['message', msg.type]">
+                        <div v-if="msg.type === 'bot'" class="bot-avatar-small">
+                            <Bot :size="14" />
+                        </div>
+                        <div class="bubble-wrapper">
+                            <div class="bubble">
+                                {{ msg.text }}
+                            </div>
+                            <span class="timestamp">{{ msg.time }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Typing -->
+                    <div v-if="isTyping" class="message bot">
+                        <div class="bot-avatar-small">
+                            <Bot :size="14" />
+                        </div>
+                        <div class="bubble-wrapper">
+                            <div class="bubble typing">
+                                <div class="typing-indicator">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Error Message -->
+                    <div v-if="error" class="message bot error">
+                        <div class="bot-avatar-small">
+                            <Bot :size="14" />
+                        </div>
+                        <div class="bubble-wrapper">
+                            <div class="bubble error-bubble">
+                                {{ error }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input -->
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <input v-model="userInput" @keypress.enter="sendMessage" type="text"
+                            placeholder="Ask me anything..." :disabled="isTyping" />
+                        <button @click="sendMessage" :disabled="!userInput.trim() || isTyping" class="send-btn">
+                            <Send :size="18" />
+                        </button>
+                    </div>
+                    <div class="powered-by">
+                        <Sparkles :size="10" />
+                        <span>AI assistant powered by Eventory. Responses may vary.</span>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+
+        <!-- Float Button -->
+        <Transition name="button">
+            <button v-if="!isOpen" @click="openChat" class="float-btn">
+                <BotMessageSquare :size="24" />
+                <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
+            </button>
+        </Transition>
+    </div>
+</template>
+
 <style scoped>
 .chatbot-container {
     position: fixed;
     bottom: 20px;
-    right: 20px;
     z-index: 9999;
 }
 

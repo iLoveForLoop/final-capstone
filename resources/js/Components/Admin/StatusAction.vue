@@ -10,6 +10,7 @@ defineProps({
 const emit = defineEmits(['close-action-modal', 'perform-suspend', 'perform-delete', 'perform-ban'])
 
 const suspendForm = defineModel('suspendForm')
+const deleteForm = defineModel('deleteForm')
 const banForm = defineModel('banForm')
 const currentAction = defineModel('currentAction')
 
@@ -20,7 +21,7 @@ const minDateTime = computed(() => {
 
 <template>
     <!-- Drawer Panel -->
-    <<div class="w-screen max-w-md">
+    <div class="w-screen max-w-md">
         <div class="h-full flex flex-col bg-white shadow-xl">
             <!-- Header -->
             <div class="bg-indigo-700 px-4 py-6 sm:px-6">
@@ -63,7 +64,7 @@ const minDateTime = computed(() => {
                                     currentUser?.status?.slice(1) }}
                             </span>
                             <span class="text-indigo-200 text-xs ml-2">ID: {{ currentUser?.id
-                                }}</span>
+                            }}</span>
                         </div>
                     </div>
                 </div>
@@ -254,7 +255,7 @@ const minDateTime = computed(() => {
             <!-- Footer -->
             <div class="border-t border-gray-200 px-4 py-4">
                 <div class="flex justify-end space-x-3">
-                    <button @click="closeActionModal"
+                    <button @click="emit('close-action-modal')"
                         class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                         Cancel
                     </button>
@@ -288,7 +289,7 @@ const minDateTime = computed(() => {
                 </div>
             </div>
         </div>
-        </div>
+    </div>
 </template>
 
 <style></style>
