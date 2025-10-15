@@ -28,7 +28,7 @@ class BookingObserver
         // Client notification for booking submitted
         $this->notificationService->createBookingSubmittedClientNotification($booking);
 
-        // Mail::to($booking->service->vendor->user->email)->queue(new BookingRequestMail($booking));
+        Mail::to($booking->service->vendor->user->email)->queue(new BookingRequestMail($booking));
     }
 
     public function updated(Booking $booking)
@@ -61,7 +61,7 @@ class BookingObserver
                         $this->notificationService->createBookingCompletedClientNotification($booking);
 
                         // Optional: Send completion email to client
-                        // Mail::to($booking->user->email)->queue(new BookingCompletedMail($booking));
+                        Mail::to($booking->user->email)->queue(new BookingCompletedMail($booking));
                     }
                     break;
 
