@@ -16,6 +16,7 @@ use App\Http\Controllers\ProfileSettingController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ServiceCategoryController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\SmsController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VendorCalendarController;
 use App\Http\Controllers\VendorApplicationController;
@@ -279,7 +280,8 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client', 'user
 });
 
 
-//AI
+//SMS TEST
+Route::get('/sms-test', [SmsController::class, 'sendTest']);
 
 
 

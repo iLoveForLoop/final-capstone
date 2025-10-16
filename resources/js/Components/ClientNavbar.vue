@@ -351,50 +351,62 @@ onMounted(() => {
     ui.isInMessage = false
 
     document.addEventListener('click', closeDrawers)
-    loadInitialData()
-    subscribeToNotifications()
 
-    emitter.on('chat-vendor', async (payload) => {
-        console.log('vendor id', payload)
-        const newConversationData = {
-            participants: [
-                Number(page.props.auth.user.id),
-                Number(payload)
-            ]
-        }
 
-        try {
-            const res = await axios.post(route('conversation.create', newConversationData))
-            const conv = res.data
 
-            const message = {
-                id: conv.id,
-                sender: conv.title,
-                initials: getInitials(conv.title),
-                message: conv.last_message?.content || 'No messages yet',
-                time: formatTimestamp(conv.last_message?.created_at),
-                read: conv.unread_count === 0,
-                online: false,
-                chatMessages: []
+
+    if (page.props.auth.user) {
+        // console.log('Is logged in: ', page.props.auth.user);
+        loadInitialData()
+        subscribeToNotifications()
+
+        emitter.on('chat-vendor', async (payload) => {
+            console.log('vendor id', payload)
+            const newConversationData = {
+                participants: [
+                    Number(page.props.auth.user.id),
+                    Number(payload)
+                ]
             }
 
-            openChatWindow(message)
-        } catch (error) {
-            console.log('Error creating conversation: ', error.message)
-        }
-    })
+            try {
+                const res = await axios.post(route('conversation.create', newConversationData))
+                const conv = res.data
 
-    // Refresh data periodically using store (keep conversations refresh, remove notifications refresh)
-    // In your onMounted hook, replace the interval with:
-    const interval = setInterval(() => {
-        // Only refresh conversations (notifications are handled by real-time)
-        navbarStore.refreshData();
-    }, 60000); // Every 60 seconds
+                const message = {
+                    id: conv.id,
+                    sender: conv.title,
+                    initials: getInitials(conv.title),
+                    message: conv.last_message?.content || 'No messages yet',
+                    time: formatTimestamp(conv.last_message?.created_at),
+                    read: conv.unread_count === 0,
+                    online: false,
+                    chatMessages: []
+                }
 
-    // Cleanup interval on unmount
-    onUnmounted(() => {
-        clearInterval(interval)
-    })
+                openChatWindow(message)
+            } catch (error) {
+                console.log('Error creating conversation: ', error.message)
+            }
+        })
+
+        // Refresh data periodically using store (keep conversations refresh, remove notifications refresh)
+        // In your onMounted hook, replace the interval with:
+        const interval = setInterval(() => {
+            // Only refresh conversations (notifications are handled by real-time)
+            navbarStore.refreshData();
+        }, 60000); // Every 60 seconds
+
+
+        // Cleanup interval on unmount
+        onUnmounted(() => {
+            clearInterval(interval)
+        })
+    }
+
+
+
+
 })
 
 onUnmounted(() => {
@@ -580,7 +592,7 @@ onUnmounted(() => {
                                                             {{ console.log("Message: ", message) }}
                                                             <p class="font-medium text-gray-900 truncate">{{
                                                                 message.sender
-                                                                }}</p>
+                                                            }}</p>
                                                             <div class="flex items-center space-x-1">
                                                                 <span v-if="!message.read"
                                                                     class="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></span>

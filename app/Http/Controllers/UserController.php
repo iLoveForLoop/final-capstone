@@ -19,7 +19,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
 {
-    $query = User::with(['vendor', 'roles'])
+    $query = User::with(['vendor', 'roles', 'client'])
         ->whereDoesntHave('vendor', function ($query) {
             $query->where('is_approved', false);
         });
@@ -46,13 +46,14 @@ class UserController extends Controller
     }
 
     $users = $query->paginate(5);
-
+    // dd('here');
     $users->getCollection()->transform(function ($user) {
         return [
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
-            'vendor' => $user->vendor,
+            'vendor' => $user->vendor ?? null,
+            'client' => $user->client ?? null,
             'roles' => $user->roles,
             'created_at' => $user->created_at,
             'image_url' => $user->getFirstMediaUrl('avatar'),
@@ -192,6 +193,8 @@ class UserController extends Controller
     public function update(User $user, Request $request)
     {
 
+
+
         $rules = [
             'full_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
@@ -234,6 +237,7 @@ class UserController extends Controller
         }
 
         if ($request->selected_role === 'client') {
+
             $clientData = [
                 'contact_number' => $request->contact_number,
                 'location' => $request->location,
@@ -245,7 +249,7 @@ class UserController extends Controller
         }
 
 
-
+        // dd('Client Num: '. $user->client->contact_number);
         return redirect()->back()->with('success', 'User updated successfully');
     }
 

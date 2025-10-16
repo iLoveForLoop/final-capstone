@@ -45,6 +45,8 @@ const open = (user) => {
     currentUser.value = user;
     currentUserId.value = user.id;
 
+    // console.log('Client Number: ', user)
+
     // Update form with user data
     form.full_name = user.name;
     form.email = user.email;
@@ -90,7 +92,10 @@ const submit = () => {
         onSuccess: () => {
             show.value = false;
             form.reset();
-            push.success('User Edited Successfully')
+            push.success({
+                // title: 'Success',
+                message: 'User Edited Successfully'
+            })
         }
     });
 };

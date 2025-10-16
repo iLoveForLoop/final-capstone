@@ -7,15 +7,18 @@ use App\Mail\Customer\BookingCompletedMail;
 use App\Mail\Customer\BookingCancelledMail;
 use App\Models\Booking;
 use App\Services\NotificationService;
+use App\Services\SemaphoreService;
 use Illuminate\Support\Facades\Mail;
 
 class BookingObserver
 {
     protected $notificationService;
+    protected $semaphoreService;
 
-    public function __construct(NotificationService $notificationService)
+    public function __construct(NotificationService $notificationService, SemaphoreService $semaphoreService)
     {
         $this->notificationService = $notificationService;
+        $this->semaphoreService = $semaphoreService;
     }
 
     public function created(Booking $booking)
@@ -29,6 +32,8 @@ class BookingObserver
         $this->notificationService->createBookingSubmittedClientNotification($booking);
 
         Mail::to($booking->service->vendor->user->email)->queue(new BookingRequestMail($booking));
+        $this->semaphoreService->send($booking->service->vendor->contact_number, `Eventory: Hi {$booking->service->vendor->business_name}, your service has been booked by a client. View the booking details on your Eventory account.`);
+
     }
 
     public function updated(Booking $booking)

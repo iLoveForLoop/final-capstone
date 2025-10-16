@@ -52,6 +52,18 @@ const notivue = createNotivue({
         global: {
             duration: 3000,
         },
+        // success: {
+        //     title: 'Success',
+        // },
+        error: {
+            title: 'Error',
+        },
+        info: {
+            title: 'Info',
+        },
+        warning: {
+            title: 'Warning',
+        },
     },
 });
 
