@@ -1,6 +1,12 @@
 <?php
 namespace App\Observers;
 
+use App\Jobs\SendBookingCompletedEmailJob;
+use App\Jobs\SendBookingCompletedSmsJob;
+use App\Jobs\SendBookingConfirmedEmailJob;
+use App\Jobs\SendBookingConfirmedSmsJob;
+use App\Jobs\SendBookingEmailJob;
+use App\Jobs\SendBookingSmsJob;
 use App\Mail\Customer\BookingConfirmedMail;
 use App\Mail\Vendor\BookingRequestMail;
 use App\Mail\Customer\BookingCompletedMail;
@@ -13,32 +19,30 @@ use Illuminate\Support\Facades\Mail;
 class BookingObserver
 {
     protected $notificationService;
-    protected $semaphoreService;
 
-    public function __construct(NotificationService $notificationService, SemaphoreService $semaphoreService)
+    public function __construct(NotificationService $notificationService)
     {
         $this->notificationService = $notificationService;
-        $this->semaphoreService = $semaphoreService;
     }
 
     public function created(Booking $booking)
     {
         $booking->load(['service.vendor.user', 'user.client']);
 
-        // Vendor notification - existing
+        // Create internal system notifications first
         $this->notificationService->createBookingReceivedNotification($booking);
-
-        // Client notification for booking submitted
         $this->notificationService->createBookingSubmittedClientNotification($booking);
 
-        Mail::to($booking->service->vendor->user->email)->queue(new BookingRequestMail($booking));
-        $this->semaphoreService->send($booking->service->vendor->contact_number, `Eventory: Hi {$booking->service->vendor->business_name}, your service has been booked by a client. View the booking details on your Eventory account.`);
-
+        // Chain jobs: Email first, then SMS
+        SendBookingEmailJob::dispatch($booking)->chain([
+            new SendBookingSmsJob($booking),
+        ]);
+        // SendBookingSmsJob::dispatch($booking);
     }
 
     public function updated(Booking $booking)
     {
-        $booking->load(['service.vendor.user', 'user']);
+        $booking->load(['service.vendor.user', 'user.client']);
 
         if ($booking->wasChanged('status')) {
             $oldStatus = $booking->getOriginal('status');
@@ -53,20 +57,28 @@ class BookingObserver
                         // Client notification - NEW
                         $this->notificationService->createBookingConfirmedClientNotification($booking);
 
-                        Mail::to($booking->user->email)->queue(new BookingConfirmedMail($booking));
+                        // Mail::to($booking->user->email)->queue(new BookingConfirmedMail($booking));
+                        // dd($booking->user->client->contact_number);
+                        SendBookingConfirmedEmailJob::dispatch($booking)->chain([
+                            new SendBookingConfirmedSmsJob($booking)
+                        ]);
                     }
                     break;
 
                 case 'completed':
                     if ($oldStatus !== 'completed') {
-                        // Vendor notification - existing
+                        // Vendor notification
                         $this->notificationService->createBookingCompletedNotification($booking);
 
-                        // Client notification - NEW
+                        // Client notification
                         $this->notificationService->createBookingCompletedClientNotification($booking);
 
                         // Optional: Send completion email to client
-                        Mail::to($booking->user->email)->queue(new BookingCompletedMail($booking));
+                        // Mail::to($booking->user->email)->queue(new BookingCompletedMail($booking));
+                        SendBookingCompletedEmailJob::dispatch($booking)->chain([
+                            new SendBookingCompletedSmsJob($booking)
+                        ]);
+                        // SendBookingCompletedSmsJob::dispatch($booking);
                     }
                     break;
 

@@ -11,12 +11,14 @@ class SemaphoreService
 
     public function __construct()
     {
+
         $this->apiKey = config('semaphore.api_key');
         $this->apiUrl = config('semaphore.api_url');
     }
 
     public function send($number, $message)
     {
+        // dd($message);
         $response = Http::asForm()->post($this->apiUrl, [
             'apikey'   => $this->apiKey,
             'number'   => $number,

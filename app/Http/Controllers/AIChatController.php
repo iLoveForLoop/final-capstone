@@ -32,7 +32,7 @@ class AIChatController extends Controller
             ];
 
             // Call OpenRouter API
-            $response = Http::timeout(60)
+            $response = Http::timeout(120)
                 ->withHeaders([
                     'Authorization' => 'Bearer ' . config('openrouter.openrouter_api_key'),
                     'HTTP-Referer' => config('app.url'),
