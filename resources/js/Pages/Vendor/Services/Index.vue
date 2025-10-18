@@ -9,6 +9,7 @@ import { ref } from 'vue';
 import CateringServiceCard from '@/Components/Vendor/Catering/CateringServiceCard.vue';
 import PhotographyServiceCard from '@/Components/Vendor/Photograpy/PhotographyServiceCard.vue';
 import MyToaster from '@/Components/MyToaster.vue';
+import GeneralVendorServiceCard from '@/Components/Vendor/GeneralVendorServiceCard.vue';
 
 const toast = useToast();
 
@@ -159,12 +160,14 @@ const showError = () => {
             <!-- Services Cards Grid -->
             <div v-if="services.data?.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div v-for="service in services.data" :key="service.id"
-                    class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition">
+                    class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition"
+                    :class="{ 'ring-2 ring-green-500': service.is_available, 'opacity-80': !service.is_available }">
 
+                    <GeneralVendorServiceCard :service="service" />
 
-                    <CateringServiceCard :service="service" v-if="service.category.name === 'Catering'" />
+                    <!-- <CateringServiceCard :service="service" v-if="service.category.name === 'Catering'" />
 
-                    <PhotographyServiceCard :service="service" v-if="service.category.name === 'Photography'" />
+                    <PhotographyServiceCard :service="service" v-if="service.category.name === 'Photography'" /> -->
                 </div>
             </div>
 

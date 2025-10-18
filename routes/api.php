@@ -20,6 +20,7 @@ Route::delete('/chat/clear', [AIChatController::class, 'clearConversation'])
 
 
 
+Route::patch('/vendor/{service}/toggle-availability', [ServiceController::class, 'toggleAvailability'])->name('vendor.services.toggle-availability');
 
 Route::get('/vendor/{vendor}/booked-dates', [BookingController::class, 'getBookedDates']);
 

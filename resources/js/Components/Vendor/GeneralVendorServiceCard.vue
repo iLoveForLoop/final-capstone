@@ -2,7 +2,9 @@
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { useToast } from 'vue-toastification';
-import EditPhotographyServiceForm from './EditPhotographyServiceForm.vue';
+import EditPhotographyServiceForm from './Photograpy/EditPhotographyServiceForm.vue';
+import EditCateringServiceForm from './Catering/EditCateringServiceForm.vue';
+
 
 const toast = useToast();
 const showEditModal = ref(false);
@@ -96,10 +98,6 @@ const formatPrice = (price) => {
                             </label>
                         </div>
                     </div>
-                    <!-- Category Badge -->
-                    <!-- <span class="text-xs font-medium px-3 py-1 bg-white/95 text-gray-800 rounded-full shadow-sm">
-                        {{ service.category.name }}
-                    </span> -->
 
                     <!-- Category Badge -->
                     <div class="absolute top-4 right-4">
@@ -125,9 +123,17 @@ const formatPrice = (price) => {
                 <div class="flex justify-between items-start mb-3">
                     <h3 class="text-xl font-bold text-gray-900 line-clamp-1 flex-1 mr-3">{{ service.name }}</h3>
                     <div class="text-right">
-                        <div class="text-lg font-bold text-indigo-600">{{ formatPrice(service.price) }}</div>
+                        <div v-if="service.category.name !== 'Catering'" class="text-lg font-bold text-indigo-600">{{
+                            formatPrice(service.price) }}</div>
                         <div v-if="service.max_price" class="text-sm text-gray-500">
                             up to {{ formatPrice(service.max_price) }}
+                        </div>
+
+                        <div v-if="service.category.name === 'Catering'" class="text-lg font-bold text-indigo-600">{{
+                            formatPrice(service.catering_service?.price ||
+                                service?.price) }} <span class="text-black"
+                                v-if="service.catering_service?.price !== service.catering_service?.package_price">/
+                                Pax</span>
                         </div>
                     </div>
                 </div>
@@ -176,37 +182,48 @@ const formatPrice = (price) => {
         </div>
 
         <!-- Edit Modal -->
-        <div v-if="showEditModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog"
-            aria-modal="true">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <!-- Background overlay -->
-                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
-                    @click="closeEditModal"></div>
+        <teleport to="body">
 
-                <!-- Modal panel -->
-                <div
-                    class="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-                    <!-- Modal header -->
-                    <div class="bg-white px-6 py-4 border-b border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-lg font-semibold text-gray-900">
-                                Edit Service: {{ service.name }}
-                            </h3>
-                            <button @click="closeEditModal" class="text-gray-400 hover:text-gray-500">
-                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
+
+            <div v-if="showEditModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title"
+                role="dialog" aria-modal="true">
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <!-- Background overlay -->
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
+                        @click="closeEditModal"></div>
+
+                    <!-- Modal panel -->
+                    <div
+                        class="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                        <!-- Modal header -->
+                        <div class="bg-white px-6 py-4 border-b border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-semibold text-gray-900">
+                                    Edit Service: {{ service.name }}
+                                </h3>
+                                <button @click="closeEditModal" class="text-gray-400 hover:text-gray-500">
+                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Modal content -->
-                    <EditPhotographyServiceForm :service="service" :category_id="service.service_category_id"
-                        @close="closeEditModal" @updated="handleServiceUpdated" />
+                        <!-- Modal content -->
+                        <EditPhotographyServiceForm v-if="service.category.name === 'Photography'" :service="service"
+                            :category_id="service.service_category_id" @close="closeEditModal"
+                            @updated="handleServiceUpdated" />
+
+                        <EditCateringServiceForm v-if="service.category.name === 'Catering'" :service="service"
+                            :catering-service="service.catering_service" @close="closeEditModal"
+                            @updated="handleServiceUpdated" />
+
+
+                    </div>
                 </div>
             </div>
-        </div>
+        </teleport>
     </div>
 </template>
 

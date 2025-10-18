@@ -102,6 +102,8 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'role:vendor', 'user
 
     //service page
     Route::resource('services', ServiceController::class);
+    Route::patch('/services/{service}/toggle-availability', [ServiceController::class, 'toggleAvailability'])
+    ->name('services.toggle-availability');
 
     //dishes page
     Route::resource('dishes', DishController::class);
@@ -239,23 +241,23 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client', 'user
 
 
     //ui testing
-//     Route::get('/temp', function () {
+    Route::get('/temp', function () {
 
-//     return inertia('Client/Vendor/Temp');
+    return inertia('Client/Vendor/Temp');
 
-//    })->name('temp');
+   })->name('temp');
 
-//    Route::get('/temp2', function () {
+   Route::get('/temp2', function () {
 
-//     return inertia('Client/Vendor/Temp2');
+    return inertia('Client/Vendor/Temp2');
 
-//    })->name('temp2');
+   })->name('temp2');
 
-//    Route::get('/temp3', function () {
+   Route::get('/temp3', function () {
 
-//     return inertia('Client/Vendor/Temp3');
+    return inertia('Client/Vendor/Temp3');
 
-//    })->name('temp3');
+   })->name('temp3');
 
 
 

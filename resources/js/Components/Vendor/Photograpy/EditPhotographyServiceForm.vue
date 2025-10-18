@@ -178,6 +178,8 @@ const submit = () => {
 </script>
 
 <template>
+
+
     <!-- Modal body -->
     <div class="px-6 py-4">
         <div class="space-y-6">
@@ -281,7 +283,8 @@ const submit = () => {
 
                         <!-- New Images Upload Area -->
                         <div class="mb-4" v-if="totalImageCount < 8">
-                            <h5 v-if="existingImages.length > 0" class="text-sm font-medium text-gray-600 mb-3">Add New
+                            <h5 v-if="existingImages.length > 0" class="text-sm font-medium text-gray-600 mb-3">Add
+                                New
                                 Images</h5>
                             <label class="cursor-pointer">
                                 <div
@@ -371,7 +374,8 @@ const submit = () => {
                         <!-- Images count and limit info -->
                         <div class="mt-3 flex items-center justify-between text-sm text-gray-500">
                             <span>{{ totalImageCount }} of 8 images
-                                <span v-if="imagesToDelete.length > 0" class="text-red-600">({{ imagesToDelete.length }}
+                                <span v-if="imagesToDelete.length > 0" class="text-red-600">({{
+                                    imagesToDelete.length }}
                                     marked for deletion)</span>
                             </span>
                             <span v-if="existingImages.length > 0 && !imagesToDelete.includes(existingImages[0]?.id)"
@@ -534,6 +538,7 @@ const submit = () => {
             Cancel
         </button>
     </div>
+
 </template>
 
 <style></style>

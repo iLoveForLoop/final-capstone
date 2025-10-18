@@ -12,6 +12,8 @@ class CreateVendorsTable extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');// Owner
             $table->string('full_name');
+            $table->string('first_name');
+            $table->string('last_name');
             $table->boolean('is_approved')->default(false);
             $table->string('business_name');
             $table->text('description')->nullable();

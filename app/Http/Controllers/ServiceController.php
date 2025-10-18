@@ -132,6 +132,15 @@ class ServiceController extends Controller
 }
 
 
+    public function toggleAvailability(Service $service){
+        $service->update([
+            'is_available' => !$service->is_available
+        ]);
+
+        return redirect()->back();
+    }
+
+
     /**
      * Display the specified resource.
      */
