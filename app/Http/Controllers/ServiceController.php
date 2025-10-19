@@ -59,6 +59,8 @@ class ServiceController extends Controller
             'catering_service'   => $service->cateringService,
             'photography_service'=> $service->photographyService,
             'average_rating'     => $service->vendor->averageRating(),
+            'created_at'         => $service->created_at,
+            'updated_at'         => $service->updated_at,
             'media' => $service->media->map(fn($media) => [
                 'id' => $media->id,
                 'name' => $media->name,

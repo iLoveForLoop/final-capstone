@@ -238,4 +238,17 @@ class WelcomeController extends Controller
 
         return inertia('Services', compact('filters', 'services', 'categories'));
     }
+
+    public function thankYou(Request $request){
+
+        // $request->registered = true;
+        // dd($request->registered);
+
+        if($request->registered){
+            return inertia('ThankYou');
+        }
+
+        return redirect('/');
+
+    }
 }

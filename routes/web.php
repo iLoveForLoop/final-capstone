@@ -34,6 +34,8 @@ Route::get('/', [WelcomeController::class, 'index']);
 //OPEN SERVICES PAGE
 Route::get('/services', [WelcomeController::class, 'servicesPage'])->name('service.index');
 
+Route::get('/thankyou', [WelcomeController::class, 'thankYou'])->name('thankyou');
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -42,6 +44,8 @@ Route::get('/join', function() {
 
     return inertia('Join');
 });
+
+
 
 Route::get('/organizer-reg', function() {
 

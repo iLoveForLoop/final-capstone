@@ -135,8 +135,8 @@ class RegisteredUserController extends Controller
             }
 
             return redirect()
-                ->route('login')
-                ->with('info', 'Registered Successfully. Please wait for admin approval.');
+                ->route('thankyou', ['registered' => true]);
+
         }
 
         // Handle client registration
