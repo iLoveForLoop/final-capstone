@@ -205,7 +205,7 @@ watch(() => props.bookings, (newBookings) => {
 </script>
 
 <template>
-    <VendorLayout title="Calendar">
+    <VendorLayout>
         <div class="min-h-screen bg-gray-50 py-6">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <!-- Header Section -->
@@ -339,7 +339,7 @@ watch(() => props.bookings, (newBookings) => {
                                         </h3>
                                         <p class="text-sm text-gray-600 mt-1">
                                             {{ selectedBookings.length }} booking{{ selectedBookings.length !== 1 ? 's'
-                                            : '' }}
+                                                : '' }}
                                         </p>
                                     </div>
                                     <button @click="closeModal"

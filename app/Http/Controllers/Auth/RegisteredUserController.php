@@ -54,10 +54,7 @@ class RegisteredUserController extends Controller
     {
 
 
-        // dd($request->all());
 
-
-        try {
             $request->validate([
             // User
             'full_name'     => ['required', 'string', 'max:255'],
@@ -85,10 +82,7 @@ class RegisteredUserController extends Controller
             'permitFiles'        => ['nullable', 'array'],
             'permitFiles.*'      => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ]);
-            // dd('here');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            dd($e->errors());
-        }
+
 
 
 

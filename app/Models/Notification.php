@@ -128,6 +128,7 @@ class Notification extends Model
     const TYPE_BOOKING_RECEIVED = 'booking_received';
     const TYPE_BOOKING_COMPLETED = 'booking_completed';
     const TYPE_BOOKING_CANCELLED = 'booking_cancelled';
+    const TYPE_BOOKING_DECLINED = 'booking_declined';
     const TYPE_BOOKING_CONFIRMED = 'booking_confirmed';
     const TYPE_SERVICE_UPDATED = 'service_updated';
     const TYPE_PAYMENT_RECEIVED = 'payment_received';
@@ -144,6 +145,7 @@ class Notification extends Model
     const TYPE_BOOKING_SUBMITTED = 'booking_submitted';
     const TYPE_BOOKING_IN_PROGRESS = 'booking_in_progress';
     const TYPE_BOOKING_CANCELLED_CLIENT = 'booking_cancelled_client';
+    const TYPE_BOOKING_DECLINED_CLIENT = 'booking_declined_client';
 
     public static function getTypes()
     {
@@ -152,6 +154,7 @@ class Notification extends Model
             self::TYPE_BOOKING_RECEIVED,
             self::TYPE_BOOKING_COMPLETED,
             self::TYPE_BOOKING_CANCELLED,
+            self::TYPE_BOOKING_DECLINED,
             self::TYPE_BOOKING_CONFIRMED,
             self::TYPE_SERVICE_UPDATED,
             self::TYPE_PAYMENT_RECEIVED,
@@ -168,6 +171,7 @@ class Notification extends Model
             self::TYPE_BOOKING_SUBMITTED,
             self::TYPE_BOOKING_IN_PROGRESS,
             self::TYPE_BOOKING_CANCELLED_CLIENT,
+            self::TYPE_BOOKING_DECLINED_CLIENT,
         ];
     }
 }

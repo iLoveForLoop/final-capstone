@@ -13,6 +13,7 @@ import Statcard from '@/Components/Vendor/Booking/Statcard.vue'
 import Filters from '@/Components/Vendor/Booking/Filters.vue'
 import BookingsTable from '@/Components/Vendor/Booking/BookingsTable.vue'
 import { push } from 'notivue'
+import CancelBookingModal from '@/Components/Vendor/Booking/CancelBookingModal.vue'
 
 const props = defineProps({
     bookings: {
@@ -63,8 +64,10 @@ const selectedSort = ref(props.filters.sort || 'date_desc')
 const showAcceptModal = ref(false)
 const showDeclineModal = ref(false)
 const showCompleteModal = ref(false)
+const showCancelModal = ref(false)
 const selectedBooking = ref(null)
 const declineReason = ref('')
+const cancelReason = ref('')
 const loadingActions = ref({})
 
 // Watch for filter changes and update URL
@@ -108,12 +111,17 @@ const openDeclineModal = (booking) => {
 const openCompleteModal = (booking) => {
     selectedBooking.value = booking
     showCompleteModal.value = true
-    // console.log('Selected: ', book);
 
+}
+
+const openCancelModal = (booking) => {
+    selectedBooking.value = booking
+    showCancelModal.value = true
 }
 
 const closeModals = () => {
     showAcceptModal.value = false
+    showCancelModal.value = false
     showDeclineModal.value = false
     showCompleteModal.value = false
     selectedBooking.value = null
@@ -144,6 +152,24 @@ const declineBooking = () => {
 
     router.patch(route('vendor.bookings.decline', selectedBooking.value.raw_id), {
         reason: declineReason.value || 'No reason provided',
+    }, {
+        onFinish: () => {
+            delete loadingActions.value[selectedBooking.value.raw_id]
+            closeModals()
+        },
+        onError: () => {
+            delete loadingActions.value[selectedBooking.value.raw_id]
+        }
+    })
+}
+
+const cancelBooking = () => {
+    if (!selectedBooking.value || loadingActions.value[selectedBooking.value.raw_id]) return
+
+    loadingActions.value[selectedBooking.value.raw_id] = 'cancelling'
+
+    router.patch(route('vendor.bookings.cancel', selectedBooking.value.raw_id), {
+        reason: cancelReason.value || 'No reason provided',
     }, {
         onFinish: () => {
             delete loadingActions.value[selectedBooking.value.raw_id]
@@ -245,6 +271,11 @@ const bookingDetailsModal = ref(null)
             :isLoading="isLoading" @close-modals="closeModals" :formatDate="formatDate"
             @complete-booking="completeBooking" />
 
+        <!-- Cancel Booking Modal -->
+        <CancelBookingModal :showCancelModal="showCancelModal" :selectedBooking="selectedBooking" :isLoading="isLoading"
+            @close-modals="closeModals" @cancel-booking="cancelBooking" :formatDate="formatDate"
+            v-model:cancelReason="cancelReason" />
+
         <div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
             <div class="max-w-7xl mx-auto">
                 <!-- Header -->
@@ -280,7 +311,8 @@ const bookingDetailsModal = ref(null)
                 <!-- Bookings Table -->
                 <BookingsTable :bookings="bookings" :isLoading="isLoading"
                     v-model:bookingDetailsModal="bookingDetailsModal" @open-accept-modal="openAcceptModal"
-                    @open-decline-modal="openDeclineModal" @open-complete-modal="openCompleteModal" />
+                    @open-decline-modal="openDeclineModal" @open-complete-modal="openCompleteModal"
+                    @open-cancel-modal="openCancelModal" />
 
             </div>
         </div>

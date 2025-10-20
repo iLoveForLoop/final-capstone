@@ -149,8 +149,9 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'role:vendor', 'user
 
         // Booking status actions
         Route::patch('/{id}/accept', 'accept')->name('accept');
-        Route::patch('/{id}/decline', 'decline')->name('decline'); // This cancels the booking
+        Route::patch('/{id}/decline', 'decline')->name('decline');
         Route::patch('/{id}/complete', 'complete')->name('complete');
+        Route::patch('/{id}/cancel', 'cancel')->name('cancel');
 
         // Bulk actions
         Route::patch('/bulk/update', 'bulkUpdate')->name('bulk.update');

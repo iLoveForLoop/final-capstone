@@ -19,6 +19,9 @@ class UserController extends Controller
      */
     public function index(Request $request)
 {
+
+    // dd('hi');
+
     $query = User::with(['vendor', 'roles', 'client'])
         ->whereDoesntHave('vendor', function ($query) {
             $query->where('is_approved', false);
@@ -58,7 +61,15 @@ class UserController extends Controller
             'created_at' => $user->created_at,
             'image_url' => $user->getFirstMediaUrl('avatar'),
             'service_categories' => $user->vendor?->serviceCategories ?? [],
-            'status' => $user->status
+            'status' => $user->status,
+            'activities' => $user->activities->map(function ($activity) {
+            return [
+                'description' => $activity->description,
+                'causer_id' => $activity->causer_id,
+                'properties' => $activity->properties,
+                'created_at' => $activity->created_at,
+                    ];
+                }),
         ];
     });
 
@@ -171,6 +182,15 @@ class UserController extends Controller
         'roles' => $user->roles,
         'created_at' => $user->created_at,
         'image_url' => $user->getFirstMediaUrl('images'),
+        'activities' => $user->activities->map(function ($activity) {
+            return [
+                'description' => $activity->description,
+                'causer_id' => $activity->causer_id,
+                'properties' => $activity->properties,
+                'created_at' => $activity->created_at,
+                    ];
+                }),
+
 
     ];
 
@@ -193,7 +213,7 @@ class UserController extends Controller
     public function update(User $user, Request $request)
     {
 
-
+        // dd('hi');
 
         $rules = [
             'full_name' => 'required|string|max:255',
@@ -247,6 +267,22 @@ class UserController extends Controller
             $user->client()->updateOrCreate([], $clientData);
 
         }
+
+        // Log the activation
+                        activity()
+                            ->causedBy(auth()->user())
+                            ->performedOn($user)
+                            ->withProperties([
+                                'action' => 'activate',
+                                // 'previous_status' => $previousStatus,
+                                'reason' => $request->reason,
+                                'ip_address' => $request->ip(),
+                            ])
+                            ->log('user_updated');
+
+                            // dd('here');
+
+
 
 
         // dd('Client Num: '. $user->client->contact_number);

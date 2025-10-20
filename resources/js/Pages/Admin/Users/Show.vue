@@ -270,6 +270,7 @@ const resetPassword = () => {
 
                             <!-- Activity Tab -->
                             <div v-if="activeTab === 'activity'" class="space-y-4">
+
                                 <div class="space-y-4">
                                     <div v-for="(activity, index) in user.activities" :key="index"
                                         class="flex items-start">

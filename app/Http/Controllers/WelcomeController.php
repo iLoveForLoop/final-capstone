@@ -16,8 +16,8 @@ class WelcomeController extends Controller
         if (auth()->check()) {
             return RedirectHelper::redirectBasedOnRole(auth()->user());
         }
-
-        $query = Service::with(['category', 'vendor', 'cateringService']);
+        // dd('hi');
+        $query = Service::with(['category', 'vendor', 'cateringService'])->where('is_available', true);
         $categories = ServiceCategory::all();
 
         $services = $query->paginate(8)->withQueryString()->through(fn($service) => [

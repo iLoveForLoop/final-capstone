@@ -73,7 +73,7 @@ class NotificationService
             $vendor->id,
             Notification::TYPE_BOOKING_CONFIRMED,
             'Booking Confirmed',
-            "Booking #{$booking->id} for {$client->name} has been confirmed.",
+            "Booking #{$booking->id} for {$client->full_name} has been confirmed.",
             [
                 'booking_id' => $booking->id,
                 'client_name' => $client->name,
@@ -101,6 +101,32 @@ class NotificationService
             Notification::TYPE_BOOKING_CANCELLED,
             'Booking Cancelled',
             "Booking #{$booking->id} for {$client->name} has been cancelled.",
+            [
+                'booking_id' => $booking->id,
+                'client_name' => $client->name,
+                'service_name' => $service->name
+            ],
+            'high',
+            "/vendor/bookings/{$booking->id}"
+        );
+
+        // Broadcast the notification
+        broadcast(new NotificationCreated($notification));
+
+        return $notification;
+    }
+
+    public function createBookingDeclinedNotification($booking)
+    {
+        $vendor = $booking->service->vendor;
+        $client = $booking->user->client;
+        $service = $booking->service;
+
+        $notification = Notification::createForVendor(
+            $vendor->id,
+            Notification::TYPE_BOOKING_DECLINED,
+            'Booking Declined',
+            "Booking #{$booking->id} for {$client->name} has been declined.",
             [
                 'booking_id' => $booking->id,
                 'client_name' => $client->name,
@@ -242,7 +268,7 @@ class NotificationService
     }
 
 
-    // Add client notification methods
+    // CLIENT NOTIFICATIONS METHOD
     public function createBookingConfirmedClientNotification($booking)
     {
         $client = $booking->user->client;
@@ -462,6 +488,32 @@ class NotificationService
                 'cancellation_reason' => $booking->cancellation_reason ?? null
             ],
             'high',
+            "/client/bookings/{$booking->id}"
+        );
+
+        broadcast(new NotificationCreated($notification));
+        return $notification;
+    }
+
+    public function createBookingDeclinedClientNotification($booking)
+    {
+        $client = $booking->user->client;
+        $vendor = $booking->service->vendor;
+        $service = $booking->service;
+
+        $notification = Notification::createForUser(
+            $client->id,
+            Notification::TYPE_BOOKING_DECLINED_CLIENT,
+            'Booking Declined',
+            "Your booking for {$service->name} with {$vendor->business_name} has been declined.",
+            [
+                'booking_id' => $booking->id,
+                'vendor_name' => $vendor->business_name,
+                'service_name' => $service->name,
+                'vendor_id' => $vendor->id,
+                'cancellation_reason' => $booking->cancellation_reason ?? null
+            ],
+            'normal',
             "/client/bookings/{$booking->id}"
         );
 

@@ -255,26 +255,26 @@ const getPaymentStatusColor = (status) => {
             </div>
 
             <!-- Quick Actions Footer -->
-            <!-- <div class="bg-white border-t border-gray-200">
-            <div class="max-w-7xl mx-auto px-6 py-6">
-                <div class="flex items-center justify-between">
-                    <div class="text-sm text-gray-600">
-                        Need help with your bookings? <a href="#" class="text-blue-600 hover:text-blue-700">Contact
-                            Support</a>
-                    </div>
-                    <div class="flex space-x-3">
-                        <button
-                            class="bg-gray-100 text-gray-700 px-4 py-2 rounded hover:bg-gray-200 transition-colors text-sm">
-                            Export Bookings
-                        </button>
-                        <button
-                            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors text-sm">
-                            Browse Services
-                        </button>
+            <div class="bg-white border-t border-gray-200">
+                <div class="max-w-7xl mx-auto px-6 py-6">
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm text-gray-600">
+                            Need help with your bookings? <a href="#" class="text-blue-600 hover:text-blue-700">Contact
+                                Support</a>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button
+                                class="bg-gray-100 text-gray-700 px-4 py-2 rounded hover:bg-gray-200 transition-colors text-sm">
+                                Export Bookings
+                            </button>
+                            <button
+                                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors text-sm">
+                                Browse Services
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div> -->
         </div>
     </ClientLayout>
 </template>

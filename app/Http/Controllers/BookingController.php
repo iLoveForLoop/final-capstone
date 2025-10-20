@@ -229,7 +229,7 @@ class BookingController extends Controller
             ->firstOrFail();
 
         $booking->update([
-            'status' => 'cancelled'
+            'status' => 'declined'
         ]);
 
         // Optional: Send notification to user
@@ -244,7 +244,28 @@ class BookingController extends Controller
 
 
 
-        return back()->with('success', 'Booking has been cancelled.');
+        return back()->with('success', 'Booking has been declined.');
+    }
+
+    public function cancel(Request $request, $id){
+        $request->validate([
+            'reason' => 'nullable|string|max:500'
+        ]);
+
+        $vendor = auth()->user()->vendor;
+
+        $booking = $vendor->bookings()
+            ->where('id', $id)
+            ->where('status', 'confirmed')
+            ->firstOrFail();
+
+        $booking->update([
+            'status' => 'cancelled'
+        ]);
+
+         $booking->load(['service.vendor.user', 'user']);
+
+         return back()->with('success', 'Booking has been cancelled.');
     }
 
     /**
@@ -575,24 +596,21 @@ class BookingController extends Controller
     }
 
 
-    public function getBookedDates(Vendor $vendor){
-
+    public function getBookedDates(Vendor $vendor)
+    {
         $bookedDates = $vendor->bookings()
             ->where('status', 'confirmed')
             ->whereHas('event', fn($q) => $q->whereDate('event_date', '>=', now()))
             ->with('event:id,event_date')
             ->get()
-            ->pluck('event.event_date')
-            ->filter()
-            ->map(fn($date) => $date->format('Y-m-d'))
+            ->groupBy(fn($booking) => $booking->event->event_date->format('Y-m-d')) // group by event date
+            ->filter(fn($bookings) => $bookings->count() >= 2) // only keep dates with 2 or more confirmed bookings
+            ->keys() // get just the date keys
             ->values();
-
-
-
 
         return response()->json([
             'bookedDates' => $bookedDates
-            ]);
-
+        ]);
     }
+
 }

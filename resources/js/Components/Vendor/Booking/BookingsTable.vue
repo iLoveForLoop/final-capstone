@@ -8,7 +8,7 @@ defineProps({
 
 const bookingDetailsModal = defineModel('bookingDetailsModal')
 
-const emit = defineEmits(['open-accept-modal', 'open-decline-modal', 'open-complete-modal'])
+const emit = defineEmits(['open-accept-modal', 'open-decline-modal', 'open-complete-modal', 'open-cancel-modal'])
 
 
 
@@ -122,6 +122,8 @@ const getStatusColor = (status) => {
                                     <span>Decline</span>
                                 </button>
 
+
+
                                 <!-- Complete Button -->
                                 <button v-if="booking.status === 'confirmed'"
                                     @click="emit('open-complete-modal', booking)"
@@ -133,6 +135,19 @@ const getStatusColor = (status) => {
                                     </div>
                                     <CircleCheck v-else class="h-4 w-4" />
                                     <span>Complete</span>
+                                </button>
+
+                                <!-- Cancel Button -->
+                                <button v-if="booking.status === 'confirmed'"
+                                    @click="emit('open-cancel-modal', booking)"
+                                    :disabled="isLoading(booking.raw_id, 'canceling')"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 hover:border-red-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
+                                    title="Decline booking">
+                                    <div v-if="isLoading(booking.raw_id, 'canceling')"
+                                        class="animate-spin h-4 w-4 border-2 border-red-600 border-t-transparent rounded-full">
+                                    </div>
+                                    <X v-else class="h-4 w-4" />
+                                    <span>Cancel</span>
                                 </button>
                             </div>
                         </td>

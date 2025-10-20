@@ -59,9 +59,10 @@ class BookingObserver
 
                         // Mail::to($booking->user->email)->queue(new BookingConfirmedMail($booking));
                         // dd($booking->user->client->contact_number);
-                        SendBookingConfirmedEmailJob::dispatch($booking)->chain([
-                            new SendBookingConfirmedSmsJob($booking)
-                        ]);
+                        // SendBookingConfirmedEmailJob::dispatch($booking)->chain([
+                        //     new SendBookingConfirmedSmsJob($booking)
+                        // ]);
+                        // SendBookingConfirmedEmailJob::dispatch($booking);
                     }
                     break;
 
@@ -89,6 +90,18 @@ class BookingObserver
 
                         // Client notification - NEW
                         $this->notificationService->createBookingCancelledClientNotification($booking);
+
+                        // Optional: Send cancellation email to client
+                        // Mail::to($booking->user->email)->queue(new BookingCancelledMail($booking));
+                    }
+                    break;
+            case 'declined':
+                    if ($oldStatus !== 'declined') {
+                        // Vendor notification - existing
+                        $this->notificationService->createBookingDeclinedNotification($booking);
+
+                        // Client notification - NEW
+                        $this->notificationService->createBookingDeclinedClientNotification($booking);
 
                         // Optional: Send cancellation email to client
                         // Mail::to($booking->user->email)->queue(new BookingCancelledMail($booking));

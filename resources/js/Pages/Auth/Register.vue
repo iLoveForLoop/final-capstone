@@ -6,7 +6,9 @@ import LegalAndCompliance from '@/Components/Register/LegalAndCompliance.vue'
 import LocationForm from '@/Components/Register/LocationForm.vue'
 import MediaAndPortfolio from '@/Components/Register/MediaAndPortfolio.vue'
 import Review from '@/Components/Register/Review.vue'
+import GuestLayout from '@/Layouts/GuestLayout.vue'
 import { useForm, usePage } from '@inertiajs/vue3'
+import { push } from 'notivue'
 import { ref, reactive, computed, watch } from 'vue'
 import { onUnmounted } from 'vue'
 
@@ -50,7 +52,7 @@ const formData = useForm({
 
 // UI State
 const currentStep = ref(1)
-const totalSteps = 7
+const totalSteps = 6
 const isLoading = ref(false)
 const profilePhoto = ref(null)
 const servicePhotos = ref([])
@@ -61,15 +63,13 @@ const termsAccepted = ref(false)
 // Password UI state
 
 const passwordStrength = ref(0)
+
 const passwordRequirements = reactive({
     length: false,
     uppercase: false,
     lowercase: false,
     number: false
 })
-
-// Options
-
 
 
 
@@ -116,28 +116,27 @@ const isStep2Valid = computed(() => {
 })
 
 const isStep3Valid = computed(() => {
-    return formData.preferred_contact_method !== undefined &&
-        formData.preferred_contact_method !== ''
-})
-
-const isStep4Valid = computed(() => {
     return true
     // return profilePhoto.value !== null && servicePhotos.value.length > 0
 })
 
-const isStep5Valid = computed(() => {
+const isStep4Valid = computed(() => {
     return true
     // return permitFiles.value.length > 0
 })
 
-const isStep6Valid = computed(() => {
+const isStep5Valid = computed(() => {
     return formData.password.length >= 8 &&
         passwordStrength.value >= 3 &&
         passwordsMatch.value === true
 })
 
-const isStep7Valid = computed(() => {
+const isStep6Valid = computed(() => {
     return termsAccepted.value === true
+})
+
+const isStep7Valid = computed(() => {
+    return true
 })
 
 const isCurrentStepValid = computed(() => {
@@ -158,11 +157,11 @@ const stepTitle = computed(() => {
     const titles = {
         1: 'Business Information',
         2: 'Location & Services',
-        3: 'Contact and Payment Preference',
-        4: 'Media & Portfolio',
-        5: 'Legal & Compliance',
-        6: 'Account Security',
-        7: 'Review & Submit'
+        // 3: 'Contact and Payment Preference',
+        3: 'Media & Portfolio',
+        4: 'Legal & Compliance',
+        5: 'Account Security',
+        6: 'Review & Submit'
     }
     return titles[currentStep.value]
 })
@@ -213,13 +212,6 @@ const validateCurrentStep = () => {
             break
 
         case 3:
-            if (!formData.preferred_contact_method) {
-                errors.preferred_contact_method = 'Preferred contact method is required'
-                isValid = false
-            }
-            break
-
-        case 4:
             // if (!profilePhoto.value) {
             //     errors.profilePhoto = 'Profile photo is required'
             //     isValid = false
@@ -230,14 +222,14 @@ const validateCurrentStep = () => {
             // }
             break
 
-        case 5:
+        case 4:
             // if (permitFiles.value.length === 0) {
             //     errors.businessPermits = 'At least one business permit is required'
             //     isValid = false
             // }
             break
 
-        case 6:
+        case 5:
             if (formData.password.length < 8) {
                 errors.password = 'Password must be at least 8 characters long'
                 isValid = false
@@ -252,11 +244,15 @@ const validateCurrentStep = () => {
             }
             break
 
-        case 7:
+        case 6:
             if (!termsAccepted.value) {
                 errors.terms = 'You must accept the terms and conditions'
                 isValid = false
             }
+            break
+
+        case 7:
+
             break
     }
 
@@ -362,9 +358,29 @@ const submitForm = () => {
             return fd;
         })
         .post(route('register'), {
+            // forceFormData: true,
             onFinish: () => {
                 isLoading.value = false;
+
+
             },
+            onError: (errors) => {
+                console.log(errors);
+
+                // errors is the same as form.errors
+                // You can get the field names:
+                const fields = Object.keys(errors) // ['full_name', 'email', 'password']
+
+                // You can build a custom message
+                const message = `Validation failed for: ${fields.join(', ')}`
+
+                // push.error(message)
+
+                // If you want to show the first message only:
+                const firstField = fields[0]
+                const firstMessage = errors[firstField]
+                push.error(`${firstMessage}`)
+            }
         });
 };
 
@@ -384,161 +400,168 @@ watch(() => formData.password, checkPasswordStrength)
 </script>
 
 <template>
-    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-4 sm:py-8">
-        <div class="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8">
-            <!-- Header -->
-            <div class="text-center mb-6 sm:mb-10">
-                <div class="flex justify-center mb-3 sm:mb-4">
-                    <div
-                        class="w-10 h-10 sm:w-12 sm:h-12 bg-purple-500 rounded-lg flex items-center justify-center shadow-sm">
-                        <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                            </path>
-                        </svg>
-                    </div>
-                </div>
-                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Vendor Registration</h1>
-                <p class="text-sm sm:text-base text-gray-600 px-2">Complete your profile to start accepting bookings</p>
-            </div>
-
-            <!-- Progress Section -->
-            <div class="mb-6 sm:mb-8 px-2 sm:px-0">
-                <div class="flex justify-between items-center mb-3">
-                    <span class="text-xs sm:text-sm font-medium text-gray-700">Step {{ currentStep }} of {{ totalSteps
-                    }}</span>
-                    <span class="text-xs sm:text-sm font-medium text-purple-500">{{ Math.round((currentStep /
-                        totalSteps)
-                        * 100) }}% Complete</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-1.5 sm:h-2 mb-2">
-                    <div class="bg-purple-500 h-1.5 sm:h-2 rounded-full transition-all duration-300 ease-out shadow-sm"
-                        :style="{ width: `${(currentStep / totalSteps) * 100}%` }"></div>
-                </div>
-                <div class="flex justify-between text-[10px] sm:text-xs text-gray-500 px-1">
-                    <span class="truncate px-1">Business</span>
-                    <span class="truncate px-1">Location</span>
-                    <span class="truncate px-1">Contact</span>
-                    <span class="truncate px-1">Portfolio</span>
-                    <span class="truncate px-1">Legal</span>
-                    <span class="truncate px-1">Security</span>
-                    <span class="truncate px-1">Review</span>
-                </div>
-            </div>
-
-            <!-- Form Container -->
-            <div
-                class="bg-white rounded-xl sm:rounded-xl shadow-md sm:shadow-lg border border-gray-100 overflow-hidden mx-2 sm:mx-0">
-                <!-- Step Header -->
-                <div class="border-b bg-purple-500 text-white px-4 sm:px-6 py-3 sm:py-4">
-                    <h2 class="text-base sm:text-lg font-semibold">{{ stepTitle }}</h2>
-                </div>
-
-                <!-- Form Content -->
-                <div class="p-4 sm:p-6">
-                    <!-- Step 1: Business Information -->
-                    <div v-show="currentStep === 1" class="space-y-4 sm:space-y-6">
-                        <BusinessInformationForm :formData="formData" :errors="errors"
-                            :vendorCategoryOptions="vendorCategoryOptions" />
-                    </div>
-
-                    <!-- Step 2: Location -->
-                    <div v-show="currentStep === 2" class="space-y-4 sm:space-y-6">
-                        <LocationForm :formData="formData" :errors="errors"
-                            :serviceCoverageOptions="serviceCoverageOptions" />
-                    </div>
-
-                    <!-- Step 3: Contact and Payment Preference -->
-                    <div v-show="currentStep === 3" class="space-y-4 sm:space-y-6">
-                        <ContactAndPayment :formData="formData" :errors="errors" />
-                    </div>
-
-                    <!-- Step 4: Media & Portfolio -->
-                    <div v-show="currentStep === 4" class="space-y-4 sm:space-y-6">
-                        <MediaAndPortfolio :errors="errors" :profilePhoto="profilePhoto"
-                            :profilePhotoUrl="profilePhotoUrl" :servicePhotos="servicePhotos"
-                            :servicePhotoUrls="servicePhotoUrls" @handle-file-upload="handleFileUpload"
-                            @remove-file="removeFile" />
-                    </div>
-
-                    <!-- Step 5: Legal & Compliance -->
-                    <div v-show="currentStep === 5" class="space-y-4 sm:space-y-6">
-                        <LegalAndCompliance :errors="errors" :permitFiles="permitFiles"
-                            @handle-file-upload="handleFileUpload" @remove-file="removeFile" />
-                    </div>
-
-                    <!-- Step 6: Account Security -->
-                    <div v-show="currentStep === 6" class="space-y-4 sm:space-y-6">
-                        <AccountSecurity :formData="formData" :errors="errors" :passwordStrength="passwordStrength"
-                            :passwordRequirements="passwordRequirements" :passwordsMatch="passwordsMatch" />
-                    </div>
-
-                    <!-- Step 7: Review & Submit -->
-                    <div v-show="currentStep === 7" class="space-y-4 sm:space-y-6">
-                        <Review :formData="formData" :errors="errors" v-model:termsAccepted="termsAccepted" />
-                    </div>
-                </div>
-
-                <!-- Navigation Buttons -->
-                <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between gap-2">
-                    <button v-if="currentStep > 1" @click="prevStep" type="button"
-                        class="px-3 sm:px-5 py-2 text-sm sm:text-base text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors flex-1 sm:flex-none">
-                        <div class="flex items-center justify-center sm:justify-start">
-                            <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor"
+    <GuestLayout>
+        <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-4 sm:py-8">
+            <div class="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8">
+                <!-- Header -->
+                <div class="text-center mb-6 sm:mb-10">
+                    <div class="flex justify-center mb-3 sm:mb-4">
+                        <div
+                            class="w-10 h-10 sm:w-12 sm:h-12 bg-purple-500 rounded-lg flex items-center justify-center shadow-sm">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 19l-7-7 7-7"></path>
+                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                                </path>
                             </svg>
-                            Previous
                         </div>
-                    </button>
-                    <div v-else class="flex-1 sm:flex-none"></div>
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Vendor Registration</h1>
+                    <p class="text-sm sm:text-base text-gray-600 px-2">Complete your profile to start accepting bookings
+                    </p>
+                </div>
 
-                    <div class="flex space-x-2 sm:space-x-3 flex-1 sm:flex-none justify-end">
-                        <button v-if="currentStep < totalSteps" @click="nextStep" type="button"
-                            :disabled="!isCurrentStepValid" :class="[
-                                'px-3 sm:px-5 py-2 text-sm sm:text-base rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 sm:focus:ring-offset-2 transition-colors flex items-center justify-center w-full',
-                                isCurrentStepValid
-                                    ? 'bg-purple-500 text-white hover:bg-blue-700 shadow-sm'
-                                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                            ]">
-                            Next
-                            <svg class="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
-                                </path>
-                            </svg>
-                        </button>
-                        <button v-else @click="submitForm" :disabled="isLoading || !isCurrentStepValid" type="button"
-                            :class="[
-                                'px-4 sm:px-6 py-2 text-sm sm:text-base rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 sm:focus:ring-offset-2 transition-colors flex items-center justify-center w-full',
-                                (isLoading || !isCurrentStepValid)
-                                    ? 'bg-green-400 text-white cursor-not-allowed'
-                                    : 'bg-green-600 text-white hover:bg-green-700 shadow-sm'
-                            ]">
-                            <svg v-if="isLoading"
-                                class="animate-spin -ml-1 mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 text-white"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                    stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                </path>
-                            </svg>
-                            {{ isLoading ? 'Submitting...' : 'Submit' }}
-                        </button>
+                <!-- Progress Section -->
+                <div class="mb-6 sm:mb-8 px-2 sm:px-0">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-xs sm:text-sm font-medium text-gray-700">Step {{ currentStep }} of {{
+                            totalSteps
+                            }}</span>
+                        <span class="text-xs sm:text-sm font-medium text-purple-500">{{ Math.round((currentStep /
+                            totalSteps)
+                            * 100) }}% Complete</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-1.5 sm:h-2 mb-2">
+                        <div class="bg-purple-500 h-1.5 sm:h-2 rounded-full transition-all duration-300 ease-out shadow-sm"
+                            :style="{ width: `${(currentStep / totalSteps) * 100}%` }"></div>
+                    </div>
+                    <div class="flex justify-between text-[10px] sm:text-xs text-gray-500 px-1">
+                        <span class="truncate px-1">Business</span>
+                        <span class="truncate px-1">Location</span>
+                        <!-- <span class="truncate px-1">Contact</span> -->
+                        <span class="truncate px-1">Portfolio</span>
+                        <span class="truncate px-1">Legal</span>
+                        <span class="truncate px-1">Security</span>
+                        <span class="truncate px-1">Review</span>
                     </div>
                 </div>
-            </div>
 
-            <!-- Help Text -->
-            <div class="mt-4 sm:mt-6 text-center text-xs sm:text-sm text-gray-500 px-2">
-                <p>Questions? <a href="#" class="text-purple-500 hover:text-blue-800 font-medium">Contact our support
-                        team</a></p>
+                <!-- Form Container -->
+                <div
+                    class="bg-white rounded-xl sm:rounded-xl shadow-md sm:shadow-lg border border-gray-100 overflow-hidden mx-2 sm:mx-0">
+                    <!-- Step Header -->
+                    <div class="border-b bg-purple-500 text-white px-4 sm:px-6 py-3 sm:py-4">
+                        <h2 class="text-base sm:text-lg font-semibold">{{ stepTitle }}</h2>
+                    </div>
+
+                    <!-- Form Content -->
+                    <div class="p-4 sm:p-6">
+                        <!-- Step 1: Business Information -->
+                        <div v-show="currentStep === 1" class="space-y-4 sm:space-y-6">
+                            <BusinessInformationForm :formData="formData" :errors="errors"
+                                :vendorCategoryOptions="vendorCategoryOptions" />
+                        </div>
+
+                        <!-- Step 2: Location -->
+                        <div v-show="currentStep === 2" class="space-y-4 sm:space-y-6">
+                            <LocationForm :formData="formData" :errors="errors"
+                                :serviceCoverageOptions="serviceCoverageOptions" />
+                        </div>
+
+                        <!-- Step 3: Contact and Payment Preference -->
+                        <!-- <div v-show="currentStep === 3" class="space-y-4 sm:space-y-6">
+                        <ContactAndPayment :formData="formData" :errors="errors" />
+                    </div> -->
+
+                        <!-- Step 3: Media & Portfolio -->
+                        <div v-show="currentStep === 3" class="space-y-4 sm:space-y-6">
+                            <MediaAndPortfolio :errors="errors" :profilePhoto="profilePhoto"
+                                :profilePhotoUrl="profilePhotoUrl" :servicePhotos="servicePhotos"
+                                :servicePhotoUrls="servicePhotoUrls" @handle-file-upload="handleFileUpload"
+                                @remove-file="removeFile" />
+                        </div>
+
+                        <!-- Step 4: Legal & Compliance -->
+                        <div v-show="currentStep === 4" class="space-y-4 sm:space-y-6">
+                            <LegalAndCompliance :errors="errors" :permitFiles="permitFiles"
+                                @handle-file-upload="handleFileUpload" @remove-file="removeFile" />
+                        </div>
+
+                        <!-- Step 6: Account Security -->
+                        <div v-show="currentStep === 5" class="space-y-4 sm:space-y-6">
+                            <AccountSecurity :formData="formData" :errors="errors" :passwordStrength="passwordStrength"
+                                :passwordRequirements="passwordRequirements" :passwordsMatch="passwordsMatch" />
+                        </div>
+
+                        <!-- Step 6: Review & Submit -->
+                        <div v-show="currentStep === 6" class="space-y-4 sm:space-y-6">
+                            <Review :formData="formData" :errors="errors" v-model:termsAccepted="termsAccepted" />
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between gap-2">
+                        <button v-if="currentStep > 1" @click="prevStep" type="button"
+                            class="px-3 sm:px-5 py-2 text-sm sm:text-base text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors flex-1 sm:flex-none">
+                            <div class="flex items-center justify-center sm:justify-start">
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                                Previous
+                            </div>
+                        </button>
+                        <div v-else class="flex-1 sm:flex-none"></div>
+
+                        <div class="flex space-x-2 sm:space-x-3 flex-1 sm:flex-none justify-end">
+                            <button v-if="currentStep < totalSteps" @click="nextStep" type="button"
+                                :disabled="!isCurrentStepValid" :class="[
+                                    'px-3 sm:px-5 py-2 text-sm sm:text-base rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 sm:focus:ring-offset-2 transition-colors flex items-center justify-center w-full',
+                                    isCurrentStepValid
+                                        ? 'bg-purple-500 text-white hover:bg-blue-700 shadow-sm'
+                                        : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                ]">
+                                Next
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7">
+                                    </path>
+                                </svg>
+                            </button>
+                            <button v-else @click="submitForm" :disabled="isLoading || !isCurrentStepValid"
+                                type="button" :class="[
+                                    'px-4 sm:px-6 py-2 text-sm sm:text-base rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 sm:focus:ring-offset-2 transition-colors flex items-center justify-center w-full',
+                                    (isLoading || !isCurrentStepValid)
+                                        ? 'bg-green-400 text-white cursor-not-allowed'
+                                        : 'bg-green-600 text-white hover:bg-green-700 shadow-sm'
+                                ]">
+                                <svg v-if="isLoading"
+                                    class="animate-spin -ml-1 mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 text-white"
+                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                    </path>
+                                </svg>
+                                {{ isLoading ? 'Submitting...' : 'Submit' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help Text -->
+                <div class="mt-4 sm:mt-6 text-center text-xs sm:text-sm text-gray-500 px-2">
+                    <p>Questions? <a href="#" class="text-purple-500 hover:text-blue-800 font-medium">Contact our
+                            support
+                            team</a></p>
+                </div>
             </div>
         </div>
-    </div>
+    </GuestLayout>
+
 </template>
 
 <style scoped>

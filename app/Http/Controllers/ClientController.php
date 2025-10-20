@@ -18,7 +18,7 @@ class ClientController extends Controller
     public function index()
     {
 
-        $query = Service::with(['category', 'vendor', 'cateringService']);
+        $query = Service::with(['category', 'vendor', 'cateringService'])->where('is_available', true);
         $categories = ServiceCategory::all();
 
         $services = $query->paginate(8)->withQueryString()->through(fn($service) => [

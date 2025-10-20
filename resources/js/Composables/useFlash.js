@@ -1,4 +1,3 @@
-// resources/js/Composables/useFlash.js
 import { usePage } from '@inertiajs/vue3';
 import { useToast } from 'vue-toastification';
 
