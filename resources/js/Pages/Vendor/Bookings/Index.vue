@@ -14,6 +14,7 @@ import Filters from '@/Components/Vendor/Booking/Filters.vue'
 import BookingsTable from '@/Components/Vendor/Booking/BookingsTable.vue'
 import { push } from 'notivue'
 import CancelBookingModal from '@/Components/Vendor/Booking/CancelBookingModal.vue'
+import VendorAcceptanceModal from '@/Components/Vendor/Booking/VendorAcceptanceModal.vue'
 
 const props = defineProps({
     bookings: {
@@ -254,8 +255,13 @@ const bookingDetailsModal = ref(null)
 
 <template>
     <VendorLayout>
-        <BookingDetailsModal ref="bookingDetailsModal" @accept-booking="openAcceptModal"
-            @decline-booking="openDeclineModal" @complete-booking="openCompleteModal" />
+        <VendorAcceptanceModal ref="bookingDetailsModal" @contact-client="handleContactClient"
+            @view-booking-details="handleViewBookingDetails" />
+
+
+        <!-- <BookingDetailsModal ref="bookingDetailsModal" @accept-booking="openAcceptModal"
+            @decline-booking="openDeclineModal" @complete-booking="openCompleteModal"
+            @cancel-booking="openCancelModal" /> -->
 
         <!-- Accept Booking Modal -->
         <AcceptBookingModal :showAcceptModal="showAcceptModal" :selectedBooking="selectedBooking" :isLoading="isLoading"

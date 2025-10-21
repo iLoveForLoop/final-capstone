@@ -24,7 +24,7 @@ defineExpose({
     close
 })
 
-const emit = defineEmits(['accept-booking', 'decline-booking', 'complete-booking'])
+const emit = defineEmits(['accept-booking', 'decline-booking', 'complete-booking', 'cancel-booking'])
 
 const getStatusBadgeClass = (status) => {
     if (!status) return 'bg-gray-100 text-gray-800 border-gray-200'
@@ -172,6 +172,11 @@ const acceptBooking = (booking) => {
 const declineBooking = (booking) => {
     emit('decline-booking', booking)
 }
+
+const cancelBooking = (booking) => {
+    emit('cancel-booking', booking)
+}
+
 
 const completeBooking = (booking) => {
     console.log('Here');
@@ -529,7 +534,8 @@ onUnmounted(() => {
 
                         <!-- Footer with Actions -->
                         <BookingDetailsModalFooter :booking="booking" @close="close" @accept-booking="acceptBooking"
-                            @decline-booking="declineBooking" @complete-booking="completeBooking" />
+                            @decline-booking="declineBooking" @complete-booking="completeBooking"
+                            @cancel-booking="cancelBooking" />
                     </div>
                 </Transition>
             </div>

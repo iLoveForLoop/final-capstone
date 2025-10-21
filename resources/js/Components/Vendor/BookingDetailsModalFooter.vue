@@ -5,7 +5,7 @@ const props = defineProps({
     booking: Object
 })
 
-const emit = defineEmits(['close', 'accept-booking', 'decline-booking', 'complete-booking'])
+const emit = defineEmits(['close', 'accept-booking', 'decline-booking', 'complete-booking', 'cancel-booking'])
 
 
 
@@ -35,6 +35,10 @@ const chatClient = () => {
             <button @click="emit('decline-booking', booking)" v-if="booking?.status === 'pending'"
                 class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm">
                 Decline Booking
+            </button>
+            <button @click="emit('cancel-booking', booking)" v-if="booking?.status === 'confirmed'"
+                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm">
+                Cancel Booking
             </button>
             <button @click="emit('complete-booking', booking)" v-if="booking?.status === 'confirmed'"
                 class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm">

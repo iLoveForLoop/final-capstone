@@ -96,19 +96,6 @@
                                             class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all duration-300 shadow-sm">
                                     </div>
 
-                                    <!-- Quick Category Pills -->
-                                    <div class="flex flex-wrap gap-2">
-                                        <button v-for="category in quickCategories" :key="category.id"
-                                            @click="toggleCategory(category.id)" :class="[
-                                                'px-3 py-2 text-sm rounded-lg border transition-all duration-200',
-                                                selectedCategories.includes(category.id)
-                                                    ? 'bg-blue-100 border-blue-300 text-blue-700'
-                                                    : 'bg-gray-100 border-gray-200 text-gray-700 hover:bg-gray-200'
-                                            ]">
-                                            {{ category.name }}
-                                        </button>
-                                    </div>
-
                                     <!-- Filter and Search Buttons -->
                                     <div class="flex gap-3">
                                         <!-- Filter Button -->

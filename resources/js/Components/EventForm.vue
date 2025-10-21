@@ -1,10 +1,70 @@
 <script setup>
+import VueDatePicker from '@vuepic/vue-datepicker';
+import { ref } from 'vue';
+
 const props = defineProps({
     eventForm: Object,
     selectedCategories: {
         type: Array
     }
 })
+
+
+const booked = ref([])
+
+
+const pickerDate = ref(null);
+const pickerTime = ref(null);
+
+if (props.eventForm.event_date) {
+    pickerDate.value = new Date(props.eventForm.event_date);
+}
+
+if (props.eventForm.event_time) {
+
+    const [hours, minutes] = props.eventForm.event_time.split(':');
+    pickerTime.value = {
+        hours: parseInt(hours),
+        minutes: parseInt(minutes)
+    };
+}
+
+// Watch for changes and convert to string format
+const updateEventDate = (date) => {
+    if (date) {
+        // Convert Date object to YYYY-MM-DD string (same format as input type="date")
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        props.eventForm.event_date = `${year}-${month}-${day}`;
+    } else {
+        props.eventForm.event_date = null;
+    }
+};
+
+const updateEventTime = (time) => {
+    if (time) {
+        // Convert time object to HH:MM format (24-hour, same as input type="time")
+        const hours = String(time.hours).padStart(2, '0');
+        const minutes = String(time.minutes).padStart(2, '0');
+        props.eventForm.event_time = `${hours}:${minutes}`;
+    } else {
+        props.eventForm.event_time = null;
+    }
+};
+
+
+
+
+// onMounted(async () => {
+//     try {
+//         const res = await axios.get(`/api/vendor/${props.vendorId}/booked-dates`);
+//         booked.value = res.data.bookedDates || []
+//     } catch (error) {
+//         console.error('Failed to fetch booked dates:', error)
+//     }
+
+// });
 
 function doesCategoryExist(categoryName) {
     return props.selectedCategories.some(category => category.name == categoryName);
@@ -52,7 +112,10 @@ function doesCategoryExist(categoryName) {
                         Date
                         <span class="text-[#239BA7] ml-1">*</span>
                     </label>
-                    <input id="event-date" type="date" v-model="eventForm.event_date" class="form-input">
+                    <VueDatePicker v-model="pickerDate" @update:model-value="updateEventDate"
+                        :enable-time-picker="false" :min-date="new Date()" placeholder="Select date" class="w-full"
+                        auto-apply :teleport="true"
+                        :markers="booked.map(date => ({ date, type: 'dot', color: 'red' }))" />
                     <p class="form-hint">When your event will occur</p>
                 </div>
 
@@ -61,7 +124,8 @@ function doesCategoryExist(categoryName) {
                     <label for="event-time" class="form-label">
                         Start time
                     </label>
-                    <input id="event-time" type="time" v-model="eventForm.event_time" class="form-input">
+                    <VueDatePicker v-model="pickerTime" @update:model-value="updateEventTime" time-picker
+                        placeholder="Select time" class="w-full" auto-apply :teleport="true" :is-24="false" />
                     <p class="form-hint">Optional start time</p>
                 </div>
 

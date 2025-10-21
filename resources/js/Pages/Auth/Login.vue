@@ -50,15 +50,15 @@
 
                     <!-- Stats -->
                     <div class="grid grid-cols-3 gap-8 pt-8">
-                        <div class="text-center reveal-animation animation-delay-400">
+                        <div v-show="false" class="text-center reveal-animation animation-delay-400">
                             <div class="text-2xl font-bold text-gray-900">10K+</div>
                             <div class="text-sm text-gray-600">Vendors</div>
                         </div>
-                        <div class="text-center reveal-animation animation-delay-500">
+                        <div v-show="false" class="text-center reveal-animation animation-delay-500">
                             <div class="text-2xl font-bold text-gray-900">50K+</div>
                             <div class="text-sm text-gray-600">Events</div>
                         </div>
-                        <div class="text-center reveal-animation animation-delay-600">
+                        <div v-show="false" class="text-center reveal-animation animation-delay-600">
                             <div class="text-2xl font-bold text-gray-900">99%</div>
                             <div class="text-sm text-gray-600">Satisfaction</div>
                         </div>
