@@ -91,6 +91,7 @@ const getStatusColor = (status) => {
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex items-center justify-end space-x-2">
                                 <!-- View Details Button -->
+                                <!-- {{ console.log('Booking deatails', booking) }} -->
                                 <button @click="bookingDetailsModal.open(booking)"
                                     class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-md hover:bg-indigo-100 hover:border-indigo-300 transition-colors duration-150"
                                     title="View booking details">

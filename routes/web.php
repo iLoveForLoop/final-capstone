@@ -7,6 +7,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CateringServiceController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DishController;
+use App\Http\Controllers\EmailOtpController;
 use App\Http\Controllers\FavoritesController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
@@ -22,6 +23,7 @@ use App\Http\Controllers\VendorCalendarController;
 use App\Http\Controllers\VendorApplicationController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\WelcomeController;
+use App\Mail\EmailOtpMail;
 use App\Mail\TestMail;
 use App\Models\Service;
 use App\Models\Vendor;
@@ -36,6 +38,12 @@ Route::get('/services', [WelcomeController::class, 'servicesPage'])->name('servi
 
 Route::get('/thankyou', [WelcomeController::class, 'thankYou'])->name('thankyou');
 
+ Route::get('/termsandcondition', function (){
+
+        return inertia('TermsAndCondition');
+
+    })->name('termsandcondition');
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -44,6 +52,11 @@ Route::get('/join', function() {
 
     return inertia('Join');
 });
+
+//EMAIL OTP
+Route::post('/email/send-otp', [EmailOtpController::class, 'sendOtp']);
+Route::post('/email/verify-otp', [EmailOtpController::class, 'verifyOtp']);
+
 
 
 
@@ -193,9 +206,9 @@ Route::middleware(['auth'])->group(function () {
 
 
 //MAIL TEST
-Route::get('/test-brevo', function () {
-    Mail::to('baykingjeferson110@gmail.com')->send(new TestMail());
-    return "Test email sent via Brevo!";
+Route::get('/test-otp', function () {
+    Mail::to('baykingjeferson110@gmail.com')->send(new EmailOtpMail(123412));
+    return "Test email sent";
 });
 
 

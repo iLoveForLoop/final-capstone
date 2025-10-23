@@ -44,6 +44,7 @@ return new class extends Migration
             // Optional Details
             $table->decimal('delivery_fee', 8, 2)->nullable();
             $table->string('buffet_type')->nullable();
+            $table->boolean('is_per_pax')->default(false);
 
             // Specifications
             $table->json('specifications')->nullable();

@@ -70,6 +70,8 @@ const selectedBooking = ref(null)
 const declineReason = ref('')
 const cancelReason = ref('')
 const loadingActions = ref({})
+const vendorAcceptanceModal = ref(null)
+const bookingDetailsModal = ref(null)
 
 // Watch for filter changes and update URL
 watch([searchQuery, selectedStatus, selectedDateRange, selectedSort], () => {
@@ -125,8 +127,9 @@ const closeModals = () => {
     showCancelModal.value = false
     showDeclineModal.value = false
     showCompleteModal.value = false
-    selectedBooking.value = null
+    // selectedBooking.value = null
     declineReason.value = ''
+    bookingDetailsModal.value.close()
 }
 
 // Action functions with loading states
@@ -137,8 +140,12 @@ const acceptBooking = () => {
 
     router.patch(route('vendor.bookings.accept', selectedBooking.value.raw_id), {}, {
         onFinish: () => {
+
+
             delete loadingActions.value[selectedBooking.value.raw_id]
             closeModals()
+            console.log('SELECETED: ', selectedBooking.value);
+            vendorAcceptanceModal.value.open(selectedBooking.value)
         },
         onError: () => {
             delete loadingActions.value[selectedBooking.value.raw_id]
@@ -249,19 +256,18 @@ onMounted(async () => {
     }
 })
 
-const bookingDetailsModal = ref(null)
+
 
 </script>
 
 <template>
     <VendorLayout>
-        <VendorAcceptanceModal ref="bookingDetailsModal" @contact-client="handleContactClient"
-            @view-booking-details="handleViewBookingDetails" />
+        <VendorAcceptanceModal ref="vendorAcceptanceModal" />
 
-
-        <!-- <BookingDetailsModal ref="bookingDetailsModal" @accept-booking="openAcceptModal"
+        <!-- View Booking Details -->
+        <BookingDetailsModal ref="bookingDetailsModal" @accept-booking="openAcceptModal"
             @decline-booking="openDeclineModal" @complete-booking="openCompleteModal"
-            @cancel-booking="openCancelModal" /> -->
+            @cancel-booking="openCancelModal" />
 
         <!-- Accept Booking Modal -->
         <AcceptBookingModal :showAcceptModal="showAcceptModal" :selectedBooking="selectedBooking" :isLoading="isLoading"

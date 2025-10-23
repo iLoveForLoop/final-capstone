@@ -5,6 +5,7 @@ import EventForm from './EventForm.vue';
 import CategorySelection from './CategorySelection.vue';
 import VendorServiceSelection from './VendorServiceSelection.vue';
 import ReviewEvent from './ReviewEvent.vue';
+import ClientBookingSuccessModal from './Client/Booking/ClientBookingSuccessModal.vue';
 
 const props = defineProps({
     categories: Array
@@ -42,6 +43,7 @@ const steps = [
 ];
 
 const currentStep = ref(0);
+const successModal = ref(null)
 
 
 
@@ -132,7 +134,15 @@ const submitSelection = () => {
     eventForm.post(route('client.bookings.store'), {
         preserveScroll: true,
         onSuccess: () => {
-            // toast.success('Service created successfully');
+            // console.log('EVENT FORM', eventForm)
+            successModal.value.open({
+                event_date: eventForm.event_date,
+                event_time: eventForm.event_time,
+                location: eventForm.location,
+                services: selectedServices.value,
+                vendorsCount: selectedServices.value.length,
+                // totalPrice: totalPrice?.value || 0
+            })
             resetForm()
         },
         onError: () => {
@@ -174,6 +184,7 @@ const finalNotes = ref('');
 
 <template>
     <!-- Modal Overlay -->
+    <ClientBookingSuccessModal ref="successModal" />
     <transition name="modal-backdrop">
         <div v-if="showModal" @click.self="closeModal"
             class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">

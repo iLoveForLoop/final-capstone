@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import { isPricePackage } from '@/utils/packageIdentifier';
+
+const props = defineProps({
     service: Object,
     form: Object,
     selectedDishes: Object,
@@ -14,6 +16,14 @@ const formatPrice = (price) => {
         currency: 'PHP'
     }).format(price);
 };
+
+const calculatedPrice = () => {
+    if (isPricePackage(props.service)) {
+        return formatPrice(props.service.catering_service.price * props.form.pax)
+    }
+
+    return formatPrice(props.service.catering_service.package_price)
+}
 </script>
 
 <template>
@@ -51,7 +61,7 @@ const formatPrice = (price) => {
                                 clip-rule="evenodd" />
                         </svg>
                         <span>Base Price: {{ formatPrice(service.catering_service.price)
-                            }}
+                        }}
                             per person</span>
                     </div>
                     <div class="flex items-center">
@@ -144,7 +154,7 @@ const formatPrice = (price) => {
                 <span class="text-gray-600">Date & Time:</span>
                 <span class="font-medium text-gray-900">{{ form.event_date }} at {{
                     form.event_time
-                    }}</span>
+                }}</span>
             </div>
             <div v-if="form.pax" class="flex justify-between">
                 <span class="text-gray-600">Number of Guests:</span>
@@ -154,7 +164,7 @@ const formatPrice = (price) => {
                 <span class="text-gray-600">Description:</span>
                 <span class="font-medium text-gray-900 text-right max-w-xs">{{
                     form.description
-                    }}</span>
+                }}</span>
             </div>
         </div>
     </div>
@@ -165,13 +175,12 @@ const formatPrice = (price) => {
 
         <div class="space-y-3 text-sm mb-4">
             <div v-if="service.category_name === 'Catering'" class="flex justify-between">
-                <span class="text-gray-600">Base price ({{
-                    formatPrice(service.catering_service?.price || service.price) }} ×
-                    {{
-                        form.pax || 0 }} guests)</span>
-                <span class="font-medium text-gray-900">{{
-                    formatPrice((service.catering_service?.price ||
-                        service.price) * (form.pax || 0)) }}</span>
+                <span class="text-gray-600">Base price {{
+                    formatPrice(service.catering_service?.price || service.price) }} <span
+                        v-if="isPricePackage(service) !== null">×
+                        {{
+                            form.pax || 0 }} guests</span> </span>
+                <span class="font-medium text-gray-900">{{ calculatedPrice() }}</span>
             </div>
             <div v-else class="flex justify-between">
                 <span class="text-gray-600">Service fee</span>
@@ -193,7 +202,7 @@ const formatPrice = (price) => {
                     Cost:</span>
                 <span class="text-2xl font-bold text-blue-600">{{
                     formatPrice(totalPrice)
-                    }}</span>
+                }}</span>
             </div>
         </div>
 

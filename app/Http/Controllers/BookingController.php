@@ -195,14 +195,14 @@ class BookingController extends Controller
     {
         $vendor = auth()->user()->vendor;
 
-        $booking = $vendor->bookings()
-            ->where('id', $id)
-            ->where('status', 'pending')
-            ->firstOrFail();
+        // $booking = $vendor->bookings()
+        //     ->where('id', $id)
+        //     ->where('status', 'pending')
+        //     ->firstOrFail();
 
-        $booking->update([
-            'status' => 'confirmed'
-        ]);
+        // $booking->update([
+        //     'status' => 'confirmed'
+        // ]);
 
         // Optional: Send notification to user
         // $this->sendBookingConfirmationNotification($booking);

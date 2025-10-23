@@ -6,6 +6,8 @@ import GeneralForm from './BookingModalForm/GeneralForm.vue';
 import CateringDetails from './BookingModalForm/CateringDetails.vue';
 import ReviewConfirm from './BookingModalForm/ReviewConfirm.vue';
 import ModalFooter from './BookingModalForm/ModalFooter.vue';
+import ClientBookingSuccessModal from './Booking/ClientBookingSuccessModal.vue';
+import { isPricePackage } from '@/utils/packageIdentifier';
 
 // Props for available vendors/services data
 const props = defineProps({
@@ -29,6 +31,7 @@ const isOpen = ref(false);
 const currentStep = ref(1);
 const isLoading = ref(false);
 const acceptedTerms = ref(false);
+const successModal = ref(null)
 
 // Form data using Inertia's useForm
 const form = useForm({
@@ -200,10 +203,13 @@ const totalPrice = computed(() => {
 
     // For catering, multiply by guest count (convert form.pax to number)
     if (props.service?.catering_service && form.pax) {
-        const pax = Number(form.pax);
-        if (!isNaN(pax)) {
-            base *= pax;
+        if (isPricePackage(props.service)) {
+            const pax = Number(form.pax);
+            if (!isNaN(pax)) {
+                base *= pax;
+            }
         }
+
     }
 
     // Always return a valid number (even if NaN)
@@ -214,6 +220,7 @@ const totalPrice = computed(() => {
 
 // Methods
 const openModal = (date, time) => {
+    document.body.classList.add("overflow-hidden");
     isOpen.value = true;
     currentStep.value = 1;
     acceptedTerms.value = false;
@@ -225,6 +232,7 @@ const openModal = (date, time) => {
 };
 
 const closeModal = () => {
+    document.body.classList.remove("overflow-hidden");
     isOpen.value = false;
     setTimeout(() => {
         currentStep.value = 1;
@@ -270,6 +278,14 @@ const submitBooking = async () => {
         onSuccess: () => {
             closeModal();
             // Reset form
+            successModal.value.open({
+                event_date: form.event_date,
+                event_time: form.event_time,
+                location: form.location,
+                services: form.vendors,
+                vendorsCount: form.vendors.length,
+                // totalPrice: totalPrice?.value || 0
+            })
             form.reset();
         },
         onError: () => {
@@ -310,6 +326,10 @@ const missingSelectionCategoriesText = computed(() => {
 </script>
 
 <template>
+    <Teleport to="body">
+        <ClientBookingSuccessModal ref="successModal" />
+    </Teleport>
+
     <!-- Modal Overlay -->
     <Transition name="modal-overlay">
         <Teleport to="body">

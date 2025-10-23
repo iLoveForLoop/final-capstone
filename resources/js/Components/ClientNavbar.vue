@@ -7,9 +7,22 @@ import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue';
 import { useNavbarStore } from '@/store/navbarStore';
 import MyDropdown from './MyDropdown.vue';
 import {
-    Bell, MessageSquare, Menu, X, Home, Calendar, Heart,
-    LogOut, Settings, User, Search, ChevronDown, CheckCircle, Send,
-    CheckCheck, Check
+    Bell,
+    MessageSquare,
+    Menu,
+    X,
+    Home,
+    Calendar,
+    Heart,
+    LogOut,
+    Settings,
+    User,
+    Search,
+    ChevronDown,
+    CheckCircle,
+    Send,
+    CheckCheck,
+    Check,
 } from 'lucide-vue-next';
 import emitter from '@/utils/eventBus';
 import axios from 'axios';
@@ -17,161 +30,152 @@ import DesktopNavs from './ClientNavbar/DesktopNavs.vue';
 import ChatWindow from './ClientNavbar/ChatWindow.vue';
 import { useUIStore } from '@/store/ui';
 
-const page = usePage()
-const navbarStore = useNavbarStore()
-const ui = useUIStore()
+const page = usePage();
+const navbarStore = useNavbarStore();
+const ui = useUIStore();
 
-// Local UI state only (these stay as refs)
-const isDropdownShowing = ref(false)
-const isMobileMenuOpen = ref(false)
-const isNotificationsOpen = ref(false)
-const isMessagesOpen = ref(false)
-const openChats = ref([])
+// Local UI state
+const isDropdownShowing = ref(false);
+const isMobileMenuOpen = ref(false);
+const isNotificationsOpen = ref(false);
+const isMessagesOpen = ref(false);
+const openChats = ref([]);
 
-// Create computed properties that map to store properties
-// This ensures your template works exactly the same
-const conversations = computed(() => navbarStore.conversations)
-const notifications = computed(() => navbarStore.notifications)
-const isLoading = computed(() => navbarStore.isLoading)
-const isLoadingNotifications = computed(() => navbarStore.isLoadingNotifications)
-const unreadCount = computed(() => navbarStore.unreadCount)
-const unreadNotifications = computed(() => navbarStore.unreadNotifications)
-const unreadMessages = computed(() => navbarStore.unreadMessages)
-const processedMessages = computed(() => navbarStore.processedMessages)
+// ===== Messages drawer (keep wrapper mounted for leave) =====
+const isMessagesDrawerOpen = ref(false);
+const isMessagesDrawerActive = ref(false);
+const panelEl = ref(null);
 
-console.log('Unread Notifications: ', unreadNotifications.value);
+// ===== Notifications drawer (same behavior) =====
+const isNotificationsDrawerOpen = ref(false);
+const isNotificationsDrawerActive = ref(false);
+const notifPanelEl = ref(null);
 
+// Store-mapped state
+const conversations = computed(() => navbarStore.conversations);
+const notifications = computed(() => navbarStore.notifications);
+const isLoading = computed(() => navbarStore.isLoading);
+const isLoadingNotifications = computed(
+    () => navbarStore.isLoadingNotifications,
+);
+const unreadCount = computed(() => navbarStore.unreadCount);
+const unreadNotifications = computed(() => navbarStore.unreadNotifications);
+const unreadMessages = computed(() => navbarStore.unreadMessages);
+const processedMessages = computed(() => navbarStore.processedMessages);
 
-// Load initial data using store
 const loadInitialData = async () => {
-    if (!page.props.auth.user) return
-    await navbarStore.initialize()
-}
+    if (!page.props.auth.user) return;
+    await navbarStore.initialize();
+};
 
-// Load messages for a specific conversation (keep this local as it's chat-specific)
 const loadChatMessages = async (conversationId) => {
     try {
-        const response = await axios.get(`/conversations/${conversationId}/messages`)
-
-        // Sort messages by creation time (oldest first, newest last)
-        const sortedMessages = response.data.messages.sort((a, b) =>
-            new Date(a.created_at) - new Date(b.created_at)
+        const response = await axios.get(
+            `/conversations/${conversationId}/messages`,
         );
-
-        return sortedMessages.map(msg => ({
+        const sorted = response.data.messages.sort(
+            (a, b) => new Date(a.created_at) - new Date(b.created_at),
+        );
+        return sorted.map((msg) => ({
             id: msg.id,
             text: msg.content,
             sent: msg.is_own,
-            time: formatTime(msg.created_at)
-        }))
+            time: formatTime(msg.created_at),
+        }));
     } catch (error) {
-        console.error('Failed to load messages:', error)
-        return []
+        console.error('Failed to load messages:', error);
+        return [];
     }
-}
+};
 
-// Chat window functions (keep these local as they're UI-specific)
+// Open chat window; auto-close drawers/popovers (leave animations will play)
 const openChatWindow = async (message) => {
+    ui.isInMessage = true;
+    navbarStore.updateConversation(message.id, { unread_count: 0 });
+    // Close any popovers and drawers
+    isMessagesOpen.value = false;
+    isNotificationsOpen.value = false;
+    if (isMessagesDrawerOpen.value) isMessagesDrawerOpen.value = false;
+    if (isNotificationsDrawerOpen.value)
+        isNotificationsDrawerOpen.value = false;
 
-    ui.isInMessage = true
-
-    // Mark conversation as read (update unread count in store)
-    navbarStore.updateConversation(message.id, { unread_count: 0 })
-
-    // Close messages dropdown
-    isMessagesOpen.value = false
-
-    // Check if chat is already open
-    const existingChat = openChats.value.find(chat => chat.id === message.id)
+    const existingChat = openChats.value.find((chat) => chat.id === message.id);
     if (existingChat) {
-        // If minimized, expand it
-        existingChat.minimized = false
-        return
+        existingChat.minimized = false;
+        return;
     }
 
-    // Load chat messages from backend
-    const chatMessages = await loadChatMessages(message.id)
+    const chatMessages = await loadChatMessages(message.id);
 
-    // Add new chat window (max 3 windows)
     if (openChats.value.length >= 3) {
-        openChats.value.shift() // Remove oldest chat
+        openChats.value.shift();
     }
 
     openChats.value.push({
         ...message,
         minimized: false,
         newMessage: '',
-        chatMessages: chatMessages,
-        conversationId: message.id
-    })
+        chatMessages,
+        conversationId: message.id,
+    });
 
-    // Scroll to bottom after adding
     nextTick(() => {
-        scrollChatToBottom()
-    })
+        scrollChatToBottom();
+    });
 
-    // Subscribe to real-time updates for this conversation
-    subscribeToConversation(message.id)
-}
+    subscribeToConversation(message.id);
+};
 
-// Subscribe to Echo for real-time updates
 const subscribeToConversation = (conversationId) => {
-    if (!window.Echo) return
+    if (!window.Echo) return;
 
-    window.Echo.private(`conversation.${conversationId}`)
-        .listen('.MessageSent', async (e) => {
-            const chat = openChats.value.find(c => c.conversationId === conversationId)
+    window.Echo.private(`conversation.${conversationId}`).listen(
+        '.MessageSent',
+        async (e) => {
+            const chat = openChats.value.find(
+                (c) => c.conversationId === conversationId,
+            );
 
             if (chat) {
-                // Add the new message
                 chat.chatMessages.push({
                     id: e.message.id,
                     text: e.message.content,
                     sent: e.message.is_own,
-                    time: formatTime(e.message.created_at)
-                })
+                    time: formatTime(e.message.created_at),
+                });
 
-                nextTick(() => scrollChatToBottom())
+                nextTick(() => scrollChatToBottom());
 
-                // If the user is looking at this chat and message is NOT their own
                 if (!e.message.is_own) {
-                    await axios.post(`/conversations/${conversationId}/mark-as-read`)
-                    navbarStore.updateConversation(conversationId, { unread_count: 0 })
+                    await axios.post(
+                        `/conversations/${conversationId}/mark-as-read`,
+                    );
+                    navbarStore.updateConversation(conversationId, {
+                        unread_count: 0,
+                    });
                 }
             } else {
-                // Chat window is closed → increase unread
-                const conversation = navbarStore.conversations.find(c => c.id === conversationId)
+                const conversation = navbarStore.conversations.find(
+                    (c) => c.id === conversationId,
+                );
                 if (conversation && !e.message.is_own) {
                     navbarStore.updateConversation(conversationId, {
                         last_message: e.message,
-                        unread_count: (conversation.unread_count || 0) + 1
-                    })
+                        unread_count: (conversation.unread_count || 0) + 1,
+                    });
                 }
             }
-        })
-}
+        },
+    );
+};
 
-// Subscribe to real-time notifications - FIXED to await the store action
 const subscribeToNotifications = () => {
-    console.log('🔔 Setting up notification listener...');
-
-    if (!window.Echo || !page.props.auth.user) {
-        console.log('❌ Echo not available or user not authenticated');
-        return;
-    }
+    if (!window.Echo || !page.props.auth.user) return;
 
     const clientId = page.props.auth.clientId;
-    console.log('👂 Listening for notifications for client:', clientId);
 
     window.Echo.private(`client.${clientId}`)
         .listen('.notification.created', async (e) => {
-            console.log('📨 Real-time notification received:', {
-                id: e.id,
-                title: e.title,
-                type: e.type
-            });
-
-            // FIXED: Await the store action to ensure it completes
             await navbarStore.addNotification({
                 id: e.id,
                 type: e.type,
@@ -182,196 +186,254 @@ const subscribeToNotifications = () => {
                 created_at: e.created_at,
                 time_ago: e.time_ago,
                 read_at: null,
-                is_read: false
+                is_read: false,
             });
-
             playNotificationSound();
         })
         .error((error) => {
-            console.error('❌ Echo subscription error:', error);
+            console.error('Echo subscription error:', error);
         });
-}
+};
 
-// Play notification sound
 const playNotificationSound = () => {
-    // You can add a notification sound here
-    console.log('Notification sound played')
-}
+    /* optional */
+};
 
 const closeChatWindow = (chatId) => {
-    ui.isInMessage = false
-    const index = openChats.value.findIndex(chat => chat.id === chatId)
+    ui.isInMessage = false;
+    const index = openChats.value.findIndex((chat) => chat.id === chatId);
     if (index !== -1) {
-        // Leave the Echo channel
-        const chat = openChats.value[index]
+        const chat = openChats.value[index];
         if (window.Echo && chat.conversationId) {
-            window.Echo.leave(`conversation.${chat.conversationId}`)
+            window.Echo.leave(`conversation.${chat.conversationId}`);
         }
-        openChats.value.splice(index, 1)
+        openChats.value.splice(index, 1);
     }
-}
+};
 
 const toggleChatWindow = (chatId) => {
-    const chat = openChats.value.find(chat => chat.id === chatId)
+    const chat = openChats.value.find((chat) => chat.id === chatId);
     if (chat) {
-        chat.minimized = !chat.minimized
+        chat.minimized = !chat.minimized;
         if (!chat.minimized) {
             nextTick(() => {
-                scrollChatToBottom()
-            })
+                scrollChatToBottom();
+            });
         }
     }
-}
+};
 
 const sendChatMessage = async (chatId) => {
-    const chat = openChats.value.find(chat => chat.id === chatId)
-    if (!chat || !chat.newMessage?.trim() || !chat.conversationId) return
+    const chat = openChats.value.find((chat) => chat.id === chatId);
+    if (!chat || !chat.newMessage?.trim() || !chat.conversationId) return;
 
-    const messageContent = chat.newMessage.trim()
-    const tempId = Date.now()
+    const messageContent = chat.newMessage.trim();
+    const tempId = Date.now();
 
-    // Add optimistic message
     const optimisticMessage = {
         id: tempId,
         text: messageContent,
         sent: true,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        sending: true
-    }
+        time: new Date().toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+        }),
+        sending: true,
+    };
 
-    chat.chatMessages.push(optimisticMessage)
-    chat.newMessage = ''
+    chat.chatMessages.push(optimisticMessage);
+    chat.newMessage = '';
 
-    // Scroll to bottom
-    nextTick(() => scrollChatToBottom())
+    nextTick(() => scrollChatToBottom());
 
     try {
-        // Send message to backend
-        const response = await axios.post(`/conversations/${chat.conversationId}/messages`, {
-            content: messageContent,
-            type: 'text'
-        })
+        const response = await axios.post(
+            `/conversations/${chat.conversationId}/messages`,
+            {
+                content: messageContent,
+                type: 'text',
+            },
+        );
 
-        // Replace optimistic message with real one
-        const messageIndex = chat.chatMessages.findIndex(m => m.id === tempId)
+        const messageIndex = chat.chatMessages.findIndex(
+            (m) => m.id === tempId,
+        );
         if (messageIndex !== -1) {
             chat.chatMessages[messageIndex] = {
                 id: response.data.message.id,
                 text: response.data.message.content,
                 sent: true,
-                time: formatTime(response.data.message.created_at)
-            }
+                time: formatTime(response.data.message.created_at),
+            };
         }
 
-        // Update conversation in store
-        const conversation = navbarStore.conversations.find(c => c.id === chat.conversationId)
+        const conversation = navbarStore.conversations.find(
+            (c) => c.id === chat.conversationId,
+        );
         if (conversation) {
             navbarStore.updateConversation(chat.conversationId, {
-                last_message: response.data.message
-            })
+                last_message: response.data.message,
+            });
         }
-
     } catch (error) {
-        console.error('Failed to send message:', error)
-        // Remove optimistic message on error
-        const messageIndex = chat.chatMessages.findIndex(m => m.id === tempId)
+        console.error('Failed to send message:', error);
+        const messageIndex = chat.chatMessages.findIndex(
+            (m) => m.id === tempId,
+        );
         if (messageIndex !== -1) {
-            chat.chatMessages.splice(messageIndex, 1)
+            chat.chatMessages.splice(messageIndex, 1);
         }
     }
-}
+};
 
 const scrollChatToBottom = () => {
-    const chatElements = document.querySelectorAll('.chat-body .h-64')
-    chatElements.forEach(element => {
-        element.scrollTop = element.scrollHeight
-    })
-}
+    const chatElements = document.querySelectorAll('.chat-body .h-64');
+    chatElements.forEach((element) => {
+        element.scrollTop = element.scrollHeight;
+    });
+};
 
-// Close drawers when clicking outside
 const closeDrawers = (event) => {
     if (!event.target.closest('.drawer-container')) {
-        isNotificationsOpen.value = false
-        isMessagesOpen.value = false
+        isNotificationsOpen.value = false;
+        isMessagesOpen.value = false;
     }
-}
+};
 
-// Utility functions (keep local versions that use store utilities)
 const getInitials = (name) => {
-    return navbarStore.getInitials(name)
-}
+    return navbarStore.getInitials(name);
+};
 
 const formatTimestamp = (timestamp) => {
-    return navbarStore.formatTimestamp(timestamp)
-}
+    return navbarStore.formatTimestamp(timestamp);
+};
 
 const formatTime = (timestamp) => {
-    if (!timestamp) return ''
+    if (!timestamp) return '';
     return new Date(timestamp).toLocaleTimeString([], {
         hour: '2-digit',
-        minute: '2-digit'
-    })
-}
+        minute: '2-digit',
+    });
+};
 
-// Get icon component by notification type
 const getNotificationIcon = (type) => {
     const iconMap = {
-        'booking_confirmed_client': CheckCircle,
-        'booking_submitted': Calendar,
-        'booking_updated': Calendar,
-        'booking_in_progress': Calendar,
-        'booking_completed_client': CheckCheck,
-        'booking_cancelled_client': X,
-        'payment_confirmed': CheckCircle,
-        'vendor_message': MessageSquare,
-        'booking_reminder': Bell
-    }
-    return iconMap[type] || Bell
-}
+        booking_confirmed_client: CheckCircle,
+        booking_submitted: Calendar,
+        booking_updated: Calendar,
+        booking_in_progress: Calendar,
+        booking_completed_client: CheckCheck,
+        booking_cancelled_client: X,
+        payment_confirmed: CheckCircle,
+        vendor_message: MessageSquare,
+        booking_reminder: Bell,
+    };
+    return iconMap[type] || Bell;
+};
 
-// Get notification icon color by type
 const getNotificationIconColor = (type) => {
     const colorMap = {
-        'booking_confirmed_client': 'text-green-600',
-        'booking_submitted': 'text-blue-600',
-        'booking_updated': 'text-blue-600',
-        'booking_in_progress': 'text-orange-600',
-        'booking_completed_client': 'text-green-600',
-        'booking_cancelled_client': 'text-red-600',
-        'payment_confirmed': 'text-green-600',
-        'vendor_message': 'text-purple-600',
-        'booking_reminder': 'text-yellow-600'
+        booking_confirmed_client: 'text-green-600',
+        booking_submitted: 'text-blue-600',
+        booking_updated: 'text-blue-600',
+        booking_in_progress: 'text-orange-600',
+        booking_completed_client: 'text-green-600',
+        booking_cancelled_client: 'text-red-600',
+        payment_confirmed: 'text-green-600',
+        vendor_message: 'text-purple-600',
+        booking_reminder: 'text-yellow-600',
+    };
+    return colorMap[type] || 'text-gray-600';
+};
+
+// ===== Body scroll lock shared by both drawers =====
+const originalOverflow = ref('');
+const lockScroll = (lock) => {
+    const body = document.body;
+    if (lock) {
+        originalOverflow.value = body.style.overflow;
+        body.style.overflow = 'hidden';
+    } else {
+        body.style.overflow = originalOverflow.value || '';
     }
-    return colorMap[type] || 'text-gray-600'
-}
+};
 
-// Lifecycle hooks
+// ===== Messages drawer lifecycle =====
+const openMessagesDrawer = async () => {
+    // Close mini popover and the notifications popover/drawer
+    isMessagesOpen.value = false;
+    isNotificationsOpen.value = false;
+    if (isNotificationsDrawerOpen.value)
+        isNotificationsDrawerOpen.value = false;
+
+    isMessagesDrawerActive.value = true;
+    lockScroll(true);
+    await nextTick();
+    isMessagesDrawerOpen.value = true;
+    await nextTick();
+    panelEl.value?.focus?.();
+};
+const closeMessagesDrawer = () => {
+    isMessagesDrawerOpen.value = false;
+};
+const onDrawerAfterLeave = () => {
+    isMessagesDrawerActive.value = false;
+    lockScroll(false);
+};
+
+// ===== Notifications drawer lifecycle =====
+const openNotificationsDrawer = async () => {
+    // Close mini popover and any messages popover/drawer
+    isNotificationsOpen.value = false;
+    isMessagesOpen.value = false;
+    if (isMessagesDrawerOpen.value) isMessagesDrawerOpen.value = false;
+
+    isNotificationsDrawerActive.value = true;
+    lockScroll(true);
+    await nextTick();
+    isNotificationsDrawerOpen.value = true;
+    await nextTick();
+    notifPanelEl.value?.focus?.();
+};
+const closeNotificationsDrawer = () => {
+    isNotificationsDrawerOpen.value = false;
+};
+const onNotifDrawerAfterLeave = () => {
+    isNotificationsDrawerActive.value = false;
+    lockScroll(false);
+};
+
+// ESC to close whichever is open
+const onKeydown = (e) => {
+    if (e.key === 'Escape') {
+        if (isMessagesDrawerOpen.value) closeMessagesDrawer();
+        if (isNotificationsDrawerOpen.value) closeNotificationsDrawer();
+    }
+};
+
+// Lifecycle
 onMounted(() => {
-
-    ui.isInMessage = false
-
-    document.addEventListener('click', closeDrawers)
-
-
-
+    ui.isInMessage = false;
+    document.addEventListener('click', closeDrawers);
+    document.addEventListener('keydown', onKeydown);
 
     if (page.props.auth.user) {
-        // console.log('Is logged in: ', page.props.auth.user);
-        loadInitialData()
-        subscribeToNotifications()
+        loadInitialData();
+        subscribeToNotifications();
 
         emitter.on('chat-vendor', async (payload) => {
-            console.log('vendor id', payload)
             const newConversationData = {
                 participants: [
                     Number(page.props.auth.user.id),
-                    Number(payload)
-                ]
-            }
+                    Number(payload),
+                ],
+            };
 
             try {
-                const res = await axios.post(route('conversation.create', newConversationData))
-                const conv = res.data
+                const res = await axios.post(
+                    route('conversation.create', newConversationData),
+                );
+                const conv = res.data;
 
                 const message = {
                     id: conv.id,
@@ -381,64 +443,55 @@ onMounted(() => {
                     time: formatTimestamp(conv.last_message?.created_at),
                     read: conv.unread_count === 0,
                     online: false,
-                    chatMessages: []
-                }
+                    chatMessages: [],
+                };
 
-                openChatWindow(message)
+                openChatWindow(message);
             } catch (error) {
-                console.log('Error creating conversation: ', error.message)
+                console.log('Error creating conversation: ', error.message);
             }
-        })
+        });
 
-        // Refresh data periodically using store (keep conversations refresh, remove notifications refresh)
-        // In your onMounted hook, replace the interval with:
         const interval = setInterval(() => {
-            // Only refresh conversations (notifications are handled by real-time)
             navbarStore.refreshData();
-        }, 60000); // Every 60 seconds
+        }, 60000);
 
-
-        // Cleanup interval on unmount
         onUnmounted(() => {
-            clearInterval(interval)
-        })
+            clearInterval(interval);
+        });
     }
-
-
-
-
-})
+});
 
 onUnmounted(() => {
-    document.removeEventListener('click', closeDrawers)
+    document.removeEventListener('click', closeDrawers);
+    document.removeEventListener('keydown', onKeydown);
+    lockScroll(false);
 
-    // Leave all Echo channels
-    openChats.value.forEach(chat => {
+    openChats.value.forEach((chat) => {
         if (window.Echo && chat.conversationId) {
-            window.Echo.leave(`conversation.${chat.conversationId}`)
+            window.Echo.leave(`conversation.${chat.conversationId}`);
         }
-    })
+    });
 
-    // Leave notification channel
     if (window.Echo && page.props.auth.user) {
-        window.Echo.leave(`client.${page.props.auth.user.id}`)
+        window.Echo.leave(`client.${page.props.auth.user.id}`);
     }
 
-    emitter.off('chat-vendor')
-})
+    emitter.off('chat-vendor');
+});
 </script>
 
 <template>
     <div>
         <!-- Navbar -->
-        <nav class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-16">
+        <nav class="sticky top-0 z-30 border-b border-gray-100 bg-white/95 shadow-sm backdrop-blur-md">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="flex h-16 items-center justify-between">
                     <!-- Logo -->
-                    <div class="flex-1 flex justify-start">
-                        <Link href="/" class="flex items-center space-x-2 group flex-shrink-0">
+                    <div class="flex flex-1 justify-start">
+                        <Link href="/" class="group flex flex-shrink-0 items-center space-x-2">
                         <span
-                            class="text-xl font-bold text-gray-900 group-hover:text-purple-700 transition-colors duration-300">
+                            class="text-2xl font-bold text-gray-900 transition-colors duration-300 group-hover:text-yellow-400">
                             Eventory
                         </span>
                         </Link>
@@ -448,29 +501,49 @@ onUnmounted(() => {
                     <DesktopNavs />
 
                     <!-- Right Side Actions -->
-                    <div class="flex-1 flex justify-end">
-                        <div class="hidden lg:flex items-center space-x-2">
+                    <div class="flex flex-1 justify-end">
+                        <div class="hidden items-center space-x-2 lg:flex">
                             <template v-if="page.props.auth.user">
                                 <!-- Notifications -->
                                 <div class="drawer-container relative">
-                                    <button @click="isNotificationsOpen = !isNotificationsOpen"
-                                        class="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200">
+                                    <button @click="
+                                        isNotificationsOpen =
+                                        !isNotificationsOpen;
+                                    // optimize icons behavior:
+                                    if (isNotificationsOpen) {
+                                        isMessagesOpen = false;
+                                        if (isMessagesDrawerOpen)
+                                            isMessagesDrawerOpen = false;
+                                        if (isNotificationsDrawerOpen)
+                                            isNotificationsDrawerOpen = false; // ensure drawer closed when toggling popover
+                                    }
+                                    "
+                                        class="relative rounded-lg p-2 text-gray-500 transition-all duration-200 hover:bg-gray-100 hover:text-gray-700">
                                         <Bell :size="20" />
                                         <span v-if="unreadNotifications > 0"
-                                            class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-                                            {{ unreadNotifications > 9 ? '9+' : unreadNotifications }}
+                                            class="absolute -right-1 -top-1 flex h-5 w-5 animate-pulse items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                                            {{
+                                                unreadNotifications > 9
+                                                    ? '9+'
+                                                    : unreadNotifications
+                                            }}
                                         </span>
                                     </button>
 
-                                    <!-- Notifications Drawer -->
+                                    <!-- Notifications Popover -->
                                     <div v-if="isNotificationsOpen"
-                                        class="absolute right-0 top-full mt-2 w-96 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50">
-                                        <div class="p-4 border-b border-gray-100 bg-gray-50">
+                                        class="absolute right-0 top-full z-50 mt-2 w-96 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+                                        <div class="border-b border-gray-100 bg-gray-50 p-4">
                                             <div class="flex items-center justify-between">
-                                                <h3 class="font-semibold text-gray-900">Notifications</h3>
-                                                <button v-if="unreadNotifications > 0"
-                                                    @click="navbarStore.markAllNotificationsAsRead"
-                                                    class="text-xs text-purple-600 hover:text-purple-800 font-medium">
+                                                <h3 class="font-semibold text-gray-900">
+                                                    Notifications
+                                                </h3>
+                                                <button v-if="
+                                                    unreadNotifications > 0
+                                                " @click="
+                                                        navbarStore.markAllNotificationsAsRead
+                                                    "
+                                                    class="text-xs font-medium text-purple-600 hover:text-purple-800">
                                                     Mark all read
                                                 </button>
                                             </div>
@@ -478,139 +551,211 @@ onUnmounted(() => {
                                         <div class="max-h-96 overflow-y-auto">
                                             <div v-if="isLoadingNotifications" class="p-8 text-center">
                                                 <div
-                                                    class="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500 mx-auto">
+                                                    class="mx-auto h-6 w-6 animate-spin rounded-full border-b-2 border-purple-500">
                                                 </div>
-                                                <p class="text-sm text-gray-500 mt-2">Loading notifications...</p>
+                                                <p class="mt-2 text-sm text-gray-500">
+                                                    Loading notifications...
+                                                </p>
                                             </div>
-                                            <div v-else-if="notifications.length === 0" class="p-8 text-center">
-                                                <Bell :size="24" class="mx-auto text-gray-400 mb-2" />
-                                                <p class="text-sm text-gray-500">No notifications yet</p>
-                                                <p class="text-xs text-gray-400 mt-1">We'll notify you when something
-                                                    arrives</p>
+                                            <div v-else-if="
+                                                notifications.length === 0
+                                            " class="p-8 text-center">
+                                                <Bell :size="24" class="mx-auto mb-2 text-gray-400" />
+                                                <p class="text-sm text-gray-500">
+                                                    No notifications yet
+                                                </p>
+                                                <p class="mt-1 text-xs text-gray-400">
+                                                    We'll notify you when
+                                                    something arrives
+                                                </p>
                                             </div>
                                             <div v-else v-for="notification in notifications" :key="notification.id"
-                                                @click="navbarStore.markNotificationRead(notification.id)"
-                                                class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-150 group"
-                                                :class="{ 'bg-purple-50/50': !notification.is_read }">
+                                                @click="
+                                                    navbarStore.markNotificationRead(
+                                                        notification.id,
+                                                    )
+                                                    "
+                                                class="group cursor-pointer border-b border-gray-100 p-4 transition-colors duration-150 hover:bg-gray-50"
+                                                :class="{
+                                                    'bg-purple-50/50':
+                                                        !notification.is_read,
+                                                }">
                                                 <div class="flex items-start space-x-3">
-                                                    <component :is="getNotificationIcon(notification.type)" :size="18"
-                                                        class="mt-0.5 flex-shrink-0"
-                                                        :class="getNotificationIconColor(notification.type)" />
-                                                    <div class="flex-1 min-w-0">
+                                                    <component :is="getNotificationIcon(
+                                                        notification.type,
+                                                    )
+                                                        " :size="18" class="mt-0.5 flex-shrink-0" :class="getNotificationIconColor(
+                                                            notification.type,
+                                                        )
+                                                            " />
+                                                    <div class="min-w-0 flex-1">
                                                         <div class="flex items-center justify-between">
-                                                            <p class="font-medium text-gray-900 truncate">{{
-                                                                notification.title }}</p>
-                                                            <span v-if="!notification.is_read"
-                                                                class="w-2 h-2 bg-purple-600 rounded-full flex-shrink-0"></span>
+                                                            <p class="truncate font-medium text-gray-900">
+                                                                {{
+                                                                    notification.title
+                                                                }}
+                                                            </p>
+                                                            <span v-if="
+                                                                !notification.is_read
+                                                            "
+                                                                class="h-2 w-2 flex-shrink-0 rounded-full bg-purple-600"></span>
                                                         </div>
-                                                        <p class="text-sm text-gray-600 mt-1">{{ notification.message }}
+                                                        <p class="mt-1 text-sm text-gray-600">
+                                                            {{
+                                                                notification.message
+                                                            }}
                                                         </p>
-                                                        <div class="flex items-center justify-between mt-2">
-                                                            <p class="text-xs text-gray-400">{{ notification.time_ago }}
+                                                        <div class="mt-2 flex items-center justify-between">
+                                                            <p class="text-xs text-gray-400">
+                                                                {{
+                                                                    notification.time_ago
+                                                                }}
                                                             </p>
                                                             <div
-                                                                class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                class="flex items-center space-x-1 opacity-0 transition-opacity group-hover:opacity-100">
                                                                 <Check :size="12" class="text-gray-400" />
-                                                                <span class="text-xs text-gray-400">Mark read</span>
+                                                                <span class="text-xs text-gray-400">Mark
+                                                                    read</span>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="p-4 border-t border-gray-100 bg-gray-50">
-                                            <Link href="/client/notifications"
-                                                class="block text-center text-purple-600 hover:text-purple-800 font-medium text-sm">
-                                            View all notifications
-                                            </Link>
+
+                                        <!-- Footer: View all -> Button opens slide-in drawer -->
+                                        <div class="border-t border-gray-100 bg-gray-50 p-4">
+                                            <button type="button" @click="openNotificationsDrawer"
+                                                class="w-full text-center text-sm font-medium text-purple-600 hover:text-purple-800">
+                                                View all notifications
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Messages (your existing code remains the same) -->
+                                <!-- Messages -->
                                 <div class="drawer-container relative">
-                                    <button @click="isMessagesOpen = !isMessagesOpen"
-                                        class="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200">
+                                    <button @click="
+                                        isMessagesOpen = !isMessagesOpen;
+                                    // optimize icons behavior:
+                                    if (isMessagesOpen) {
+                                        isNotificationsOpen = false;
+                                        if (isNotificationsDrawerOpen)
+                                            isNotificationsDrawerOpen = false;
+                                        if (isMessagesDrawerOpen)
+                                            isMessagesDrawerOpen = false; // ensure drawer closed when toggling popover
+                                    }
+                                    "
+                                        class="relative rounded-lg p-2 text-gray-500 transition-all duration-200 hover:bg-gray-100 hover:text-gray-700">
                                         <MessageSquare :size="20" />
                                         <span v-if="unreadMessages > 0"
-                                            class="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-                                            {{ unreadMessages > 9 ? '9+' : unreadMessages }}
+                                            class="absolute -right-1 -top-1 flex h-5 w-5 animate-pulse items-center justify-center rounded-full bg-green-500 text-xs text-white">
+                                            {{
+                                                unreadMessages > 9
+                                                    ? '9+'
+                                                    : unreadMessages
+                                            }}
                                         </span>
                                     </button>
 
-                                    <!-- Messages Drawer (your existing code remains the same) -->
+                                    <!-- Messages Popover -->
                                     <div v-if="isMessagesOpen"
-                                        class="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50">
-                                        <div class="p-4 border-b border-gray-100 bg-gray-50">
+                                        class="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+                                        <div class="border-b border-gray-100 bg-gray-50 p-4">
                                             <div class="flex items-center justify-between">
-                                                <h3 class="font-semibold text-gray-900">Messages</h3>
-                                                <Link href="/messages"
-                                                    class="text-xs text-purple-600 hover:text-purple-800 font-medium">
-                                                View all
-                                                </Link>
+                                                <h3 class="font-semibold text-gray-900">
+                                                    Messages
+                                                </h3>
                                             </div>
                                         </div>
                                         <div class="max-h-96 overflow-y-auto">
                                             <div v-if="isLoading" class="p-8 text-center">
                                                 <div
-                                                    class="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500 mx-auto">
+                                                    class="mx-auto h-6 w-6 animate-spin rounded-full border-b-2 border-purple-500">
                                                 </div>
-                                                <p class="text-sm text-gray-500 mt-2">Loading conversations...</p>
+                                                <p class="mt-2 text-sm text-gray-500">
+                                                    Loading conversations...
+                                                </p>
                                             </div>
-                                            <div v-else-if="processedMessages.length === 0" class="p-8 text-center">
-                                                <MessageSquare :size="24" class="mx-auto text-gray-400 mb-2" />
-                                                <p class="text-sm text-gray-500">No conversations yet</p>
+                                            <div v-else-if="
+                                                processedMessages.length ===
+                                                0
+                                            " class="p-8 text-center">
+                                                <MessageSquare :size="24" class="mx-auto mb-2 text-gray-400" />
+                                                <p class="text-sm text-gray-500">
+                                                    No conversations yet
+                                                </p>
                                             </div>
                                             <div v-else v-for="message in processedMessages" :key="message.id"
                                                 @click="openChatWindow(message)"
-                                                class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-150"
-                                                :class="{ 'bg-blue-50/50': !message.read }">
+                                                class="cursor-pointer border-b border-gray-100 p-4 transition-colors duration-150 hover:bg-gray-50"
+                                                :class="{
+                                                    'bg-blue-50/50':
+                                                        !message.read,
+                                                }">
                                                 <div class="flex items-start space-x-3">
                                                     <div class="relative flex-shrink-0">
-                                                        <!-- Avatar -->
                                                         <div
-                                                            class="w-9 h-9 rounded-full overflow-hidden shadow-sm border border-gray-200 bg-gray-100 flex items-center justify-center text-white font-semibold text-xs">
-                                                            <!-- If user has an avatar image -->
-                                                            <img v-if="message.avatar" :src="message.avatar"
-                                                                alt="User avatar" class="w-full h-full object-cover" />
-
-                                                            <!-- Fallback: initials with gradient -->
+                                                            class="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-gray-200 bg-gray-100 text-xs font-semibold text-white shadow-sm">
+                                                            <img v-if="
+                                                                message.avatar
+                                                            " :src="message.avatar
+                                                                    " alt="User avatar"
+                                                                class="h-full w-full object-cover" />
                                                             <span v-else
-                                                                class="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-700">
-                                                                {{ message.initials }}
+                                                                class="flex h-full w-full items-center justify-center bg-gradient-to-br from-purple-500 to-purple-700">
+                                                                {{
+                                                                    message.initials
+                                                                }}
                                                             </span>
                                                         </div>
-
-                                                        <!-- Online Indicator -->
-                                                        <div v-if="message.online"
-                                                            class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full shadow-sm">
-                                                        </div>
+                                                        <div v-if="
+                                                            message.online
+                                                        "
+                                                            class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-500 shadow-sm" />
                                                     </div>
 
-                                                    <div class="flex-1 min-w-0">
+                                                    <div class="min-w-0 flex-1">
                                                         <div class="flex items-center justify-between">
-                                                            {{ console.log("Message: ", message) }}
-                                                            <p class="font-medium text-gray-900 truncate">{{
-                                                                message.sender
-                                                            }}</p>
+                                                            {{
+                                                                console.log(
+                                                                    'Message: ',
+                                                                    message,
+                                                                )
+                                                            }}
+                                                            <p class="truncate font-medium text-gray-900">
+                                                                {{
+                                                                    message.sender
+                                                                }}
+                                                            </p>
                                                             <div class="flex items-center space-x-1">
-                                                                <span v-if="!message.read"
-                                                                    class="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></span>
-                                                                <span class="text-xs text-gray-400 whitespace-nowrap">{{
-                                                                    message.time }}</span>
+                                                                <span v-if="
+                                                                    !message.read
+                                                                "
+                                                                    class="h-2 w-2 flex-shrink-0 rounded-full bg-blue-600"></span>
+                                                                <span class="whitespace-nowrap text-xs text-gray-400">
+                                                                    {{
+                                                                        message.time
+                                                                    }}
+                                                                </span>
                                                             </div>
                                                         </div>
-                                                        <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{
-                                                            message.message }}</p>
+                                                        <p class="mt-1 line-clamp-2 text-sm text-gray-600">
+                                                            {{
+                                                                message.message
+                                                            }}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="p-4 border-t border-gray-100 bg-gray-50">
-                                            <Link href="/messages"
-                                                class="block text-center text-purple-600 hover:text-purple-800 font-medium text-sm">
-                                            Open Messages
-                                            </Link>
+
+                                        <!-- Footer: View More -> Button opens slide-in drawer -->
+                                        <div class="border-t border-gray-100 bg-gray-50 p-4">
+                                            <button type="button" @click="openMessagesDrawer"
+                                                class="w-full text-center text-sm font-medium text-purple-600 hover:text-purple-800">
+                                                View more
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -622,12 +767,12 @@ onUnmounted(() => {
                             <template v-else>
                                 <!-- Login Button -->
                                 <Link href="/login"
-                                    class="px-4 py-2 text-gray-600 hover:text-gray-900 transition-all duration-200 font-medium">
+                                    class="px-4 py-2 font-medium text-gray-600 transition-all duration-200 hover:text-gray-900">
                                 Log In
                                 </Link>
                                 <!-- Get Started Button -->
                                 <Link href="/join"
-                                    class="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-500 hover:to-indigo-500 transition-all duration-300 font-semibold shadow-md hover:shadow-lg">
+                                    class="rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-5 py-2.5 font-semibold text-white shadow-md transition-all duration-300 hover:from-purple-500 hover:to-indigo-500 hover:shadow-lg">
                                 Get Started
                                 </Link>
                             </template>
@@ -637,7 +782,7 @@ onUnmounted(() => {
                     <!-- Mobile Menu Button -->
                     <div class="lg:hidden">
                         <button @click="isMobileMenuOpen = !isMobileMenuOpen"
-                            class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200">
+                            class="rounded-lg p-2 text-gray-600 transition-all duration-200 hover:bg-gray-100 hover:text-gray-900">
                             <Menu v-if="!isMobileMenuOpen" :size="24" />
                             <X v-else :size="24" />
                         </button>
@@ -645,131 +790,329 @@ onUnmounted(() => {
                 </div>
 
                 <!-- Mobile Menu -->
-                <!-- Mobile Menu -->
-                <div v-if="isMobileMenuOpen" class="lg:hidden pb-4 border-t border-gray-200 pt-4">
+                <div v-if="isMobileMenuOpen" class="border-t border-gray-200 pb-4 pt-4 lg:hidden">
                     <div class="flex flex-col space-y-1">
                         <Link :href="page.props.auth.user ? '/client' : '/'" @click="isMobileMenuOpen = false"
-                            class="flex items-center px-4 py-3 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium"
-                            :class="{ 'text-gray-900 bg-gray-50': (page.url === '/client' || page.url === '/') }">
+                            class="flex items-center rounded-lg px-4 py-3 font-medium text-gray-600 transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                            :class="{
+                                'bg-gray-50 text-gray-900':
+                                    page.url === '/client' || page.url === '/',
+                            }">
                         <Home :size="18" class="mr-3" />
                         <span>Home</span>
                         </Link>
 
-                        <Link :href="page.props.auth.user ? '/client/services' : '/services'"
-                            @click="isMobileMenuOpen = false"
-                            class="flex items-center px-4 py-3 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium"
-                            :class="{ 'text-gray-900 bg-gray-50': (page.url.startsWith('/client/services') || page.url.startsWith('/services')) }">
+                        <Link :href="page.props.auth.user
+                                ? '/client/services'
+                                : '/services'
+                            " @click="isMobileMenuOpen = false"
+                            class="flex items-center rounded-lg px-4 py-3 font-medium text-gray-600 transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                            :class="{
+                                'bg-gray-50 text-gray-900':
+                                    page.url.startsWith('/client/services') ||
+                                    page.url.startsWith('/services'),
+                            }">
                         <Search :size="18" class="mr-3" />
                         <span>Services</span>
                         </Link>
 
                         <template v-if="page.props.auth.user">
                             <Link href="/client/bookings" @click="isMobileMenuOpen = false"
-                                class="flex items-center px-4 py-3 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium"
-                                :class="{ 'text-gray-900 bg-gray-50': page.url.startsWith('/client/bookings') }">
+                                class="flex items-center rounded-lg px-4 py-3 font-medium text-gray-600 transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                                :class="{
+                                    'bg-gray-50 text-gray-900':
+                                        page.url.startsWith('/client/bookings'),
+                                }">
                             <Calendar :size="18" class="mr-3" />
                             <span>Bookings</span>
                             </Link>
                             <Link href="/client/events" @click="isMobileMenuOpen = false"
-                                class="flex items-center px-4 py-3 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium"
-                                :class="{ 'text-gray-900 bg-gray-50': page.url.startsWith('/client/events') }">
+                                class="flex items-center rounded-lg px-4 py-3 font-medium text-gray-600 transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                                :class="{
+                                    'bg-gray-50 text-gray-900':
+                                        page.url.startsWith('/client/events'),
+                                }">
                             <Calendar :size="18" class="mr-3" />
                             <span>Events</span>
                             </Link>
                             <Link href="/client/favorites" @click="isMobileMenuOpen = false"
-                                class="flex items-center px-4 py-3 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium"
-                                :class="{ 'text-gray-900 bg-gray-50': page.url.startsWith('/client/favorites') }">
+                                class="flex items-center rounded-lg px-4 py-3 font-medium text-gray-600 transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                                :class="{
+                                    'bg-gray-50 text-gray-900':
+                                        page.url.startsWith(
+                                            '/client/favorites',
+                                        ),
+                                }">
                             <Heart :size="18" class="mr-3" />
                             <span>Favorites</span>
                             </Link>
 
                             <!-- Mobile Notifications & Messages -->
-                            <div class="px-4 py-3 space-y-2 border-t border-gray-200 mt-4 pt-4">
+                            <div class="mt-4 space-y-2 border-t border-gray-200 px-4 py-3 pt-4">
                                 <Link href="/notifications" @click="isMobileMenuOpen = false"
-                                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all duration-200">
+                                    class="flex items-center justify-between rounded-lg bg-gray-50 p-3 transition-all duration-200 hover:bg-gray-100">
                                 <div class="flex items-center space-x-3">
                                     <Bell :size="18" class="text-gray-600" />
                                     <span class="font-medium text-gray-900">Notifications</span>
                                 </div>
                                 <span v-if="unreadNotifications > 0"
-                                    class="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                                    {{ unreadNotifications > 9 ? '9+' : unreadNotifications }}
+                                    class="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                                    {{
+                                        unreadNotifications > 9
+                                            ? '9+'
+                                            : unreadNotifications
+                                    }}
                                 </span>
                                 </Link>
 
                                 <Link href="/messages" @click="isMobileMenuOpen = false"
-                                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all duration-200">
+                                    class="flex items-center justify-between rounded-lg bg-gray-50 p-3 transition-all duration-200 hover:bg-gray-100">
                                 <div class="flex items-center space-x-3">
                                     <MessageSquare :size="18" class="text-gray-600" />
                                     <span class="font-medium text-gray-900">Messages</span>
                                 </div>
                                 <span v-if="unreadMessages > 0"
-                                    class="bg-green-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                                    {{ unreadMessages > 9 ? '9+' : unreadMessages }}
+                                    class="flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-xs text-white">
+                                    {{
+                                        unreadMessages > 9
+                                            ? '9+'
+                                            : unreadMessages
+                                    }}
                                 </span>
                                 </Link>
                             </div>
                         </template>
 
                         <!-- Mobile Auth Section -->
-                        <div class="pt-4 border-t border-gray-200 mt-4">
+                        <div class="mt-4 border-t border-gray-200 pt-4">
                             <template v-if="page.props.auth.user">
                                 <div
-                                    class="flex items-center space-x-3 px-4 py-3 text-gray-700 mb-2 bg-gray-50 rounded-lg border border-gray-200">
+                                    class="mb-2 flex items-center space-x-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-700">
                                     <div
-                                        class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-medium text-sm">
-                                        {{page.props.auth.user.name.split(' ').map(word =>
-                                            word.charAt(0)).join('').substring(0, 2).toUpperCase()}}
+                                        class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-sm font-medium text-white">
+                                        {{
+                                            page.props.auth.user.name
+                                                .split(' ')
+                                                .map((word) => word.charAt(0))
+                                                .join('')
+                                                .substring(0, 2)
+                                                .toUpperCase()
+                                        }}
                                     </div>
                                     <div>
-                                        <p class="font-medium text-gray-900">{{ page.props.auth.user.name }}</p>
-                                        <p class="text-xs text-gray-600">{{ page.props.auth.user.email }}</p>
+                                        <p class="font-medium text-gray-900">
+                                            {{ page.props.auth.user.name }}
+                                        </p>
+                                        <p class="text-xs text-gray-600">
+                                            {{ page.props.auth.user.email }}
+                                        </p>
                                     </div>
                                 </div>
 
                                 <Link :href="route('profile.edit')" @click="isMobileMenuOpen = false"
-                                    class="flex items-center px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium rounded-lg">
+                                    class="flex items-center rounded-lg px-4 py-3 font-medium text-gray-600 transition-all duration-200 hover:bg-gray-50 hover:text-gray-900">
                                 <User :size="18" class="mr-3 text-gray-600" />
                                 Profile
                                 </Link>
 
                                 <Link href="/settings" @click="isMobileMenuOpen = false"
-                                    class="flex items-center px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium rounded-lg"
-                                    v-if="route().has && route().has('settings')">
+                                    class="flex items-center rounded-lg px-4 py-3 font-medium text-gray-600 transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                                    v-if="
+                                        route().has && route().has('settings')
+                                    ">
                                 <Settings :size="18" class="mr-3 text-gray-600" />
                                 Settings
                                 </Link>
 
-                                <hr class="border-gray-200 my-2">
+                                <hr class="my-2 border-gray-200" />
 
                                 <Link :href="route('logout')" method="post" as="button"
                                     @click="isMobileMenuOpen = false"
-                                    class="flex items-center w-full px-4 py-3 text-gray-600 hover:text-red-600 hover:bg-red-50 transition-all duration-200 font-medium rounded-lg">
+                                    class="flex w-full items-center rounded-lg px-4 py-3 font-medium text-gray-600 transition-all duration-200 hover:bg-red-50 hover:text-red-600">
                                 <LogOut :size="18" class="mr-3 text-gray-600" />
                                 Sign out
                                 </Link>
                             </template>
                             <template v-else>
                                 <Link href="/login" @click="isMobileMenuOpen = false"
-                                    class="flex items-center px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 font-medium rounded-lg">
+                                    class="flex items-center rounded-lg px-4 py-3 font-medium text-gray-600 transition-all duration-200 hover:bg-gray-50 hover:text-gray-900">
                                 <User :size="18" class="mr-3" />
                                 Log In
                                 </Link>
                                 <Link href="/join" @click="isMobileMenuOpen = false"
-                                    class="flex items-center justify-center mx-4 mt-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-500 hover:to-indigo-500 transition-all duration-300 font-semibold text-center shadow-md">
+                                    class="mx-4 mt-2 flex items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-3 text-center font-semibold text-white shadow-md transition-all duration-300 hover:from-purple-500 hover:to-indigo-500">
                                 <span>Get Started</span>
                                 </Link>
                             </template>
                         </div>
                     </div>
                 </div>
-
             </div>
         </nav>
 
         <!-- Facebook-Style Chat Windows at Bottom -->
         <ChatWindow :openChats="openChats" @toggle-chat-window="toggleChatWindow" @close-chat-window="closeChatWindow"
             @send-chat-message="sendChatMessage" />
+
+        <!-- ================= Slide-in Drawer: All Messages ================= -->
+        <Teleport to="body">
+            <div v-if="isMessagesDrawerActive" class="fixed inset-0 z-[999] flex justify-end">
+                <!-- Backdrop -->
+                <transition appear enter-active-class="transition-opacity duration-300 ease-out"
+                    enter-from-class="opacity-0" enter-to-class="opacity-100"
+                    leave-active-class="transition-opacity duration-200 ease-in" leave-from-class="opacity-100"
+                    leave-to-class="opacity-0">
+                    <div v-if="isMessagesDrawerOpen" class="absolute inset-0 bg-black/50 backdrop-blur-[2px]"
+                        @click="closeMessagesDrawer" aria-hidden="true" />
+                </transition>
+
+                <!-- Panel -->
+                <transition appear enter-active-class="transform transition duration-300 ease-out"
+                    enter-from-class="translate-x-full" enter-to-class="translate-x-0"
+                    leave-active-class="transform transition duration-200 ease-in" leave-from-class="translate-x-0"
+                    leave-to-class="translate-x-full" @after-leave="onDrawerAfterLeave">
+                    <aside v-if="isMessagesDrawerOpen" ref="panelEl"
+                        class="relative flex h-svh w-full max-w-md flex-col bg-white shadow-2xl focus:outline-none"
+                        role="dialog" aria-modal="true" aria-label="All Messages" tabindex="-1">
+                        <header class="flex items-center justify-between border-b border-slate-200 p-4">
+                            <h2 class="text-lg font-semibold text-slate-800">
+                                All Messages
+                            </h2>
+                            <button @click="closeMessagesDrawer"
+                                class="rounded-full p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                aria-label="Close panel">
+                                <X :size="20" />
+                            </button>
+                        </header>
+
+                        <div class="grow overflow-y-auto">
+                            <div v-if="isLoading" class="p-6 text-center text-gray-500">
+                                Loading conversations...
+                            </div>
+                            <div v-else-if="processedMessages.length === 0" class="p-6 text-center text-gray-500">
+                                No conversations yet
+                            </div>
+                            <div v-else v-for="message in processedMessages" :key="message.id"
+                                @click="openChatWindow(message)"
+                                class="cursor-pointer border-b border-gray-100 p-4 hover:bg-gray-50"
+                                :class="{ 'bg-blue-50/50': !message.read }">
+                                <div class="flex items-start space-x-3">
+                                    <div class="relative flex-shrink-0">
+                                        <div
+                                            class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-gray-200 bg-gray-100 text-xs font-semibold text-white shadow-sm">
+                                            <img v-if="message.avatar" :src="message.avatar" alt="User avatar"
+                                                class="h-full w-full object-cover" />
+                                            <span v-else
+                                                class="flex h-full w-full items-center justify-center bg-gradient-to-br from-purple-500 to-purple-700">
+                                                {{ message.initials }}
+                                            </span>
+                                        </div>
+                                        <div v-if="message.online"
+                                            class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-green-500" />
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center justify-between">
+                                            <p class="truncate font-medium text-gray-900">
+                                                {{ message.sender }}
+                                            </p>
+                                            <span class="whitespace-nowrap text-xs text-gray-400">{{ message.time
+                                                }}</span>
+                                        </div>
+                                        <p class="mt-1 line-clamp-1 text-sm text-gray-600">
+                                            {{ message.message }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                </transition>
+            </div>
+        </Teleport>
+        <!-- ================= /Slide-in Drawer ================= -->
+
+        <!-- ================= Slide-in Drawer: All Notifications ================= -->
+        <Teleport to="body">
+            <div v-if="isNotificationsDrawerActive" class="fixed inset-0 z-[999] flex justify-end">
+                <!-- Backdrop -->
+                <transition appear enter-active-class="transition-opacity duration-300 ease-out"
+                    enter-from-class="opacity-0" enter-to-class="opacity-100"
+                    leave-active-class="transition-opacity duration-200 ease-in" leave-from-class="opacity-100"
+                    leave-to-class="opacity-0">
+                    <div v-if="isNotificationsDrawerOpen" class="absolute inset-0 bg-black/50 backdrop-blur-[2px]"
+                        @click="closeNotificationsDrawer" aria-hidden="true" />
+                </transition>
+
+                <!-- Panel -->
+                <transition appear enter-active-class="transform transition duration-300 ease-out"
+                    enter-from-class="translate-x-full" enter-to-class="translate-x-0"
+                    leave-active-class="transform transition duration-200 ease-in" leave-from-class="translate-x-0"
+                    leave-to-class="translate-x-full" @after-leave="onNotifDrawerAfterLeave">
+                    <aside v-if="isNotificationsDrawerOpen" ref="notifPanelEl"
+                        class="relative flex h-svh w-full max-w-md flex-col bg-white shadow-2xl focus:outline-none"
+                        role="dialog" aria-modal="true" aria-label="All Notifications" tabindex="-1">
+                        <header class="flex items-center justify-between border-b border-slate-200 p-4">
+                            <h2 class="text-lg font-semibold text-slate-800">
+                                All Notifications
+                            </h2>
+                            <button @click="closeNotificationsDrawer"
+                                class="rounded-full p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                aria-label="Close panel">
+                                <X :size="20" />
+                            </button>
+                        </header>
+
+                        <div class="grow overflow-y-auto">
+                            <div v-if="isLoadingNotifications" class="p-6 text-center text-gray-500">
+                                Loading notifications...
+                            </div>
+                            <div v-else-if="notifications.length === 0" class="p-6 text-center text-gray-500">
+                                No notifications yet
+                            </div>
+                            <div v-else v-for="notification in notifications" :key="notification.id" @click="
+                                navbarStore.markNotificationRead(
+                                    notification.id,
+                                )
+                                " class="cursor-pointer border-b border-gray-100 p-4 hover:bg-gray-50" :class="{
+                                    'bg-purple-50/50': !notification.is_read,
+                                }">
+                                <div class="flex items-start space-x-3">
+                                    <component :is="getNotificationIcon(
+                                        notification.type,
+                                    )
+                                        " :size="18" class="mt-0.5 flex-shrink-0" :class="getNotificationIconColor(
+                                            notification.type,
+                                        )
+                                            " />
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center justify-between">
+                                            <p class="truncate font-medium text-gray-900">
+                                                {{ notification.title }}
+                                            </p>
+                                            <span v-if="!notification.is_read"
+                                                class="h-2 w-2 flex-shrink-0 rounded-full bg-purple-600"></span>
+                                        </div>
+                                        <p class="mt-1 text-sm text-gray-600">
+                                            {{ notification.message }}
+                                        </p>
+                                        <div class="mt-2 flex items-center justify-between">
+                                            <p class="text-xs text-gray-400">
+                                                {{ notification.time_ago }}
+                                            </p>
+                                            <div class="flex items-center space-x-1">
+                                                <Check :size="12" class="text-gray-400" />
+                                                <span class="text-xs text-gray-400">Mark read</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                </transition>
+            </div>
+        </Teleport>
+        <!-- ================= /Slide-in Drawer ================= -->
     </div>
 </template>
 

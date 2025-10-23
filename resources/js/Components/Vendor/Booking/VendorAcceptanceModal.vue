@@ -5,11 +5,14 @@ import {
     MapPin, User, Clock, AlertCircle, Sparkles
 } from 'lucide-vue-next'
 
+import { chatClient } from '@/utils/chatClient';
+
 const isOpen = ref(false)
 const booking = ref(null)
 const showConfetti = ref(false)
 
 const open = (bookingData = {}) => {
+    console.log('Inside: ', bookingData)
     booking.value = bookingData
     isOpen.value = true
     showConfetti.value = true
@@ -134,7 +137,7 @@ onUnmounted(() => {
                         <!-- Main Content - Now in 2 columns -->
                         <div class="p-6">
                             <!-- Important Notice -->
-                            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 animate-pulse">
+                            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
                                 <div class="flex items-start space-x-3">
                                     <AlertCircle :size="20" class="text-amber-600 flex-shrink-0 mt-0.5" />
                                     <div>
@@ -200,7 +203,7 @@ onUnmounted(() => {
                                                 <Calendar :size="16" class="text-gray-400" />
                                                 <span class="text-sm text-gray-700">{{
                                                     formatDate(booking?.event?.event_date ||
-                                                    booking?.event_date) }}</span>
+                                                        booking?.event_date) }}</span>
                                             </div>
                                             <div class="flex items-center space-x-2">
                                                 <Clock :size="16" class="text-gray-400" />
@@ -231,10 +234,11 @@ onUnmounted(() => {
 
                                     <!-- Action Buttons -->
                                     <div class="flex flex-col space-y-3">
-                                        <button @click="contactClient"
+                                        {{ console.log('id', booking.user.id) }}
+                                        <button @click="chatClient(booking.user.id)"
                                             class="flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-md hover:shadow-lg">
                                             <MessageCircle :size="20" />
-                                            <span>Contact Client Now</span>
+                                            <span>Chat Client Now</span>
                                         </button>
 
                                         <button @click="viewBookingDetails"

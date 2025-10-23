@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import BookingModal from './BookingModal.vue';
 import { Link, router, usePage } from '@inertiajs/vue3'
 import LoginModal from '../LoginModal.vue';
+import { isPricePackage } from '@/utils/packageIdentifier';
 
 
 const props = defineProps({
@@ -32,17 +33,17 @@ const handleViewDetails = () => {
     router.get(route('client.service.show', props.service.id))
 }
 
-const isPricePackage = () => {
+// const isPricePackage = () => {
 
-    if (props.service.catering_service) {
-        if (props.service.catering_service.price !== props.service.catering_service.package_price) {
-            return 'per pax'
-        } else {
-            return ''
-        }
-    }
-    return ''
-}
+//     if (props.service.catering_service) {
+//         if (props.service.catering_service.price !== props.service.catering_service.package_price) {
+//             return 'per pax'
+//         } else {
+//             return ''
+//         }
+//     }
+//     return ''
+// }
 
 const tryToBook = () => {
 
@@ -84,7 +85,7 @@ const tryToBook = () => {
         <div class="flex items-center justify-between mb-3">
             <!-- {{ console.log(isPricePackage()) }} -->
             <div class="text-lg font-bold text-green-600">{{ formatPrice(service.price) }} <span
-                    class="text-sm text-gray-600">{{ isPricePackage()
+                    class="text-sm text-gray-600">{{ isPricePackage(service)
                     }}</span> </div>
             <div class="flex items-center text-sm text-gray-500">
                 <svg class="w-4 h-4 mr-1 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">

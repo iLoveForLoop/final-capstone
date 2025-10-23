@@ -9,6 +9,7 @@ defineProps({
 })
 
 const emit = defineEmits(['close-modals', 'accept-booking'])
+
 </script>
 
 <template>

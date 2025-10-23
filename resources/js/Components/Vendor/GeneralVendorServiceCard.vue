@@ -7,6 +7,7 @@ import EditCateringServiceForm from './Catering/EditCateringServiceForm.vue';
 import ViewPhotographyService from './Photograpy/ViewPhotographyService.vue';
 import ViewCateringService from './Catering/ViewCateringService.vue';
 import { push } from 'notivue';
+import { isPricePackage } from '@/utils/packageIdentifier';
 
 
 const toast = useToast();
@@ -151,16 +152,15 @@ const openViewModal = () => {
                     <h3 class="text-xl font-bold text-gray-900 line-clamp-1 flex-1 mr-3">{{ service.name }}</h3>
                     <div class="text-right">
                         <div v-if="service.category.name !== 'Catering'" class="text-lg font-bold text-indigo-600">{{
-                            formatPrice(service.price) }}</div>
+                            formatPrice(service.price) }} </div>
                         <div v-if="service.max_price" class="text-sm text-gray-500">
                             up to {{ formatPrice(service.max_price) }}
                         </div>
 
                         <div v-if="service.category.name === 'Catering'" class="text-lg font-bold text-indigo-600">{{
                             formatPrice(service.catering_service?.price ||
-                                service?.price) }} <span class="text-black"
-                                v-if="service.catering_service?.price !== service.catering_service?.package_price">/
-                                Pax</span>
+                                service?.price) }} <span class="text-black">
+                                {{ isPricePackage(service) }} </span>
                         </div>
                     </div>
                 </div>

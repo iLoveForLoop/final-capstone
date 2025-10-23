@@ -1,6 +1,8 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { Check, Calendar, MapPin, Clock, Briefcase, FileText, AlertCircle, Loader } from 'lucide-vue-next'
+import { Check, Calendar, MapPin, Clock, Briefcase, FileText, AlertCircle, Loader, Info } from 'lucide-vue-next'
+import { isPricePackage } from '@/utils/packageIdentifier'
+import { Link } from '@inertiajs/vue3'
 
 const props = defineProps({
     selectedServices: {
@@ -14,10 +16,22 @@ const agreedToTerms = ref(false)
 const isSubmitting = ref(false)
 const emit = defineEmits(['submit-selection'])
 
+// Calculate service price with pax consideration
+const calculateServicePrice = (service) => {
+    const basePrice = parseFloat(service.price || 0)
+
+    // If it's a price package service and pax is available, multiply by pax
+    if (isPricePackage(service) && eventForm.value?.pax) {
+        return basePrice * parseInt(eventForm.value.pax)
+    }
+
+    return basePrice
+}
+
 // Calculate total price
 const totalPrice = computed(() => {
     return props.selectedServices.reduce((sum, service) => {
-        return sum + parseFloat(service.price || 0)
+        return sum + calculateServicePrice(service)
     }, 0) || 0
 })
 
@@ -51,6 +65,8 @@ const formatTime = (timeString) => {
     })
 }
 
+const successModal = ref(null)
+
 // Handle form submission
 const submitBooking = async () => {
     if (!agreedToTerms.value) {
@@ -61,66 +77,52 @@ const submitBooking = async () => {
 
     await new Promise(resolve => setTimeout(resolve, 1000))
     emit('submit-selection')
-    // console.log('Submitting');
-
-
     isSubmitting.value = false
-
-    // try {
-
-
-
-    //     await new Promise(resolve => setTimeout(resolve, 2000))
-
-
-    //     alert('Booking request sent to vendors successfully!')
-    // } catch (error) {
-    //     console.error('Booking submission failed:', error)
-    //     alert('Failed to submit booking. Please try again.')
-    // } finally {
-    //     isSubmitting.value = false
-    // }
 }
 </script>
 
 <template>
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+    <div class="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4 lg:py-6">
         <!-- Header -->
-        <div class="text-center pb-6 border-b border-gray-200">
-            <div class="w-12 h-12 mx-auto mb-4 bg-blue-50 rounded-full flex items-center justify-center">
-                <Check class="h-6 w-6 text-blue-600" />
+        <div class="text-center pb-4 sm:pb-6 border-b border-gray-200">
+            <div
+                class="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 bg-blue-50 rounded-full flex items-center justify-center">
+                <Check class="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
             </div>
-            <h1 class="text-2xl sm:text-3xl font-semibold text-gray-900 mb-2">Review Booking</h1>
-            <p class="text-gray-600 text-sm sm:text-base">Verify your event details before submitting to vendors</p>
+            <h1 class="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2">Review Booking</h1>
+            <p class="text-gray-600 text-xs sm:text-sm lg:text-base">Verify your event details before submitting to
+                vendors</p>
         </div>
 
-        <div class="mt-6 lg:mt-8">
+        <div class="mt-4 sm:mt-6 lg:mt-8 space-y-4 sm:space-y-6">
             <!-- Event Details -->
-            <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 mb-6">
-                <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <Calendar class="h-5 w-5 text-gray-600" />
+            <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 lg:p-6">
+                <h2
+                    class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
+                    <Calendar class="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
                     Event Details
                 </h2>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                <div class="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
                     <div class="space-y-1">
                         <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Event Name</label>
-                        <p class="text-gray-900 font-medium text-sm sm:text-base">{{ eventForm.name || 'Untitled Event'
-                        }}</p>
+                        <p class="text-gray-900 font-medium text-sm sm:text-base break-words">{{ eventForm.name ||
+                            'Untitled Event' }}</p>
                     </div>
 
                     <div class="space-y-1">
                         <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Location</label>
-                        <div class="flex items-center gap-1 text-gray-900 font-medium text-sm sm:text-base">
-                            <MapPin class="h-4 w-4 text-gray-500" />
-                            {{ eventForm.location || 'Location TBD' }}
+                        <div
+                            class="flex items-start sm:items-center gap-1 text-gray-900 font-medium text-sm sm:text-base">
+                            <MapPin class="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5 sm:mt-0" />
+                            <span class="break-words">{{ eventForm.location || 'Location TBD' }}</span>
                         </div>
                     </div>
 
                     <div class="space-y-1">
                         <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Date</label>
                         <div class="flex items-center gap-1 text-gray-900 font-medium text-sm sm:text-base">
-                            <Calendar class="h-4 w-4 text-gray-500" />
+                            <Calendar class="h-4 w-4 text-gray-500 flex-shrink-0" />
                             {{ formatDate(eventForm.event_date) }}
                         </div>
                     </div>
@@ -128,38 +130,51 @@ const submitBooking = async () => {
                     <div class="space-y-1">
                         <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Time</label>
                         <div class="flex items-center gap-1 text-gray-900 font-medium text-sm sm:text-base">
-                            <Clock class="h-4 w-4 text-gray-500" />
+                            <Clock class="h-4 w-4 text-gray-500 flex-shrink-0" />
                             {{ formatTime(eventForm.event_time) }}
+                        </div>
+                    </div>
+
+                    <!-- Pax Information -->
+                    <div v-if="eventForm?.pax" class="space-y-1">
+                        <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Number of
+                            Guests</label>
+                        <div class="flex items-center gap-1 text-gray-900 font-medium text-sm sm:text-base">
+                            <Briefcase class="h-4 w-4 text-gray-500 flex-shrink-0" />
+                            {{ eventForm.pax }} guests
                         </div>
                     </div>
                 </div>
 
-                <div v-if="eventForm.description" class="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
+                <div v-if="eventForm.description"
+                    class="mt-3 sm:mt-4 lg:mt-6 pt-3 sm:pt-4 lg:pt-6 border-t border-gray-200">
                     <label
                         class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">Description</label>
-                    <p class="text-gray-700 text-sm sm:text-base leading-relaxed">{{ eventForm.description }}</p>
+                    <p class="text-gray-700 text-sm sm:text-base leading-relaxed break-words">{{ eventForm.description
+                    }}</p>
                 </div>
             </div>
 
             <!-- Selected Services -->
-            <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 mb-6">
-                <div class="flex items-center justify-between mb-4 sm:mb-6">
-                    <h2 class="text-lg sm:text-xl font-semibold text-gray-900 flex items-center gap-2">
-                        <Briefcase class="h-5 w-5 text-gray-600" />
+            <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 lg:p-6">
+                <div class="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-2 mb-3 sm:mb-4 lg:mb-6">
+                    <h2 class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 flex items-center gap-2">
+                        <Briefcase class="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
                         Selected Services
                     </h2>
-                    <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">
+                    <span
+                        class="bg-gray-100 text-gray-700 px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs font-medium self-start xs:self-auto">
                         {{ selectedServices?.length || 0 }} services
                     </span>
                 </div>
 
-                <div class="space-y-4">
+                <div class="space-y-3 sm:space-y-4">
                     <div v-for="service in selectedServices" :key="service.id"
-                        class="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
-                        <div class="flex gap-4">
+                        class="border border-gray-200 rounded-lg p-3 sm:p-4 hover:border-gray-300 transition-colors">
+                        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
                             <!-- Service Image -->
                             <div
-                                class="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                                class="flex-shrink-0 w-full sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 self-center sm:self-start">
                                 <img v-if="service.image_url" :src="service.image_url" :alt="service.name"
                                     class="w-full h-full object-cover">
                                 <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
@@ -169,30 +184,53 @@ const submitBooking = async () => {
 
                             <!-- Service Details -->
                             <div class="flex-1 min-w-0">
-                                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                                    <div class="min-w-0 flex-1">
-                                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-1">{{
-                                            service.name }}</h3>
-                                        <p class="text-gray-600 text-sm leading-relaxed line-clamp-2">{{
-                                            service.description }}</p>
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                                        <div class="min-w-0 flex-1">
+                                            <h3
+                                                class="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 mb-1 break-words">
+                                                {{ service.name }}
+                                            </h3>
+                                            <p
+                                                class="text-gray-600 text-xs sm:text-sm leading-relaxed line-clamp-2 break-words">
+                                                {{ service.description }}
+                                            </p>
 
-                                        <!-- Vendor Info -->
-                                        <div class="flex items-center mt-2 text-xs sm:text-sm text-gray-500">
-                                            <MapPin class="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                                            <span class="font-medium">{{ service.vendor?.business_name ||
-                                                service.vendor?.name || 'Vendor' }}</span>
-                                            <span class="mx-2">•</span>
-                                            <span class="truncate">
-                                                {{ service.vendor?.location || 'Location not specified' }}
-                                            </span>
+                                            <!-- Price Calculation Info -->
+                                            <div v-if="isPricePackage(service) && eventForm?.pax"
+                                                class="mt-2 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded inline-flex items-center">
+                                                <span class="font-medium">
+                                                    {{ formatCurrency(service.price) }} × {{ eventForm.pax }} guests
+                                                </span>
+                                            </div>
 
+                                            <!-- Vendor Info -->
+                                            <div
+                                                class="flex items-center mt-2 text-xs sm:text-sm text-gray-500 flex-wrap gap-1">
+                                                <MapPin class="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                                                <span class="font-medium truncate">{{ service.vendor?.business_name ||
+                                                    service.vendor?.name || 'Vendor' }}</span>
+                                                <span class="hidden sm:inline">•</span>
+                                                <span class="truncate text-xs">
+                                                    {{ service.vendor?.location || 'Location not specified' }}
+                                                </span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="sm:text-right">
-                                        <p class="text-lg sm:text-xl font-semibold text-green-600">{{
-                                            formatCurrency(service.price) }}</p>
-                                        <p v-if="service.catering_service?.price !== service.catering_service?.package_price"
-                                            class="text-xs text-gray-500 mt-1">per person</p>
+                                        <div class="sm:text-right mt-2 sm:mt-0">
+                                            <p
+                                                class="text-base sm:text-lg lg:text-xl font-semibold text-green-600 whitespace-nowrap">
+                                                {{ formatCurrency(calculateServicePrice(service)) }}
+                                            </p>
+                                            <p v-if="isPricePackage(service)"
+                                                class="text-xs text-gray-500 mt-1 whitespace-nowrap">
+                                                {{ eventForm?.pax ? `total for ` + eventForm.pax + ` guests` : `per
+                                                person` }}
+                                            </p>
+                                            <p v-else-if="service.catering_service?.price !== service.catering_service?.package_price"
+                                                class="text-xs text-gray-500 mt-1 whitespace-nowrap">
+                                                fixed price
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -201,23 +239,25 @@ const submitBooking = async () => {
                 </div>
 
                 <!-- Empty State -->
-                <div v-if="!selectedServices?.length" class="text-center py-8">
-                    <div class="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
-                        <AlertCircle class="h-6 w-6 text-gray-400" />
+                <div v-if="!selectedServices?.length" class="text-center py-6 sm:py-8">
+                    <div
+                        class="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-2 sm:mb-3 bg-gray-100 rounded-full flex items-center justify-center">
+                        <AlertCircle class="h-5 w-5 sm:h-6 sm:w-6 text-gray-400" />
                     </div>
-                    <h3 class="text-base font-semibold text-gray-700 mb-1">No Services Selected</h3>
-                    <p class="text-gray-500 text-sm">Add services to continue with your booking</p>
+                    <h3 class="text-sm sm:text-base font-semibold text-gray-700 mb-1">No Services Selected</h3>
+                    <p class="text-gray-500 text-xs sm:text-sm">Add services to continue with your booking</p>
                 </div>
             </div>
 
             <!-- Additional Information -->
-            <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 mb-6">
-                <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <FileText class="h-5 w-5 text-gray-600" />
+            <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 lg:p-6">
+                <h2
+                    class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
+                    <FileText class="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
                     Additional Information
                 </h2>
 
-                <div class="space-y-6">
+                <div class="space-y-4 sm:space-y-6">
                     <!-- Special Instructions -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Special Instructions</label>
@@ -228,21 +268,22 @@ const submitBooking = async () => {
                     </div>
 
                     <!-- Terms and Conditions -->
-                    <div class="border-t border-gray-200 pt-6">
+                    <div class="border-t border-gray-200 pt-4 sm:pt-6">
                         <div class="flex items-start gap-3">
                             <input type="checkbox" v-model="agreedToTerms" id="terms"
-                                class="mt-0.5 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                            <div class="flex-1">
+                                class="mt-0.5 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 flex-shrink-0">
+                            <div class="flex-1 min-w-0">
                                 <label for="terms" class="block text-sm font-medium text-gray-700 mb-1">
                                     Accept Terms & Conditions
                                 </label>
-                                <p class="text-xs text-gray-600 leading-relaxed">
+                                <p class="text-xs text-gray-600 leading-relaxed break-words">
                                     I agree to the
-                                    <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">booking terms</a>,
-                                    <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">cancellation
-                                        policy</a>, and
-                                    <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">privacy
-                                        policy</a>.
+                                    <Link class="text-blue-600 hover:text-blue-800 font-medium"
+                                        :href="route('termsandcondition')" target="_blank">booking terms</Link>,
+                                    <Link href="#" class="text-blue-600 hover:text-blue-800 font-medium">cancellation
+                                    policy</Link>, and
+                                    <Link href="#" class="text-blue-600 hover:text-blue-800 font-medium">privacy
+                                    policy</Link>.
                                     I understand this request will be sent to vendors and a deposit may be required.
                                 </p>
                             </div>
@@ -252,53 +293,81 @@ const submitBooking = async () => {
             </div>
 
             <!-- Summary & Submit -->
-            <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
-                <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Booking Summary</h2>
+            <div
+                class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 lg:p-6 sticky bottom-0 bg-white shadow-lg sm:shadow-none sm:static">
+                <h2 class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Booking Summary
+                </h2>
 
-                <div class="space-y-4">
+                <div class="space-y-3 sm:space-y-4">
                     <!-- Services List -->
-                    <div class="space-y-3">
+                    <div class="space-y-2 sm:space-y-3 max-h-40 sm:max-h-none overflow-y-auto">
                         <div v-for="service in selectedServices" :key="service.id"
-                            class="flex justify-between items-start text-sm">
-                            <div class="flex-1 min-w-0 pr-3">
-                                <p class="text-gray-700 font-medium truncate">{{ service.name }}</p>
-                                <p class="text-gray-500 text-xs mt-0.5">{{ service.vendor?.business_name }}</p>
+                            class="flex justify-between items-start text-sm gap-2">
+                            <div class="flex-1 min-w-0 pr-2">
+                                <p class="text-gray-700 font-medium truncate text-xs sm:text-sm">{{ service.name }}</p>
+                                <p class="text-gray-500 text-xs mt-0.5 truncate">{{ service.vendor?.business_name }}</p>
+                                <p v-if="isPricePackage(service) && eventForm?.pax"
+                                    class="text-xs text-blue-600 mt-0.5">
+                                    {{ formatCurrency(service.price) }} × {{ eventForm.pax }} guests
+                                </p>
                             </div>
-                            <p class="text-gray-900 font-semibold whitespace-nowrap">{{ formatCurrency(service.price) }}
+                            <p class="text-gray-900 font-semibold whitespace-nowrap text-xs sm:text-sm">
+                                {{ formatCurrency(calculateServicePrice(service)) }}
                             </p>
                         </div>
                     </div>
 
-                    <!-- Total -->
-                    <div class="border-t border-gray-200 pt-4">
-                        <div class="flex justify-between items-center text-base">
-                            <span class="font-semibold text-gray-900">Total</span>
+                    <!-- Total with Estimated Indicator -->
+                    <div class="border-t border-gray-200 pt-3 sm:pt-4">
+                        <div class="flex justify-between items-center text-sm sm:text-base">
+                            <div class="flex items-center gap-1">
+                                <span class="font-semibold text-gray-900">Estimated Total</span>
+                                <div class="group relative">
+                                    <Info class="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 cursor-help" />
+                                    <div
+                                        class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                                        Final price may vary based on vendor quotes
+                                        <div
+                                            class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <span class="font-bold text-green-600">{{ formatCurrency(totalPrice) }}</span>
                         </div>
                         <p class="text-xs text-gray-500 text-center mt-2">All prices in Philippine Peso (₱)</p>
                     </div>
 
                     <!-- Quick Event Info -->
-                    <div class="bg-gray-50 rounded-lg p-3 mt-4">
-                        <div class="grid grid-cols-2 gap-4 text-xs">
+                    <div class="bg-gray-50 rounded-lg p-2 sm:p-3 mt-3 sm:mt-4">
+                        <div class="grid grid-cols-2 gap-2 sm:gap-4 text-xs">
                             <div>
                                 <p class="text-gray-500 font-medium">Date</p>
-                                <p class="text-gray-900">{{ formatDate(eventForm.event_date) }}</p>
+                                <p class="text-gray-900 text-xs sm:text-sm">{{ formatDate(eventForm.event_date) }}</p>
                             </div>
                             <div>
                                 <p class="text-gray-500 font-medium">Location</p>
-                                <p class="text-gray-900 truncate">{{ eventForm.location || 'Not set' }}</p>
+                                <p class="text-gray-900 text-xs sm:text-sm truncate">{{ eventForm.location || 'Not set'
+                                }}</p>
+                            </div>
+                            <div v-if="eventForm?.pax">
+                                <p class="text-gray-500 font-medium">Guests</p>
+                                <p class="text-gray-900 text-xs sm:text-sm">{{ eventForm.pax }} people</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 font-medium">Services</p>
+                                <p class="text-gray-900 text-xs sm:text-sm">{{ selectedServices?.length || 0 }}</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Submit Button -->
-                    <div class="mt-6">
+                    <div class="mt-4 sm:mt-6">
                         <button @click="submitBooking"
                             :disabled="!agreedToTerms || !selectedServices.length || isSubmitting"
-                            class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                            class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 px-4 sm:px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base">
                             <Loader v-if="isSubmitting" class="h-4 w-4 animate-spin" />
-                            <span class="text-sm sm:text-base">
+                            <span>
                                 {{ isSubmitting ? 'Sending to Vendors...' : 'Submit Booking Request' }}
                             </span>
                         </button>
@@ -320,6 +389,29 @@ const submitBooking = async () => {
     overflow: hidden;
 }
 
+/* Custom breakpoint for extra small screens */
+@media (min-width: 475px) {
+    .xs\:grid-cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .xs\:flex-row {
+        flex-direction: row;
+    }
+
+    .xs\:items-center {
+        align-items: center;
+    }
+
+    .xs\:justify-between {
+        justify-content: space-between;
+    }
+
+    .xs\:self-auto {
+        align-self: auto;
+    }
+}
+
 /* Improve mobile touch targets */
 @media (max-width: 640px) {
     button {
@@ -329,6 +421,14 @@ const submitBooking = async () => {
     input[type="checkbox"] {
         min-width: 16px;
         min-height: 16px;
+    }
+}
+
+/* Sticky footer for mobile */
+@media (max-width: 768px) {
+    .sticky {
+        position: sticky;
+        z-index: 10;
     }
 }
 </style>

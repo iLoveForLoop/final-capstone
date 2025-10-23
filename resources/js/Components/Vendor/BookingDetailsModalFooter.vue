@@ -1,6 +1,7 @@
 <script setup>
 import { MessageCircle } from 'lucide-vue-next';
-import { router } from '@inertiajs/vue3';
+
+import { chatClient } from '@/utils/chatClient';
 const props = defineProps({
     booking: Object
 })
@@ -9,13 +10,12 @@ const emit = defineEmits(['close', 'accept-booking', 'decline-booking', 'complet
 
 
 
-const chatClient = () => {
-    console.log(props.booking.user.id)
+// const chatClient = () => {
+//     console.log(props.booking.user.id)
 
-    router.visit(route('vendor.messages.index'), { method: 'get', data: { participants: [props.booking.user.id], type: 'direct' }, preserveScroll: false, preserveState: false });
+//     router.visit(route('vendor.messages.index'), { method: 'get', data: { participants: [props.booking.user.id], type: 'direct' }, preserveScroll: false, preserveState: false });
+// }
 
-    // console.log('hereereer')
-}
 
 </script>
 
@@ -44,7 +44,7 @@ const chatClient = () => {
                 class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm">
                 Mark as Complete
             </button>
-            <button @click="chatClient"
+            <button @click="chatClient(booking.user.id)"
                 class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm flex items-center space-x-2">
                 <MessageCircle :size="16" />
                 <span>Chat Client</span>
