@@ -14,11 +14,13 @@ class EmailOtpController extends Controller
     {
         $request->validate(['email' => 'required|email']);
 
-        // Check for an existing OTP
-        $existingOtp = EmailOtp::where('email', $request->email)->first();
+        // Find a non-expired OTP for this email
+        $existingOtp = EmailOtp::where('email', $request->email)
+            ->where('expires_at', '>', now())
+            ->first();
 
         // Rate limit: prevent sending OTP too frequently (every 30 seconds)
-        if ($existingOtp && Carbon::now()->diffInSeconds($existingOtp->created_at) < 30) {
+        if ($existingOtp && $existingOtp->updated_at->diffInSeconds(now()) < 30) {
             return response()->json(['message' => 'Please wait before requesting another OTP.'], 429);
         }
 

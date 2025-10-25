@@ -1,13 +1,15 @@
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { useToast } from 'vue-toastification';
-import { Upload, X, Plus, Image as ImageIcon, Eye } from 'lucide-vue-next';
+import { Upload, X, Plus, Image as ImageIcon, Eye, Lightbulb } from 'lucide-vue-next';
+import { getCommonSpecifications } from '@/utils/getCommonSpecifications';
 
 const props = defineProps({
     category_id: {
         type: [String, Number],
     },
+    selectedCategory: String
 });
 
 const toast = useToast();
@@ -15,7 +17,6 @@ const emit = defineEmits(['close', 'created']);
 const show = ref(false);
 const selectedImages = ref([]);
 const newSpecification = ref('');
-const newDeliverable = ref('');
 
 console.log('cat id: ', props.category_id)
 
@@ -26,34 +27,18 @@ const form = useForm({
     price: '',
     max_price: '',
     cover_images: [],
-    delivery_fee: '',
-    service_area: [],
     notes: '',
 
-    // Photography specific fields
+    // Lights and Effects specific fields
     specifications: [],
-    studio_shoot_available: false,
+    equipment_available: [],
+    power_requirements: '',
+    setup_time_hours: 2,
     _method: 'POST'
 });
 
-const commonSpecifications = [
-    'Engagement Session Included',
-    'Second Photographer',
-    'Photo Booth',
-    'Drone Photography',
-    '360° Photos',
-    'Same-Day Edits',
-    'Premium Album',
-    'Unlimited Shots',
-    'All-Day Coverage'
-];
+const commonSpecifications = ref([])
 
-const commonServiceAreas = [
-    'Tubigon',
-    'Calape',
-    'Tagbilaran',
-    'Anywhere in Bohol'
-];
 
 const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
@@ -100,14 +85,7 @@ const removeSpecification = (index) => {
     form.specifications = form.specifications.filter((_, i) => i !== index);
 };
 
-const toggleServiceArea = (area) => {
-    const index = form.service_area.indexOf(area);
-    if (index === -1) {
-        form.service_area = [...form.service_area, area];
-    } else {
-        form.service_area = form.service_area.filter((_, i) => i !== index);
-    }
-};
+
 
 const addCustomSpecification = () => {
     if (newSpecification.value.trim() && !form.specifications.includes(newSpecification.value.trim())) {
@@ -116,15 +94,13 @@ const addCustomSpecification = () => {
     }
 };
 
-
-
 const submit = () => {
     console.log('cover_images:', form.cover_images);
 
-    form.post(route('vendor.photography-services.store'), {
+    form.post(route('vendor.services.store'), {
         preserveScroll: true,
         onSuccess: () => {
-            toast.success('Service created successfully');
+            toast.success('Lights and Effects service created successfully');
             form.reset();
             selectedImages.value = [];
             show.value = false;
@@ -132,10 +108,16 @@ const submit = () => {
             emit('created');
         },
         onError: () => {
-            toast.error('Failed to create service');
+            toast.error('Failed to create lights and effects service');
         }
     });
 };
+
+onMounted(() => {
+    console.log('selected cat: ', props.selectedCategory);
+
+    commonSpecifications.value = getCommonSpecifications(props.selectedCategory)
+})
 </script>
 
 <template>
@@ -275,25 +257,14 @@ const submit = () => {
                 </div>
             </div>
 
-            <!-- Photography Details Section -->
             <div class="border-b border-gray-200 pb-6">
-                <h4 class="text-lg font-medium text-gray-900 mb-4">Photography Details</h4>
 
-                <!-- Studio Shoot Available -->
-                <div class="mb-6">
-                    <div class="flex items-center">
-                        <input id="studio_shoot_available" v-model="form.studio_shoot_available" type="checkbox"
-                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                        <label for="studio_shoot_available" class="ml-2 block text-sm text-gray-700">
-                            Studio Shoot Available
-                        </label>
-                    </div>
-                    <p class="mt-1 text-xs text-gray-500">
-                        Check if you offer studio photography sessions
-                    </p>
-                    <p v-if="form.errors.studio_shoot_available" class="mt-1 text-sm text-red-600">
-                        {{ form.errors.studio_shoot_available }}</p>
-                </div>
+
+
+
+
+
+
 
                 <!-- Specifications -->
                 <div>
@@ -384,8 +355,6 @@ const submit = () => {
                 </div>
             </div>
 
-
-
             <!-- Additional Notes -->
             <div>
                 <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">
@@ -393,7 +362,7 @@ const submit = () => {
                 </label>
                 <textarea id="notes" v-model="form.notes" rows="3"
                     class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Any additional information about your photography services..."></textarea>
+                    placeholder="Any additional information about your lights and effects services..."></textarea>
                 <p v-if="form.errors.notes" class="mt-1 text-sm text-red-600">
                     {{ form.errors.notes }}</p>
             </div>

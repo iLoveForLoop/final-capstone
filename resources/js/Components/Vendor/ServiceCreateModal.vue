@@ -6,6 +6,8 @@ import { useToast } from 'vue-toastification';
 
 import CateringServiceForm from './Catering/CateringServiceForm.vue';
 import PhotographyServiceForm from './Photograpy/PhotographyServiceForm.vue';
+import VideographyServiceForm from './Videography/VideographyServiceForm.vue';
+import GeneralServiceForm from './General/GeneralServiceForm.vue';
 
 
 
@@ -104,6 +106,12 @@ defineExpose({
 
                         <PhotographyServiceForm @close="show = false" v-if="selectedCategory === 'Photography'"
                             :category_id="selectedCategoryId" />
+
+                        <VideographyServiceForm @close="show = false" v-if="selectedCategory === 'Videography'"
+                            :category_id="selectedCategoryId" />
+
+                        <GeneralServiceForm @close="show = false" v-else :category_id="selectedCategoryId"
+                            :selectedCategory="selectedCategory" />
 
                     </div>
 

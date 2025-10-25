@@ -6,6 +6,7 @@ use App\Models\Service;
 use App\Models\ServiceCategory;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ServiceController extends Controller
 {
@@ -58,6 +59,7 @@ class ServiceController extends Controller
             'specifications'     => $service->specifications,
             'catering_service'   => $service->cateringService,
             'photography_service'=> $service->photographyService,
+            'videography_service'=> $service->videographyService,
             'average_rating'     => $service->vendor->averageRating(),
             'created_at'         => $service->created_at,
             'updated_at'         => $service->updated_at,
@@ -100,38 +102,81 @@ class ServiceController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'description' => 'nullable|string',
-        'price' => 'required|numeric|min:0',
-    ]);
+    {
+        $vendor = auth()->user()->vendor;
+
+        $validated = $request->validate([
+            // General service fields
+            'service_category_id' => 'required|integer|exists:service_categories,id',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'max_price' => 'nullable|numeric|min:0|gt:price',
+
+            // Multiple images validation
+            'cover_images' => 'nullable|array',
+            'cover_images.*' => 'image|mimes:jpeg,png,jpg|max:2048', // Max 2MB per image
+
+            'specifications' => 'nullable|array',
+            'specifications.*' => 'string|max:255',
+
+
+        ]);
+
+        // Additional validation for multiple images
+        if ($request->hasFile('cover_images')) {
+            $coverImages = $request->file('cover_images');
+            if (count($coverImages) > 8) {
+                return back()->withErrors(['cover_images' => 'You can upload a maximum of 8 images.'])->withInput();
+            }
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Create the main service record
+            $service = $vendor->services()->create([
+                'service_category_id' => $validated['service_category_id'],
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+                'price' => $validated['price'],
+                'specifications' => $validated['specifications'] ?? [],
+            ]);
 
 
 
-    $vendor = auth()->user()->vendor;
+            // Handle multiple cover images upload
+            if ($request->hasFile('cover_images')) {
+                $coverImages = $request->file('cover_images');
 
+                foreach ($coverImages as $index => $image) {
+                    $mediaItem = $service->addMediaFromRequest("cover_images.{$index}")
+                        ->usingFileName(uniqid() . '.' . $image->getClientOriginalExtension())
+                        ->toMediaCollection('images', 'public');
 
+                    // Mark the first image as primary/cover
+                    if ($index === 0) {
+                        $mediaItem->setCustomProperty('is_primary', true);
+                        $mediaItem->setCustomProperty('is_cover', true);
+                        $mediaItem->save();
+                    } else {
+                        $mediaItem->setCustomProperty('is_portfolio', true);
+                        $mediaItem->save();
+                    }
+                }
+            }
 
+            DB::commit();
 
+            return redirect()->back()
+                ->with('success', 'Photography service created successfully!');
 
-    if (!$vendor) {
-        dd('error');
-        return redirect()->back()->withErrors(['error' => 'You are not registered as a vendor.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()
+                ->with('error', 'Failed to create photography service: ' . $e->getMessage());
+        }
     }
-
-
-
-    $vendor->services()->create([
-        'service_category_id' => 1,
-        'name' => $request->name,
-        'description' => $request->description,
-        'price' => $request->price,
-    ]);
-
-
-    return redirect()->back()->with('success', 'Service added successfully.');
-}
 
 
     public function toggleAvailability(Service $service){

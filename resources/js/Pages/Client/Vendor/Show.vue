@@ -154,6 +154,14 @@ onMounted(() => {
                                 <span class="text-xs md:text-sm">Overview</span>
                             </div>
                         </TabsTrigger>
+                        <TabsTrigger value="services" class="flex-1 px-4 md:px-5 py-3 md:py-4 font-medium rounded-none transition-all duration-200
+               data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600
+               data-[state=active]:bg-transparent hover:text-indigo-500 text-gray-500 hover:bg-gray-50">
+                            <div class="flex flex-col items-center justify-center gap-1">
+                                <Box :size="16" class="transition-colors" />
+                                <span class="text-xs md:text-sm">Services</span>
+                            </div>
+                        </TabsTrigger>
                         <TabsTrigger value="reviews" class="flex-1 px-4 md:px-5 py-3 md:py-4 font-medium rounded-none transition-all duration-200
                data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600
                data-[state=active]:bg-transparent hover:text-indigo-500 text-gray-500 hover:bg-gray-50">
@@ -170,14 +178,7 @@ onMounted(() => {
                                 <span class="text-xs md:text-sm">Location</span>
                             </div>
                         </TabsTrigger>
-                        <TabsTrigger value="services" class="flex-1 px-4 md:px-5 py-3 md:py-4 font-medium rounded-none transition-all duration-200
-               data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600
-               data-[state=active]:bg-transparent hover:text-indigo-500 text-gray-500 hover:bg-gray-50">
-                            <div class="flex flex-col items-center justify-center gap-1">
-                                <Box :size="16" class="transition-colors" />
-                                <span class="text-xs md:text-sm">Services</span>
-                            </div>
-                        </TabsTrigger>
+
                     </TabsList>
 
                     <!-- Tab Content -->

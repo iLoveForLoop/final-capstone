@@ -326,7 +326,7 @@ class ClientController extends Controller
             'is_available'  => $service->is_available,
             'catering_service' => $service->cateringService ?? null,
             'images'        => $service->getMedia('images')->map(fn ($media) => $media->getUrl()),
-            'specifications'=> $this->specsChecker($service),
+            'specifications'=> $service->specifications,
             'menuCategories'=> $service->cateringService->dishes ?? null,
             'minimumGuests' => $service->cateringService->min_pax ?? null,
             'is_favorite' => $service->isFavoritedBy(),

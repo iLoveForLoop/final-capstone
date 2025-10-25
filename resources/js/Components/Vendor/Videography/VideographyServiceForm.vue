@@ -26,33 +26,31 @@ const form = useForm({
     price: '',
     max_price: '',
     cover_images: [],
-    delivery_fee: '',
-    service_area: [],
     notes: '',
 
-    // Photography specific fields
+    // Videography specific fields
+    hours_of_coverage: 8,
+    delivery_time_days: 30,
+    deliverables: [],
+    number_of_videographers: 1,
     specifications: [],
     studio_shoot_available: false,
     _method: 'POST'
 });
 
 const commonSpecifications = [
-    'Engagement Session Included',
-    'Second Photographer',
-    'Photo Booth',
-    'Drone Photography',
-    '360° Photos',
-    'Same-Day Edits',
-    'Premium Album',
-    'Unlimited Shots',
-    'All-Day Coverage'
-];
-
-const commonServiceAreas = [
-    'Tubigon',
-    'Calape',
-    'Tagbilaran',
-    'Anywhere in Bohol'
+    'Pre-wedding Video',
+    'Same-Day Edit',
+    'Drone Footage',
+    'Multiple Camera Angles',
+    'Slow Motion Shots',
+    'Cinematic Style',
+    'Documentary Style',
+    'Color Grading',
+    'Audio Enhancement',
+    'Highlight Reel',
+    'Full Ceremony Coverage',
+    'Reception Coverage'
 ];
 
 const handleImageUpload = (event) => {
@@ -100,15 +98,6 @@ const removeSpecification = (index) => {
     form.specifications = form.specifications.filter((_, i) => i !== index);
 };
 
-const toggleServiceArea = (area) => {
-    const index = form.service_area.indexOf(area);
-    if (index === -1) {
-        form.service_area = [...form.service_area, area];
-    } else {
-        form.service_area = form.service_area.filter((_, i) => i !== index);
-    }
-};
-
 const addCustomSpecification = () => {
     if (newSpecification.value.trim() && !form.specifications.includes(newSpecification.value.trim())) {
         form.specifications = [...form.specifications, newSpecification.value.trim()];
@@ -116,15 +105,13 @@ const addCustomSpecification = () => {
     }
 };
 
-
-
 const submit = () => {
     console.log('cover_images:', form.cover_images);
 
-    form.post(route('vendor.photography-services.store'), {
+    form.post(route('vendor.videography-services.store'), {
         preserveScroll: true,
         onSuccess: () => {
-            toast.success('Service created successfully');
+            toast.success('Videography service created successfully');
             form.reset();
             selectedImages.value = [];
             show.value = false;
@@ -132,7 +119,7 @@ const submit = () => {
             emit('created');
         },
         onError: () => {
-            toast.error('Failed to create service');
+            toast.error('Failed to create videography service');
         }
     });
 };
@@ -275,9 +262,9 @@ const submit = () => {
                 </div>
             </div>
 
-            <!-- Photography Details Section -->
+            <!-- Videography Details Section -->
             <div class="border-b border-gray-200 pb-6">
-                <h4 class="text-lg font-medium text-gray-900 mb-4">Photography Details</h4>
+                <h4 class="text-lg font-medium text-gray-900 mb-4">Videography Details</h4>
 
                 <!-- Studio Shoot Available -->
                 <div class="mb-6">
@@ -289,10 +276,43 @@ const submit = () => {
                         </label>
                     </div>
                     <p class="mt-1 text-xs text-gray-500">
-                        Check if you offer studio photography sessions
+                        Check if you offer studio videography sessions
                     </p>
                     <p v-if="form.errors.studio_shoot_available" class="mt-1 text-sm text-red-600">
                         {{ form.errors.studio_shoot_available }}</p>
+                </div>
+
+                <!-- Hours of Coverage -->
+                <div class="mb-6">
+                    <label for="hours_of_coverage" class="block text-sm font-medium text-gray-700 mb-1">
+                        Hours of Coverage
+                    </label>
+                    <input type="number" id="hours_of_coverage" v-model="form.hours_of_coverage" min="1"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    <p v-if="form.errors.hours_of_coverage" class="mt-1 text-sm text-red-600">
+                        {{ form.errors.hours_of_coverage }}</p>
+                </div>
+
+                <!-- Number of Videographers -->
+                <div class="mb-6">
+                    <label for="number_of_videographers" class="block text-sm font-medium text-gray-700 mb-1">
+                        Number of Videographers
+                    </label>
+                    <input type="number" id="number_of_videographers" v-model="form.number_of_videographers" min="1"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    <p v-if="form.errors.number_of_videographers" class="mt-1 text-sm text-red-600">
+                        {{ form.errors.number_of_videographers }}</p>
+                </div>
+
+                <!-- Delivery Time -->
+                <div class="mb-6">
+                    <label for="delivery_time_days" class="block text-sm font-medium text-gray-700 mb-1">
+                        Delivery Time (Days)
+                    </label>
+                    <input type="number" id="delivery_time_days" v-model="form.delivery_time_days" min="1"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    <p v-if="form.errors.delivery_time_days" class="mt-1 text-sm text-red-600">
+                        {{ form.errors.delivery_time_days }}</p>
                 </div>
 
                 <!-- Specifications -->
@@ -384,8 +404,6 @@ const submit = () => {
                 </div>
             </div>
 
-
-
             <!-- Additional Notes -->
             <div>
                 <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">
@@ -393,7 +411,7 @@ const submit = () => {
                 </label>
                 <textarea id="notes" v-model="form.notes" rows="3"
                     class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Any additional information about your photography services..."></textarea>
+                    placeholder="Any additional information about your videography services..."></textarea>
                 <p v-if="form.errors.notes" class="mt-1 text-sm text-red-600">
                     {{ form.errors.notes }}</p>
             </div>

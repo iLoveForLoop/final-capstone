@@ -22,6 +22,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VendorCalendarController;
 use App\Http\Controllers\VendorApplicationController;
 use App\Http\Controllers\VendorController;
+use App\Http\Controllers\VideographyServiceController;
 use App\Http\Controllers\WelcomeController;
 use App\Mail\EmailOtpMail;
 use App\Mail\TestMail;
@@ -138,6 +139,9 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'role:vendor', 'user
     //Photography
     Route::resource('photography-services', PhotographyServiceController::class);
 
+    // Videography
+    Route::resource('videography-services', VideographyServiceController::class);
+
     //notifications from booking controller
     Route::post('/notifications/{notification}/read', [VendorController::class, 'markNotificationAsRead'])->name('notifications.read'); //check
     Route::post('/notifications/read-all', [VendorController::class, 'markAllNotificationsAsRead'])->name('notifications.readAll');
@@ -207,8 +211,7 @@ Route::middleware(['auth'])->group(function () {
 
 //MAIL TEST
 Route::get('/test-otp', function () {
-    Mail::to('baykingjeferson110@gmail.com')->send(new EmailOtpMail(123412));
-    return "Test email sent";
+    return inertia('Tmp');
 });
 
 

@@ -8,6 +8,8 @@ import ViewPhotographyService from './Photograpy/ViewPhotographyService.vue';
 import ViewCateringService from './Catering/ViewCateringService.vue';
 import { push } from 'notivue';
 import { isPricePackage } from '@/utils/packageIdentifier';
+import ViewVideographyService from './Videography/ViewVideographyService.vue';
+import EditVideographyServiceForm from './Videography/EditVideographyServiceForm.vue';
 
 
 const toast = useToast();
@@ -95,6 +97,8 @@ const openViewModal = () => {
             :service="selectedService" @close="showViewModal = false" />
         <ViewCateringService v-if="showViewModal && service.category.name === 'Catering'" :service="selectedService"
             :catering-service="selectedCateringService" @close="showViewModal = false" />
+        <ViewVideographyService v-if="showViewModal && service.category.name === 'Videography'"
+            :service="selectedService" @close="showViewModal = false" />
 
         <!-- Service Card -->
         <div class="bg-white rounded-xl shadow-sm overflow-hidden ">
@@ -245,6 +249,10 @@ const openViewModal = () => {
 
                         <EditCateringServiceForm v-if="service.category.name === 'Catering'" :service="service"
                             :catering-service="service.catering_service" @close="closeEditModal"
+                            @updated="handleServiceUpdated" />
+
+                        <EditVideographyServiceForm v-if="service.category.name === 'Videography'" :service="service"
+                            :category_id="service.service_category_id" @close="closeEditModal"
                             @updated="handleServiceUpdated" />
 
 

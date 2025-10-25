@@ -11,15 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('email_otps', function (Blueprint $table) {
+        Schema::create('videography_services', function (Blueprint $table) {
             $table->id();
-            $table->string('email')->unique();
-            $table->string('otp_code');
-            $table->timestamp('expires_at');
-            $table->timestamp('last_sent_at')->nullable();
+            $table->foreignId('service_id')->constrained()->onDelete('cascade');
+
+            $table->json('specifications')->nullable();
+            $table->text('notes')->nullable();
+
+            $table->boolean('studio_shoot_available')->default(false);
             $table->timestamps();
         });
-
     }
 
     /**
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('email_otps');
+        Schema::dropIfExists('videography_services');
     }
 };

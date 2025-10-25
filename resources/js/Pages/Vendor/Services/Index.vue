@@ -165,9 +165,7 @@ const showError = () => {
 
                     <GeneralVendorServiceCard :service="service" />
 
-                    <!-- <CateringServiceCard :service="service" v-if="service.category.name === 'Catering'" />
 
-                    <PhotographyServiceCard :service="service" v-if="service.category.name === 'Photography'" /> -->
                 </div>
             </div>
 

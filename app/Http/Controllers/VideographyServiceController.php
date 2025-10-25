@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PhotographyService;
+use App\Models\VideographyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class PhotographyServiceController extends Controller
+class VideographyServiceController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -59,6 +59,8 @@ class PhotographyServiceController extends Controller
             }
         }
 
+
+
         DB::beginTransaction();
 
         try {
@@ -72,7 +74,7 @@ class PhotographyServiceController extends Controller
             ]);
 
             // Create the photography service record
-            $service->photographyService()->create([
+            $service->videographyService()->create([
                 'specifications' => $validated['specifications'] ?? [],
                 'notes' => $validated['notes'] ?? null,
                 'studio_shoot_available' => $validated['studio_shoot_available'] ?? false,
@@ -102,19 +104,19 @@ class PhotographyServiceController extends Controller
             DB::commit();
 
             return redirect()->back()
-                ->with('success', 'Photography service created successfully!');
+                ->with('success', 'Videography service created successfully!');
 
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withInput()
-                ->with('error', 'Failed to create photography service: ' . $e->getMessage());
+                ->with('error', 'Failed to create Videography service: ' . $e->getMessage());
         }
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(PhotographyService $photographyService)
+    public function show(VideographyService $videographyService)
     {
         //
     }
@@ -122,7 +124,7 @@ class PhotographyServiceController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(PhotographyService $photographyService)
+    public function edit(VideographyService $videographyService)
     {
         //
     }
@@ -130,10 +132,10 @@ class PhotographyServiceController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+        public function update(Request $request, $id)
 {
     $vendor = auth()->user()->vendor;
-    $service = $vendor->services()->with(['photographyService', 'media'])->findOrFail($id);
+    $service = $vendor->services()->with(['videographyService', 'media'])->findOrFail($id);
 
     $validated = $request->validate([
         'service_category_id' => 'required|integer|exists:service_categories,id',
@@ -179,7 +181,7 @@ class PhotographyServiceController extends Controller
         ]);
 
         // Step 2: Update the related photography service
-        $service->photographyService->update([
+        $service->videographyService->update([
             'specifications' => $validated['specifications'] ?? [],
             'notes' => $validated['notes'] ?? null,
             'studio_shoot_available' => $validated['studio_shoot_available'] ?? false,
@@ -225,11 +227,11 @@ class PhotographyServiceController extends Controller
 
         DB::commit();
 
-        return back()->with('success', 'Photography service updated successfully');
+        return back()->with('success', 'Videography service updated successfully');
 
     } catch (\Exception $e) {
         DB::rollback();
-        \Log::error('Error updating photography service: ' . $e->getMessage());
+        \Log::error('Error updating videography service: ' . $e->getMessage());
         return back()->withErrors(['error' => 'Failed to update service. Please try again.'])->withInput();
     }
 }
@@ -237,7 +239,7 @@ class PhotographyServiceController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(PhotographyService $photographyService)
+    public function destroy(VideographyService $videographyService)
     {
         //
     }

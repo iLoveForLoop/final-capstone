@@ -296,6 +296,7 @@ onMounted(async () => {
 
                                 <h4 class="text-lg font-semibold mb-3">What's Included:</h4>
                                 <ul class="space-y-2 mb-6">
+                                    {{ console.log('Specs: ', service) }}
                                     <li v-for="feature in service.specifications" :key="feature"
                                         class="flex items-start">
                                         <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0"
