@@ -538,12 +538,9 @@ onUnmounted(() => {
                                                 <h3 class="font-semibold text-gray-900">
                                                     Notifications
                                                 </h3>
-                                                <button v-if="
-                                                    unreadNotifications > 0
-                                                " @click="
-                                                        navbarStore.markAllNotificationsAsRead
-                                                    "
-                                                    class="text-xs font-medium text-purple-600 hover:text-purple-800">
+                                                <button @click="
+                                                    navbarStore.markAllNotificationsAsRead
+                                                " class="text-xs font-medium text-purple-600 hover:text-purple-800">
                                                     Mark all read
                                                 </button>
                                             </div>
@@ -700,7 +697,7 @@ onUnmounted(() => {
                                                             <img v-if="
                                                                 message.avatar
                                                             " :src="message.avatar
-                                                                    " alt="User avatar"
+                                                                " alt="User avatar"
                                                                 class="h-full w-full object-cover" />
                                                             <span v-else
                                                                 class="flex h-full w-full items-center justify-center bg-gradient-to-br from-purple-500 to-purple-700">
@@ -803,8 +800,8 @@ onUnmounted(() => {
                         </Link>
 
                         <Link :href="page.props.auth.user
-                                ? '/client/services'
-                                : '/services'
+                            ? '/client/services'
+                            : '/services'
                             " @click="isMobileMenuOpen = false"
                             class="flex items-center rounded-lg px-4 py-3 font-medium text-gray-600 transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
                             :class="{
@@ -1016,7 +1013,7 @@ onUnmounted(() => {
                                                 {{ message.sender }}
                                             </p>
                                             <span class="whitespace-nowrap text-xs text-gray-400">{{ message.time
-                                                }}</span>
+                                            }}</span>
                                         </div>
                                         <p class="mt-1 line-clamp-1 text-sm text-gray-600">
                                             {{ message.message }}

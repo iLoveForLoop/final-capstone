@@ -19,14 +19,11 @@ class ServiceController extends Controller
 
         // dd('hi');
 
-        // Ensure the logged-in user has a vendor profile
-        if (!$user->vendor) {
-            abort(403, 'Unauthorized: Vendor account required.');
-        }
+
 
         // Base query: vendor's own services
         $query = $user->vendor->services()
-            ->with(['category', 'cateringService', 'photographyService']);
+            ->with(['category', 'cateringService', 'photographyService'])->withCount('bookings');
 
         // 🔹 Search filter
         if ($request->filled('search')) {
@@ -58,6 +55,7 @@ class ServiceController extends Controller
             'category'           => $service->category,
             'specifications'     => $service->specifications,
             'catering_service'   => $service->cateringService,
+            'bookings_count'     => $service->bookings_count,
             'photography_service'=> $service->photographyService,
             'videography_service'=> $service->videographyService,
             'average_rating'     => $service->vendor->averageRating(),
@@ -104,6 +102,8 @@ class ServiceController extends Controller
     public function store(Request $request)
     {
         $vendor = auth()->user()->vendor;
+
+        // dd($request->service_category_id);
 
         $validated = $request->validate([
             // General service fields
@@ -207,9 +207,99 @@ class ServiceController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Service $service)
+    public function update(Request $request, $id)
     {
-        //
+        $vendor = auth()->user()->vendor;
+        $service = $vendor->services()->with(['media'])->findOrFail($id);
+
+        $validated = $request->validate([
+            'service_category_id' => 'required|integer|exists:service_categories,id',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'max_price' => 'nullable|numeric|min:0|gt:price',
+
+            'specifications' => 'nullable|array',
+            'specifications.*' => 'string|max:255',
+
+
+            // Images validation
+            'cover_images' => 'nullable|array',
+            'cover_images.*' => 'image|mimes:jpeg,png,jpg|max:2048',
+            'delete_images' => 'nullable|array',
+            'delete_images.*' => 'integer|exists:media,id',
+        ]);
+
+        // Additional validation for multiple images
+        $currentImageCount = $service->media->count();
+        $deletedCount = is_array($request->delete_images) ? count($request->delete_images) : 0;
+        $newImageCount = $request->hasFile('cover_images') ? count($request->file('cover_images')) : 0;
+        $totalAfterUpdate = $currentImageCount - $deletedCount + $newImageCount;
+
+        if ($totalAfterUpdate > 8) {
+            return back()->withErrors(['cover_images' => 'Total images cannot exceed 8. Please remove some existing images first.'])->withInput();
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Step 1: Update the general service
+            $service->update([
+                'service_category_id' => $validated['service_category_id'],
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+                'price' => $validated['price'],
+                'max_price' => $validated['max_price'] ?? null,
+                'specifications' => $validated['specifications'] ?? [],
+            ]);
+
+            // Step 3: Handle image deletions
+            if ($request->has('delete_images') && is_array($request->delete_images)) {
+                foreach ($request->delete_images as $mediaId) {
+                    $media = $service->media()->find($mediaId);
+                    if ($media) {
+                        $media->delete();
+                    }
+                }
+            }
+
+            // Step 4: Handle new image uploads
+            if ($request->hasFile('cover_images')) {
+                $coverImages = $request->file('cover_images');
+
+                foreach ($coverImages as $index => $image) {
+                    $mediaItem = $service->addMediaFromRequest("cover_images.{$index}")
+                        ->usingFileName(uniqid() . '.' . $image->getClientOriginalExtension())
+                        ->toMediaCollection('images', 'public');
+
+                    // Set custom properties for new images
+                    $mediaItem->setCustomProperty('is_portfolio', true);
+                    $mediaItem->save();
+                }
+            }
+
+            // Step 5: Ensure we have a primary image
+            $allMedia = $service->fresh()->media;
+            $hasPrimary = $allMedia->contains(function ($media) {
+                return $media->getCustomProperty('is_primary', false);
+            });
+
+            if (!$hasPrimary && $allMedia->count() > 0) {
+                $firstMedia = $allMedia->first();
+                $firstMedia->setCustomProperty('is_primary', true);
+                $firstMedia->setCustomProperty('is_cover', true);
+                $firstMedia->save();
+            }
+
+            DB::commit();
+
+            return back()->with('success', 'Photography service updated successfully');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Error updating photography service: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Failed to update service. Please try again.'])->withInput();
+        }
     }
 
     /**
@@ -228,6 +318,7 @@ class ServiceController extends Controller
         $eventDate = $request->query('event_date');
 
         $services = Service::with(['vendor', 'category'])
+            ->where('is_available', true)
             ->whereHas('category', function($query) use ($categoryIdentifier) {
                 // Match by ID if numeric, otherwise by slug/name
                 if (is_numeric($categoryIdentifier)) {
@@ -250,6 +341,7 @@ class ServiceController extends Controller
                     'vendor' => $service->vendor ?? null,
                     'rating' => $service->vendor->averageRating(),
                     'dateAdded' => $service->created_at->format('Y-m-d'),
+                    'specifications' => $service->specifications,
                     'category' => $service->category ? [
                         'id' => $service->category->id,
                         'name' => $service->category->name
@@ -257,7 +349,16 @@ class ServiceController extends Controller
                     'is_available' => $service->is_available,
                     'is_available_on_date' => $isAvailableOnDate, // New field
                     'catering_service' => $service->cateringService ?? null,
-                    'photography_service' => $service->photographyService ?? null
+                    'photography_service' => $service->photographyService ?? null,
+                    'media' => $service->media->map(fn($media) => [
+                        'id' => $media->id,
+                        'name' => $media->name,
+                        'file_name' => $media->file_name,
+                        'mime_type' => $media->mime_type,
+                        'size' => $media->size,
+                        'original_url' => $media->getUrl(),
+                        'custom_properties' => $media->custom_properties,
+                    ]),
                 ];
             });
 

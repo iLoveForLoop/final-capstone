@@ -16,26 +16,39 @@ const agreedToTerms = ref(false)
 const isSubmitting = ref(false)
 const emit = defineEmits(['submit-selection'])
 
-// Calculate service price with pax consideration
-const calculateServicePrice = (service) => {
-    const basePrice = parseFloat(service.price || 0)
+// Memoize service prices to avoid recalculation
+const servicePrices = computed(() => {
+    return props.selectedServices.map(service => {
+        const basePrice = parseFloat(service.price || 0)
 
-    // If it's a price package service and pax is available, multiply by pax
-    if (isPricePackage(service) && eventForm.value?.pax) {
-        return basePrice * parseInt(eventForm.value.pax)
-    }
+        if (isPricePackage(service) && eventForm.value?.pax) {
+            return {
+                id: service.id,
+                price: basePrice * parseInt(eventForm.value.pax),
+                isPricePackage: true
+            }
+        }
 
-    return basePrice
-}
-
-// Calculate total price
-const totalPrice = computed(() => {
-    return props.selectedServices.reduce((sum, service) => {
-        return sum + calculateServicePrice(service)
-    }, 0) || 0
+        return {
+            id: service.id,
+            price: basePrice,
+            isPricePackage: false
+        }
+    })
 })
 
-// Format currency
+// Get memoized price for a service
+const getServicePrice = (serviceId) => {
+    const priceData = servicePrices.value.find(p => p.id === serviceId)
+    return priceData?.price || 0
+}
+
+// Calculate total price from memoized prices
+const totalPrice = computed(() => {
+    return servicePrices.value.reduce((sum, priceData) => sum + priceData.price, 0)
+})
+
+// Format currency (consider memoizing if called frequently with same values)
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-PH', {
         style: 'currency',
@@ -64,6 +77,10 @@ const formatTime = (timeString) => {
         hour12: true
     })
 }
+
+// Memoize formatted date and time
+const formattedEventDate = computed(() => formatDate(eventForm.value?.event_date))
+const formattedEventTime = computed(() => formatTime(eventForm.value?.event_time))
 
 const successModal = ref(null)
 
@@ -123,7 +140,7 @@ const submitBooking = async () => {
                         <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Date</label>
                         <div class="flex items-center gap-1 text-gray-900 font-medium text-sm sm:text-base">
                             <Calendar class="h-4 w-4 text-gray-500 flex-shrink-0" />
-                            {{ formatDate(eventForm.event_date) }}
+                            {{ formattedEventDate }}
                         </div>
                     </div>
 
@@ -131,7 +148,7 @@ const submitBooking = async () => {
                         <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Time</label>
                         <div class="flex items-center gap-1 text-gray-900 font-medium text-sm sm:text-base">
                             <Clock class="h-4 w-4 text-gray-500 flex-shrink-0" />
-                            {{ formatTime(eventForm.event_time) }}
+                            {{ formattedEventTime }}
                         </div>
                     </div>
 
@@ -151,7 +168,7 @@ const submitBooking = async () => {
                     <label
                         class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">Description</label>
                     <p class="text-gray-700 text-sm sm:text-base leading-relaxed break-words">{{ eventForm.description
-                    }}</p>
+                        }}</p>
                 </div>
             </div>
 
@@ -169,14 +186,15 @@ const submitBooking = async () => {
                 </div>
 
                 <div class="space-y-3 sm:space-y-4">
+                    <!-- Use will-change for better scroll performance -->
                     <div v-for="service in selectedServices" :key="service.id"
-                        class="border border-gray-200 rounded-lg p-3 sm:p-4 hover:border-gray-300 transition-colors">
+                        class="border border-gray-200 rounded-lg p-3 sm:p-4 hover:border-gray-300 transition-colors service-card">
                         <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
                             <!-- Service Image -->
                             <div
                                 class="flex-shrink-0 w-full sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 self-center sm:self-start">
                                 <img v-if="service.image_url" :src="service.image_url" :alt="service.name"
-                                    class="w-full h-full object-cover">
+                                    class="w-full h-full object-cover" loading="lazy">
                                 <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
                                     <Briefcase class="h-6 w-6 sm:h-8 sm:w-8" />
                                 </div>
@@ -219,12 +237,12 @@ const submitBooking = async () => {
                                         <div class="sm:text-right mt-2 sm:mt-0">
                                             <p
                                                 class="text-base sm:text-lg lg:text-xl font-semibold text-green-600 whitespace-nowrap">
-                                                {{ formatCurrency(calculateServicePrice(service)) }}
+                                                {{ formatCurrency(getServicePrice(service.id)) }}
                                             </p>
                                             <p v-if="isPricePackage(service)"
                                                 class="text-xs text-gray-500 mt-1 whitespace-nowrap">
-                                                {{ eventForm?.pax ? `total for ` + eventForm.pax + ` guests` : `per
-                                                person` }}
+                                                {{ eventForm?.pax ? `total for ${eventForm.pax} guests` : `per person`
+                                                }}
                                             </p>
                                             <p v-else-if="service.catering_service?.price !== service.catering_service?.package_price"
                                                 class="text-xs text-gray-500 mt-1 whitespace-nowrap">
@@ -312,7 +330,7 @@ const submitBooking = async () => {
                                 </p>
                             </div>
                             <p class="text-gray-900 font-semibold whitespace-nowrap text-xs sm:text-sm">
-                                {{ formatCurrency(calculateServicePrice(service)) }}
+                                {{ formatCurrency(getServicePrice(service.id)) }}
                             </p>
                         </div>
                     </div>
@@ -322,20 +340,16 @@ const submitBooking = async () => {
                         <div class="flex justify-between items-center text-sm sm:text-base">
                             <div class="flex items-center gap-1">
                                 <span class="font-semibold text-gray-900">Estimated Total</span>
-                                <div class="group relative">
+                                <div class="group relative tooltip-wrapper">
                                     <Info class="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 cursor-help" />
-                                    <div
-                                        class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                                    <div class="tooltip">
                                         Final price may vary based on vendor quotes
-                                        <div
-                                            class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800">
-                                        </div>
+                                        <div class="tooltip-arrow"></div>
                                     </div>
                                 </div>
                             </div>
                             <span class="font-bold text-green-600">{{ formatCurrency(totalPrice) }}</span>
                         </div>
-                        <p class="text-xs text-gray-500 text-center mt-2">All prices in Philippine Peso (₱)</p>
                     </div>
 
                     <!-- Quick Event Info -->
@@ -343,12 +357,12 @@ const submitBooking = async () => {
                         <div class="grid grid-cols-2 gap-2 sm:gap-4 text-xs">
                             <div>
                                 <p class="text-gray-500 font-medium">Date</p>
-                                <p class="text-gray-900 text-xs sm:text-sm">{{ formatDate(eventForm.event_date) }}</p>
+                                <p class="text-gray-900 text-xs sm:text-sm">{{ formattedEventDate }}</p>
                             </div>
                             <div>
                                 <p class="text-gray-500 font-medium">Location</p>
                                 <p class="text-gray-900 text-xs sm:text-sm truncate">{{ eventForm.location || 'Not set'
-                                }}</p>
+                                    }}</p>
                             </div>
                             <div v-if="eventForm?.pax">
                                 <p class="text-gray-500 font-medium">Guests</p>
@@ -387,6 +401,49 @@ const submitBooking = async () => {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+/* Optimize scroll performance */
+.service-card {
+    will-change: auto;
+    contain: layout style paint;
+}
+
+/* Optimize tooltip to prevent repaints */
+.tooltip-wrapper {
+    position: relative;
+}
+
+.tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    background-color: #1f2937;
+    color: white;
+    font-size: 0.75rem;
+    border-radius: 0.25rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 10;
+}
+
+.tooltip-wrapper:hover .tooltip {
+    opacity: 1;
+}
+
+.tooltip-arrow {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 4px;
+    border-style: solid;
+    border-color: #1f2937 transparent transparent transparent;
 }
 
 /* Custom breakpoint for extra small screens */

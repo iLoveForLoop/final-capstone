@@ -51,11 +51,11 @@ const emit = defineEmits(['show-profile-modal', 'toggle-edit', 'save-changes'])
             <div class="flex space-x-3">
                 <button @click="emit('toggle-edit')"
                     :class="isEditing ? 'bg-gray-600 hover:bg-gray-700' : 'bg-blue-600 hover:bg-blue-700'"
-                    class="px-4 py-2 text-white rounded-lg font-medium transition-colors">
+                    class="px-5 py-2 text-white rounded-lg font-medium transition-colors min-w-[120px]">
                     {{ isEditing ? 'Cancel' : 'Edit Profile' }}
                 </button>
                 <button v-if="isEditing" @click="emit('save-changes')"
-                    class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors">
+                    class="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors min-w-[120px]">
                     Save Changes
                 </button>
             </div>

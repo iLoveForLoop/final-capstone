@@ -164,7 +164,7 @@ onUnmounted(() => {
                     class="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full max-h-[90vh] overflow-y-auto">
 
                     <!-- Modal header -->
-                    <div class="bg-white px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
+                    <div class=" px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
                         <div class="flex items-center justify-between">
                             <div>
                                 <h3 class="text-2xl font-bold text-gray-900">
@@ -329,7 +329,7 @@ onUnmounted(() => {
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-gray-600">Total Bookings</span>
                                             <span class="font-semibold text-gray-900">{{ service.bookings_count || 0
-                                            }}</span>
+                                                }}</span>
                                         </div>
                                         <div v-if="service.avg_rating" class="flex items-center justify-between">
                                             <span class="text-sm text-gray-600">Average Rating</span>
@@ -337,20 +337,20 @@ onUnmounted(() => {
                                                 <Star class="w-4 h-4 text-yellow-400 fill-current" />
                                                 <span class="font-semibold text-gray-900">{{
                                                     service.avg_rating.toFixed(1)
-                                                }}</span>
+                                                    }}</span>
                                                 <span class="text-sm text-gray-500">({{ service.reviews_count || 0
-                                                }})</span>
+                                                    }})</span>
                                             </div>
                                         </div>
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-gray-600">Created</span>
                                             <span class="font-medium text-gray-900">{{ formatDate(service.created_at)
-                                            }}</span>
+                                                }}</span>
                                         </div>
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-gray-600">Last Updated</span>
                                             <span class="font-medium text-gray-900">{{ formatDate(service.updated_at)
-                                            }}</span>
+                                                }}</span>
                                         </div>
                                     </div>
                                 </div>

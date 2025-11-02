@@ -1,8 +1,9 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import axios from 'axios'
 import CateringSelectionCard from './Vendor/Catering/CateringSelectionCard.vue'
 import PhotographySelectionCard from './Vendor/Photograpy/PhotographySelectionCard.vue'
+import GeneralServiceSelectionCard from './Vendor/General/GeneralServiceSelectionCard.vue'
 
 const props = defineProps({
     selectedCategories: {
@@ -80,6 +81,8 @@ const fetchServices = async () => {
             params: { event_date: props.eventDate }
         })
         services.value = response.data.success ? response.data.data : []
+        console.log('Fetched Services: ', services.value);
+
         errorMessage.value = response.data.success ? null : (response.data.message || 'Failed to load services')
     } catch (error) {
         errorMessage.value = error.response?.data?.message || 'Network error occurred'
@@ -141,6 +144,11 @@ const nextStep = () => {
 const isServiceAvailableOnDate = (service) => {
     return service.is_available_on_date ?? service.is_available
 }
+
+onMounted(() => {
+    console.log('Vendor Selection Mounted');
+
+})
 </script>
 
 <template>
@@ -273,6 +281,7 @@ const isServiceAvailableOnDate = (service) => {
 
                     <div class="p-3 sm:p-4">
                         <!-- Specialized Service Cards -->
+
                         <div v-if="service.catering_service || service.photography_service">
                             <div v-if="service.catering_service">
                                 <CateringSelectionCard :service="service" :isSelected="isServiceSelected(service)"
@@ -283,6 +292,11 @@ const isServiceAvailableOnDate = (service) => {
                                 <PhotographySelectionCard :service="service" :isSelected="isServiceSelected(service)"
                                     @select="selectService" :isDateAvailable="isServiceAvailableOnDate(service)" />
                             </div>
+                        </div>
+                        <div v-else>
+
+                            <GeneralServiceSelectionCard :service="service" :isSelected="isServiceSelected(service)"
+                                :isDateAvailable="isServiceAvailableOnDate(service)" @select="selectService" />
                         </div>
                     </div>
                 </div>

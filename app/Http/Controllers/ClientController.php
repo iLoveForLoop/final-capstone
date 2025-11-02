@@ -21,7 +21,7 @@ class ClientController extends Controller
         $query = Service::with(['category', 'vendor', 'cateringService'])->where('is_available', true);
         $categories = ServiceCategory::all();
 
-        $services = $query->paginate(8)->withQueryString()->through(fn($service) => [
+        $services = $query->paginate(6)->withQueryString()->through(fn($service) => [
 
             'id' => $service->id,
             'name' => $service->name,
@@ -93,7 +93,7 @@ class ClientController extends Controller
     {
         // dd('hi');
         $categories = ServiceCategory::all();
-        $query = Service::with(['category', 'vendor.reviews.user.client', 'cateringService', 'photographyService', 'vendor.user']);
+        $query = Service::with(['category', 'vendor.reviews.user.client', 'cateringService', 'photographyService', 'vendor.user'])->where('is_available', true);
 
         // 🔹 Enhanced search filter - includes service name, description, and vendor business name
         if ($request->filled('search')) {
@@ -374,6 +374,8 @@ class ClientController extends Controller
             $q->with(['category', 'vendor']);
         }])->latest('created_at');
 
+        $categories = ServiceCategory::all();
+
         $events = $query->paginate(10)->withQueryString()->through(fn ($event) => [
             'id' => 'EVT' . str_pad($event->id, 3, '0', STR_PAD_LEFT),
             'title' => $event->name,
@@ -390,7 +392,7 @@ class ClientController extends Controller
 
         ]);
 
-        return inertia('Client/Events/Index', compact('events'));
+        return inertia('Client/Events/Index', compact('events', 'categories'));
     }
 
     public function showVendor(Vendor $vendor) {
@@ -475,10 +477,15 @@ class ClientController extends Controller
     }
 
 
+
     public function getVendorServices(Vendor $vendor)
     {
-        // dd('hi');
-        $vendor->load(['services.category', 'services.cateringService', 'services.vendor']); // eager load
+        $vendor->load([
+            'services' => function ($query) {
+                $query->where('is_available', true)
+                    ->with(['category', 'cateringService', 'vendor']);
+            },
+        ]);
 
         $services = $vendor->services->map(function ($service) {
             return [

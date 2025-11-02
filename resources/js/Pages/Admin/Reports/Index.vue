@@ -2,6 +2,8 @@
 import TestLayout from '@/Layouts/TestLayout.vue';
 import { ref, watch } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
+import Pagination from '@/Components/Pagination.vue';
+import { push } from 'notivue';
 
 const props = defineProps({
     reports: Object,
@@ -46,6 +48,9 @@ const updateStatus = (id, status) => {
         preserveScroll: true,
         onSuccess: () => {
             showModal.value = false;
+            console.log('STATUS: ', status);
+
+            push.success(`Status updated to ${status}`)
         }
     });
 };
@@ -272,32 +277,8 @@ const getDisplayName = (user) => {
                 </div>
 
                 <!-- Pagination -->
-                <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-                    <div class="flex items-center justify-between">
-                        <div class="flex-1 flex justify-between items-center">
-                            <div>
-                                <p class="text-sm text-gray-700">
-                                    Showing
-                                    <span class="font-medium">{{ reports.from }}</span>
-                                    to
-                                    <span class="font-medium">{{ reports.to }}</span>
-                                    of
-                                    <span class="font-medium">{{ reports.total }}</span>
-                                    results
-                                </p>
-                            </div>
-                            <div class="flex gap-1">
-                                <template v-for="(link, index) in reports.links" :key="index">
-                                    <button v-if="link.url" @click="router.get(link.url)"
-                                        class="px-3 py-1 text-sm border rounded-md"
-                                        :class="link.active ? 'bg-indigo-600 text-white border-indigo-600' : 'text-gray-700 border-gray-300 hover:bg-gray-50'"
-                                        v-html="link.label"></button>
-                                    <span v-else class="px-3 py-1 text-sm text-gray-500" v-html="link.label"></span>
-                                </template>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <Pagination :data="reports" />
+
             </div>
         </div>
 

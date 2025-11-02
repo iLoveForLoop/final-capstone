@@ -26,6 +26,11 @@ class ProfileSettingController extends Controller
         //     'id' => $media->id
         // ]) ?? [];
 
+        $permitFiles = $vendor->getMedia('permitFiles')->map(fn ($media) => [
+            'url' => $media->getUrl(),
+            'id' => $media->id
+        ]) ?? [];
+
         $showcaseVideos = $vendor->getMedia('showcaseVideos')->map(fn ($media) => [
             'id' => $media->id,
             'title' => $media->getCustomProperty('title'),
@@ -33,7 +38,7 @@ class ProfileSettingController extends Controller
         ]);
 
 
-        return inertia('Vendor/Profile/Index', compact('vendor', 'portfolioImages', 'showcaseVideos'));
+        return inertia('Vendor/Profile/Index', compact('vendor', 'portfolioImages', 'showcaseVideos', 'permitFiles'));
     }
 
     /**
@@ -90,6 +95,15 @@ class ProfileSettingController extends Controller
             'socialMedia.facebook'  => 'nullable|string|max:255',
             'socialMedia.twitter'   => 'nullable|string|max:255',
 
+            //long lat
+            'latitude'           => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude'          => ['nullable', 'numeric', 'between:-180,180'],
+
+            // Add permit files validation
+            'permitFiles'           => 'nullable|array',
+            'permitFiles.*'         => 'file|mimes:jpg,jpeg,png,pdf,doc,docx|max:10240',
+            'removedPermitIds'      => 'nullable|array',
+
 
             // Specialties stored as JSON
             'specialties'    => 'nullable|array',
@@ -98,7 +112,7 @@ class ProfileSettingController extends Controller
             // Files
             'profileImageFile'      => 'nullable|image|max:2048',
             'portfolioImages'       => 'nullable|array',
-            'portfolioImages.*'     => 'file|mimes:jpg,jpeg,png|max:2048',
+            'portfolioImages.*'     => 'file|mimes:jpg,jpeg,png|max:9048',
             'removedImagedIds'      => 'nullable|array',
 
             'showcaseVideos' => 'nullable|array',
@@ -121,6 +135,10 @@ class ProfileSettingController extends Controller
             'instagram'      => $validated['socialMedia']['instagram'] ?? null,
             'facebook'       => $validated['socialMedia']['facebook'] ?? null,
             'twitter'        => $validated['socialMedia']['twitter'] ?? null,
+
+            //long lat
+            'latitude'           => $validated['latitude'] ?? null,
+            'longitude'          => $validated['longitude'] ?? null,
 
             // Store specialties as JSON
             'specialties' => $validated['specialties'] ?? null
@@ -153,7 +171,24 @@ class ProfileSettingController extends Controller
         }
 
 
-        // 4. Handle showcase videos with Spatie Media Library
+        // 4. Handle permit files - ADD THIS SECTION
+        if ($request->has('removedPermitIds')) {
+            foreach ($request->removedPermitIds as $id) {
+                $media = $vendor->media()->where('id', $id)->first();
+                if ($media) {
+                    $media->delete();
+                }
+            }
+        }
+
+        if ($request->hasFile('permitFiles')) {
+            foreach ($request->file('permitFiles') as $file) {
+                $vendor->addMedia($file)->toMediaCollection('permitFiles');
+            }
+        }
+
+
+        // 5. Handle showcase videos with Spatie Media Library
         if ($request->has('showcaseVideos')) {
 
             $vendor->clearMediaCollection('showcaseVideos'); // optional

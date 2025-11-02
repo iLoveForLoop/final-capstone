@@ -1,8 +1,13 @@
 <script setup>
 import TestLayout from '@/Layouts/TestLayout.vue';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import Pagination from '@/Components/Pagination.vue';
+import debounce from 'lodash/debounce';
+import ViewReviewModal from '@/Components/Admin/Reviews/ViewReviewModal.vue';
+import { useConfirmDialog } from '@/Composables/useConfirmDialog';
+import { push } from 'notivue';
+
 
 const props = defineProps({
     reviews: {
@@ -16,6 +21,8 @@ const props = defineProps({
         })
     }
 });
+
+const { confirm } = useConfirmDialog()
 
 const search = ref(props.filters.search || '');
 
@@ -37,6 +44,62 @@ const truncate = (text, length = 80) => {
     if (!text) return '';
     return text.length > length ? text.substring(0, length) + '...' : text;
 };
+
+const debouncedSearch = debounce(() => {
+    applyFilters();
+}, 400);
+
+watch(search, () => debouncedSearch())
+
+
+const showViewModal = ref(false);
+const selectedReview = ref(null);
+
+const openViewModal = (review) => {
+
+
+    selectedReview.value = review;
+    showViewModal.value = true;
+    console.log('HRE', selectedReview.value);
+};
+
+const closeViewModal = () => {
+    showViewModal.value = false;
+    selectedReview.value = null;
+};
+
+const deleteReview = async (id) => {
+    const confirmed = await confirm({
+        title: 'Delete Review',
+        message: 'Are you sure you want to delete this review? This action cannot be undone.',
+        type: 'danger',
+        confirmText: 'Yes, Delete',
+        cancelText: 'Cancel'
+    })
+
+    if (confirmed) {
+        router.delete(route('admin.reviews.destroy', id), {
+            onSuccess: () => {
+
+                // toast.success('Review deleted successfully!')
+                push.success('Review deleted successfully!')
+            },
+            onError: (errors) => {
+                // ⚠️ Runs if there was a server or validation error
+                // toast.error('Failed to delete review.')
+                push.error('Failed to delete review.')
+
+            },
+            onFinish: () => {
+                closeViewModal()
+
+            },
+            preserveScroll: true, // Optional — prevents scrolling to top
+        })
+    }
+}
+
+
 </script>
 
 <template>
@@ -56,8 +119,7 @@ const truncate = (text, length = 80) => {
                     <div class="flex-1">
                         <label class="block text-xs font-medium text-gray-500 mb-1">Search</label>
                         <div class="relative">
-                            <input v-model="search" @input="applyFilters" type="text"
-                                placeholder="Search by vendor or user..."
+                            <input v-model="search" type="text" placeholder="Search by vendor or user..."
                                 class="w-full border border-gray-200 rounded-lg px-3 py-2 pl-9 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500" />
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
@@ -133,7 +195,8 @@ const truncate = (text, length = 80) => {
                                 <!-- Actions -->
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex justify-end gap-3">
-                                        <button class="text-indigo-600 hover:text-indigo-900" title="View">
+                                        <button @click="openViewModal(review)"
+                                            class="text-indigo-600 hover:text-indigo-900" title="View">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                                 stroke-linecap="round" stroke-linejoin="round"
@@ -142,7 +205,8 @@ const truncate = (text, length = 80) => {
                                                 <circle cx="12" cy="12" r="3" />
                                             </svg>
                                         </button>
-                                        <button class="text-red-600 hover:text-red-900" title="Delete">
+                                        <button @click="deleteReview(review.id)" class="text-red-600 hover:text-red-900"
+                                            title="Delete">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                                 stroke-linecap="round" stroke-linejoin="round"
@@ -166,6 +230,11 @@ const truncate = (text, length = 80) => {
                         </tbody>
                     </table>
                 </div>
+
+                <!-- View Modal -->
+                <ViewReviewModal :show="showViewModal" :review="selectedReview" @close="closeViewModal"
+                    @delete-review="deleteReview" />
+
 
                 <!-- Pagination -->
                 <Pagination :data="reviews" />

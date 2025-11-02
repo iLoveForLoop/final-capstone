@@ -26,7 +26,7 @@ class ReportController extends Controller
 
         if ($validator->fails()) {
 
-            return redirect()->back()->with('error', $validator->errors());
+            return redirect()->back()->with('error', $validator->errors()->first());
 
         }
 

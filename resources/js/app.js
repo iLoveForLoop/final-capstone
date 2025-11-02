@@ -52,9 +52,9 @@ const notivue = createNotivue({
         global: {
             duration: 3000,
         },
-        // success: {
-        //     title: 'Success',
-        // },
+        success: {
+            title: 'Success',
+        },
         error: {
             title: 'Error',
         },

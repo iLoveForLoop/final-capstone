@@ -105,7 +105,7 @@ const nextImage = () => {
                                 class="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-full transition-colors duration-200">
                                 <div class="w-2 h-2 bg-indigo-600 rounded-full"></div>
                                 <span class="text-sm font-medium text-gray-700">{{ specialty
-                                    }}</span>
+                                }}</span>
                             </div>
                         </div>
                     </div>
@@ -163,7 +163,7 @@ const nextImage = () => {
         <!-- Enhanced Sidebar -->
         <div class="space-y-6">
             <!-- Pricing Packages -->
-            <Card>
+            <!-- <Card>
                 <CardHeader>
                     <CardTitle class="text-xl sm:text-2xl font-bold text-gray-900">Service
                         Packages
@@ -194,7 +194,7 @@ const nextImage = () => {
                         </CardContent>
                     </Card>
                 </CardContent>
-            </Card>
+            </Card> -->
             <Card>
                 <CardHeader>
                     <CardTitle>Contact Information</CardTitle>

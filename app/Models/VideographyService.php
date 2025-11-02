@@ -9,7 +9,8 @@ class VideographyService extends Model
 
     protected $guarded = [];
     protected $casts = [
-        'specifications' => 'array'
+        'specifications' => 'array',
+        'studio_shoot_available' => 'boolean'
     ];
 
     public function service(){

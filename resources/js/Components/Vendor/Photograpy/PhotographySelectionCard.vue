@@ -51,7 +51,10 @@ const handleServiceViewClose = () => {
 </script>
 
 <template>
-    <ServiceViewModal ref="serviceViewModal" :service="service" @close="handleServiceViewClose" />
+    <Teleport to="body">
+        <ServiceViewModal ref="serviceViewModal" :service="service" @close="handleServiceViewClose" />
+    </Teleport>
+
 
     <div
         class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">

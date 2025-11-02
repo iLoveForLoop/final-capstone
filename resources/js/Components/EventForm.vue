@@ -1,6 +1,6 @@
 <script setup>
 import VueDatePicker from '@vuepic/vue-datepicker';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 const props = defineProps({
     eventForm: Object,
@@ -56,15 +56,18 @@ const updateEventTime = (time) => {
 
 
 
-// onMounted(async () => {
-//     try {
-//         const res = await axios.get(`/api/vendor/${props.vendorId}/booked-dates`);
-//         booked.value = res.data.bookedDates || []
-//     } catch (error) {
-//         console.error('Failed to fetch booked dates:', error)
-//     }
+onMounted(async () => {
+    // try {
+    //     const res = await axios.get(`/api/vendor/${props.vendorId}/booked-dates`);
+    //     booked.value = res.data.bookedDates || []
+    // } catch (error) {
+    //     console.error('Failed to fetch booked dates:', error)
+    // }
 
-// });
+    console.log('Event Form Mounted');
+
+
+});
 
 function doesCategoryExist(categoryName) {
     return props.selectedCategories.some(category => category.name == categoryName);

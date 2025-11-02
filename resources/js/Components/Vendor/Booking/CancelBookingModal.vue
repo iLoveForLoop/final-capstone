@@ -10,7 +10,7 @@ defineProps({
 
 const cancelReason = defineModel('cancelReason')
 
-const emit = defineEmits(['close-modals', 'cancel-booking'])
+const emit = defineEmits(['close-modals', 'cancel-booking', 'cancel'])
 </script>
 
 <template>
@@ -102,9 +102,9 @@ const emit = defineEmits(['close-modals', 'cancel-booking'])
 
                         <!-- Actions -->
                         <div class="flex space-x-3">
-                            <button @click="emit('close-modals')"
+                            <button @click="emit('cancel')"
                                 class="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
-                                Go Back
+                                Cancel
                             </button>
                             <button @click="emit('cancel-booking')"
                                 :disabled="isLoading(selectedBooking?.raw_id, 'cancelling') || !cancelReason"

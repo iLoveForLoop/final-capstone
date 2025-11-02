@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import VendorViewModal from '@/Components/Admin/VendorViewModal.vue'
 import { router } from '@inertiajs/vue3'
 import { push } from 'notivue'
+import { useConfirmDialog } from '@/Composables/useConfirmDialog'
 
 const props = defineProps({
     application: Object
@@ -10,11 +11,23 @@ const props = defineProps({
 
 const emit = defineEmits(['approved', 'rejected'])
 
+const { confirm } = useConfirmDialog()
+
 // Modal state
 const showViewModal = ref(false)
 
-const approveVendor = (vendorId) => {
-    if (confirm('Are you sure you want to approve this vendor?')) {
+const approveVendor = async (vendorId) => {
+
+    const confirmed = await confirm({
+        title: 'Approve Vendor',
+        message: 'Are you sure do you want to approve this vendor',
+        type: 'success',
+        confirmText: 'Yes',
+        cancelText: 'Cancel'
+    })
+
+    if (confirmed) {
+
         router.put(route('admin.vendor-application.approve', vendorId), {}, {
             onSuccess: () => {
                 push.success('Vendor approved successfully');
@@ -25,10 +38,34 @@ const approveVendor = (vendorId) => {
             }
         });
     }
+
+    // if (confirm('Are you sure you want to approve this vendor?')) {
+    //     router.put(route('admin.vendor-application.approve', vendorId), {}, {
+    //         onSuccess: () => {
+    //             push.success('Vendor approved successfully');
+    //             emit('approved', vendorId)
+    //         },
+    //         onError: () => {
+    //             push.error('Failed to approve vendor')
+    //         }
+    //     });
+    // }
 };
 
-const rejectVendor = (vendorId) => {
-    if (confirm('Are you sure you want to reject this vendor?')) {
+const rejectVendor = async (vendorId) => {
+
+    const confirmed = await confirm({
+        title: 'Reject Vendor',
+        message: 'Are you sure do you want to reject this vendor? This action cannot be undone.',
+        type: 'danger',
+        confirmText: 'Yes, Reject',
+        cancelText: 'Cancel'
+    })
+
+
+    if (confirmed) {
+        // console.log('Here');
+
         router.delete(route('admin.vendor-application.reject', vendorId), {
             onSuccess: () => {
                 push.success('Vendor rejected successfully')

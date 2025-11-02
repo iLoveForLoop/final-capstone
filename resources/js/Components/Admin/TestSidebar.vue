@@ -136,7 +136,7 @@ const ui = ref(useUIStore())
                         </span>
                     </NewNavLink> -->
 
-                    <NewNavLink :href="route('admin.settings.index')" :active="route().current('admin.settings.index')"
+                    <!-- <NewNavLink :href="route('admin.settings.index')" :active="route().current('admin.settings.index')"
                         :isCollapsed="ui.sidebarCollapsed">
                         <template #icon>
                             <Settings class="h-5 w-5" />
@@ -144,14 +144,14 @@ const ui = ref(useUIStore())
                         <span class="text-gray-300" v-if="!ui.sidebarCollapsed">
                             Settings
                         </span>
-                    </NewNavLink>
+                    </NewNavLink> -->
                 </nav>
 
                 <!-- Bottom spacer -->
                 <div class="flex-grow"></div>
 
                 <!-- Optional: Bottom section for user/profile -->
-                <div class="px-4 py-3 border-t border-gray-800">
+                <!-- <div class="px-4 py-3 border-t border-gray-800">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <img class="h-8 w-8 rounded-full" src="https://via.placeholder.com/32" alt="User avatar">
@@ -161,7 +161,7 @@ const ui = ref(useUIStore())
                             <p class="text-xs font-medium text-gray-400">Administrator</p>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>

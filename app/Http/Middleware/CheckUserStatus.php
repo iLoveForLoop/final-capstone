@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckUserStatus
@@ -53,10 +54,14 @@ class CheckUserStatus
                     // User is still suspended
                     Auth::logout();
 
-                    return redirect()->route('login')
-                        ->withErrors([
-                            'email' => $this->getSuspendedMessage($user)
-                        ]);
+                    throw ValidationException::withMessages([
+                        'email' => $this->getSuspendedMessage($user),
+                    ]);
+
+                    // return redirect()->route('login')
+                    //     ->withErrors([
+                    //         'email' => $this->getSuspendedMessage($user)
+                    //     ]);
                 }
             }
 
@@ -64,10 +69,9 @@ class CheckUserStatus
             if ($user->status === 'banned') {
                 Auth::logout();
 
-                return redirect()->route('login')
-                    ->withErrors([
-                        'email' => 'Your account has been permanently banned. Please contact support for more information.'
-                    ]);
+                throw ValidationException::withMessages([
+                    'email' => 'Your account has been permanently banned. Please contact support for more information.',
+                ]);
             }
         }
 

@@ -94,6 +94,8 @@ Route::prefix('admin')->as('admin.')->middleware(['auth', 'role:admin'])->group(
     Route::get('/services', [AdminController::class, 'servicesPage'])->name('services.index');
     Route::post('/services', [AdminController::class, 'addService'])->name('services.store');
     Route::resource('service', ServiceController::class);
+    Route::put('/services/general/{id}', [AdminController::class, 'updateGeneralService'])->name('services.update');
+    Route::put('/services/catering/{id}', [AdminController::class, 'updateCateringService'])->name('catering-services.update');
 
 
     //reports
@@ -103,7 +105,11 @@ Route::prefix('admin')->as('admin.')->middleware(['auth', 'role:admin'])->group(
 
     //wapa nahuman page
     Route::get('/bookings', [AdminController::class, 'bookingsPage'])->name('bookings.index');
+    Route::get('/bookings/{id}', [AdminController::class, 'bookingShow'])->name('bookings.show');
+
+    //reviews
     Route::get('/reviews', [AdminController::class, 'reviewsPage'])->name('reviews.index');
+    Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
 
     Route::get('/settings', [AdminController::class, 'settingsPage'])->name('settings.index');
 
@@ -194,6 +200,7 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'role:vendor', 'user
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
 
 
+    Route::get('/unread-messages-count', [MessageController::class, 'getUnreadMessagesCount']);
 
 });
 

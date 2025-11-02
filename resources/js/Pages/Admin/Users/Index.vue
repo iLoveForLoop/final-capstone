@@ -11,18 +11,15 @@ import {
     Edit3,
     MoreVertical,
     X,
-    UserCheck,
-    AlertCircle,
-    Ban,
-    Trash2,
     Plus,
     Search,
     Shield,
-    Clock,
     AlertTriangle
 } from 'lucide-vue-next';
 import { push } from 'notivue'
 import StatusAction from '@/Components/Admin/StatusAction.vue';
+
+import { useUserActions } from '@/Composables/useUserActions';
 
 const toast = useToast();
 
@@ -66,26 +63,28 @@ const selectedRole = ref(props.filters.role || 'all');
 const searchQuery = ref(props.filters.search || '');
 const selectedStatus = ref(props.filters.status || 'all');
 
-// Modal state
-const showActionModal = ref(false);
-const currentUser = ref(null);
-const currentAction = ref('selection');
 
-// Form states
-const suspendForm = ref({
-    reason: '',
-    suspended_until: null,
-    suspension_type: 'permanent'
-});
+const {
+    showActionModal,
+    currentUser,
+    currentAction,
+    suspendForm,
+    banForm,
+    deleteForm,
+    minDateTime,
+    availableActions,
+    openActionModal,
+    closeActionModal,
+    performSuspend,
+    performBan,
+    performActivate,
+    performDelete,
+    isSuspended
+} = useUserActions();
 
-const banForm = ref({
-    reason: ''
-});
-
-const deleteForm = ref({
-    password: ''
-});
-
+/* -------------------------
+   Filtering helpers (unchanged)
+   ------------------------- */
 const applyFilters = () => {
     router.get(route('admin.users.index'), {
         role: selectedRole.value,
@@ -104,140 +103,9 @@ const resetFilters = () => {
     applyFilters();
 };
 
-const openActionModal = (user) => {
-    currentUser.value = user;
-    currentAction.value = 'selection';
-    showActionModal.value = true;
-
-    // Reset forms
-    suspendForm.value = {
-        reason: '',
-        suspended_until: null,
-        suspension_type: 'permanent'
-    };
-    banForm.value = { reason: '' };
-    deleteForm.value = { password: '' };
-};
-
-const closeActionModal = () => {
-    showActionModal.value = false;
-    currentUser.value = null;
-    currentAction.value = 'selection';
-};
-
-const performSuspend = async () => {
-    if (!suspendForm.value.reason.trim()) {
-        toast.error('Please provide a suspension reason');
-        return;
-    }
-
-    if (suspendForm.value.suspension_type === 'temporary' && !suspendForm.value.suspended_until) {
-        toast.error('Please select a suspension end date');
-        return;
-    }
-
-
-    // console.log('Suspend: ', suspendForm);
-
-
-    try {
-        await router.patch(route('admin.users.status.update', currentUser.value.id), {
-            action: 'suspend',
-            reason: suspendForm.value.reason,
-            suspended_until: suspendForm.value.suspension_type === 'temporary' ? suspendForm.value.suspended_until : null
-        }, {
-            onSuccess: () => {
-                // toast.success('User suspended successfully');
-                push.success('User suspended successfully')
-                closeActionModal();
-            },
-            onError: () => {
-                toast.error('Failed to suspend user');
-            }
-        });
-    } catch (error) {
-        toast.error('Failed to suspend user');
-    }
-};
-
-const performBan = async () => {
-    if (!banForm.value.reason.trim()) {
-        toast.error('Please provide a ban reason');
-        return;
-    }
-
-    try {
-        await router.patch(route('admin.users.status.update', currentUser.value.id), {
-            action: 'ban',
-            reason: banForm.value.reason
-        }, {
-            onSuccess: () => {
-                push.success('User banned successfully')
-                closeActionModal();
-            },
-            onError: () => {
-                toast.error('Failed to ban user');
-            }
-        });
-    } catch (error) {
-        toast.error('Failed to ban user');
-    }
-};
-
-const performActivate = async () => {
-    try {
-        await router.patch(route('admin.users.status.update', currentUser.value.id), {
-            action: 'activate',
-            reason: ''
-        }, {
-            onSuccess: () => {
-                // toast.success('User activated successfully');
-                push.success('User activated successfully')
-                closeActionModal();
-            },
-            onError: () => {
-                toast.error('Failed to activate user');
-            }
-        });
-    } catch (error) {
-        toast.error('Failed to activate user');
-    }
-};
-
-const performDelete = async () => {
-
-    // push.success('User deleted successfully')
-
-
-
-    if (!deleteForm.value.password.trim()) {
-        toast.error('Please enter your password to confirm deletion');
-        return;
-    }
-
-    try {
-        await router.delete(route('admin.users.destroy', currentUser.value.id), {
-            data: { password: deleteForm.value.password },
-            onSuccess: () => {
-                // toast.success('User deleted successfully');
-                console.log('Test');
-                push.success('User deleted successfully')
-
-                closeActionModal();
-            },
-            onError: (errors) => {
-                if (errors.password) {
-                    toast.error(errors.password);
-                } else {
-                    toast.error('Failed to delete user');
-                }
-            }
-        });
-    } catch (error) {
-        toast.error('Failed to delete user');
-    }
-};
-
+/* -------------------------
+   Edit / View helpers (unchanged)
+   ------------------------- */
 const editUser = (user) => {
     userEditModal.value.show(user);
 }
@@ -246,70 +114,21 @@ const viewUser = (userId) => {
     router.get(route('admin.users.show', userId))
 }
 
+/* -------------------------
+   Misc helpers (unchanged)
+   ------------------------- */
 const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
-const isSuspended = (user) => {
-    if (user.status !== 'suspended') return false;
-    if (!user.suspended_until) return true;
-    return new Date(user.suspended_until) > new Date();
-};
-
-const minDateTime = computed(() => {
-    return new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16);
-});
-
-const availableActions = computed(() => {
-    const actions = [];
-
-    if (currentUser.value?.status !== 'active' || (currentUser.value?.status === 'suspended' && isSuspended(currentUser.value))) {
-        actions.push({
-            key: 'activate',
-            label: 'Activate User',
-            description: 'Restore full access and permissions',
-            icon: UserCheck,
-            color: 'green',
-            action: performActivate
-        });
-    }
-
-    if (currentUser.value?.status !== 'suspended' || !isSuspended(currentUser.value)) {
-        actions.push({
-            key: 'suspend',
-            label: 'Suspend User',
-            description: 'Temporarily restrict access',
-            icon: Clock,
-            color: 'yellow'
-        });
-    }
-
-    if (currentUser.value?.status !== 'banned') {
-        actions.push({
-            key: 'ban',
-            label: 'Ban User',
-            description: 'Permanently restrict access',
-            icon: Ban,
-            color: 'red'
-        });
-    }
-
-    actions.push({
-        key: 'delete',
-        label: 'Delete User',
-        description: 'Permanently remove from system',
-        icon: Trash2,
-        color: 'gray'
-    });
-
-    return actions;
-});
-
-const getActionIcon = (action) => {
-    return availableActions.value.find(a => a.key === action)?.icon;
-};
+/*
+  NOTE: minDateTime and isSuspended are provided by the composable above.
+  If anywhere else in this file you referenced the old local minDateTime or
+  isSuspended, they will still work because the composable exports them.
+*/
 </script>
+
 
 <template>
     <TestLayout>

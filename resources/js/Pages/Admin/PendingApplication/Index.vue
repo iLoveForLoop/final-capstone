@@ -4,6 +4,7 @@ import TestLayout from '@/Layouts/TestLayout.vue';
 import { router } from '@inertiajs/vue3';
 import { useToast } from 'vue-toastification';
 
+
 const toast = useToast();
 
 defineProps({

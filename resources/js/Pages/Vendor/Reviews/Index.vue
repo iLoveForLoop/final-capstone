@@ -3,80 +3,10 @@ import VendorLayout from '@/Layouts/VendorLayout.vue';
 import { ref, computed } from 'vue';
 import { Star, MessageCircle, Calendar, User, Filter, Search, TrendingUp, Award, Clock, Reply, ChevronDown, ExternalLink, Download, MoreVertical } from 'lucide-vue-next';
 import { router } from '@inertiajs/vue3';
+import CustomerReportDialog from '@/Components/Vendor/Report/CustomerReportDialog.vue';
 const props = defineProps({
     reviews: {}
 })
-
-// Sample data - replace with your actual API calls
-// const reviews = ref([
-//     {
-//         id: 1,
-//         customer: {
-//             name: 'Sarah Johnson',
-//             avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face',
-//             verified: true
-//         },
-//         service: 'Wedding Photography',
-//         booking: {
-//             id: 'BK-2024-001',
-//             date: '2024-08-15',
-//             event_date: '2024-08-20'
-//         },
-//         rating: 5,
-//         title: 'Absolutely Amazing Experience!',
-//         comment: 'The photographer was incredibly professional and captured every special moment perfectly. The quality of photos exceeded our expectations and the team was so pleasant to work with.',
-//         date: '2024-08-22',
-//         status: 'published',
-//         helpful_votes: 12,
-//         response: null,
-//         photos: ['photo1.jpg', 'photo2.jpg']
-//     },
-//     {
-//         id: 2,
-//         customer: {
-//             name: 'Michael Chen',
-//             avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face',
-//             verified: true
-//         },
-//         service: 'Event Catering',
-//         booking: {
-//             id: 'BK-2024-002',
-//             date: '2024-07-10',
-//             event_date: '2024-07-18'
-//         },
-//         rating: 4,
-//         title: 'Great food, minor timing issues',
-//         comment: 'The food quality was excellent and guests loved the variety. However, there was a slight delay in service during the main course. Overall very satisfied.',
-//         date: '2024-07-20',
-//         status: 'published',
-//         helpful_votes: 8,
-//         response: {
-//             message: 'Thank you for your feedback! We apologize for the timing issue and have improved our coordination process.',
-//             date: '2024-07-21'
-//         }
-//     },
-//     {
-//         id: 3,
-//         customer: {
-//             name: 'Emily Rodriguez',
-//             avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face',
-//             verified: false
-//         },
-//         service: 'DJ Services',
-//         booking: {
-//             id: 'BK-2024-003',
-//             date: '2024-09-01',
-//             event_date: '2024-09-05'
-//         },
-//         rating: 2,
-//         title: 'Not what we expected',
-//         comment: 'The DJ seemed unprepared and didn\'t follow our playlist requests. Music was too loud despite multiple requests to lower it.',
-//         date: '2024-09-06',
-//         status: 'pending_response',
-//         helpful_votes: 3,
-//         response: null
-//     }
-// ]);
 
 const filterStatus = ref('all');
 const filterRating = ref('all');
@@ -85,6 +15,8 @@ const selectedReview = ref(null);
 const showResponseModal = ref(false);
 const responseText = ref('');
 const showFilters = ref(false);
+const showReportCustomer = ref(false)
+const customer = ref(null)
 
 // Computed properties for analytics
 const totalReviews = computed(() => props.reviews.length);
@@ -167,7 +99,6 @@ const getRatingColor = (rating) => {
 
 const getStatusBadge = (review) => {
 
-    console.log('Response', review.response)
 
     if (!review.response.message && review.rating <= 3) {
         return 'bg-red-100 text-red-800';
@@ -183,6 +114,11 @@ const getStatusText = (review) => {
     if (review.response.message) return 'Responded';
     return 'Published';
 };
+
+const reportCustomer = (user) => {
+    customer.value = user
+    showReportCustomer.value = true
+}
 </script>
 
 <template>
@@ -195,17 +131,17 @@ const getStatusText = (review) => {
                         <h1 class="text-2xl md:text-2xl font-bold text-gray-900">Customer Reviews</h1>
                         <p class="text-gray-500 mt-2">Monitor and respond to customer feedback</p>
                     </div>
-                    <div class="mt-4 lg:mt-0">
+                    <!-- <div class="mt-4 lg:mt-0">
                         <button
                             class="flex items-center px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
                             <Download class="h-5 w-5 mr-2" />
                             Export Reviews
                         </button>
-                    </div>
+                    </div> -->
                 </div>
 
                 <!-- Analytics Dashboard -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
                     <!-- Overall Rating -->
                     <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-200">
                         <div class="flex items-center justify-between">
@@ -259,7 +195,7 @@ const getStatusText = (review) => {
                     </div>
 
                     <!-- Response Rate -->
-                    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-200">
+                    <!-- <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-200">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-gray-600">Response Rate</p>
@@ -270,7 +206,7 @@ const getStatusText = (review) => {
                             </div>
                         </div>
                         <p class="text-sm text-purple-600 mt-2">Above average</p>
-                    </div>
+                    </div> -->
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -292,7 +228,7 @@ const getStatusText = (review) => {
                                     class="sm:hidden flex items-center justify-center px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700">
                                     <Filter class="h-5 w-5 mr-2" />
                                     Filters
-                                    <ChevronDown class="h-4 w-4 ml-2" :class="{ 'rotate-180': showFilters }" />
+                                    <ChevronDown class="h-4 w-4 ml-2" :class="{ showFilters: 'rotate-180' }" />
                                 </button>
 
                                 <!-- Filters -->
@@ -400,14 +336,14 @@ const getStatusText = (review) => {
                                         <div class="flex items-center space-x-1">
                                             <Calendar class="h-4 w-4" />
                                             <span>Event: {{ new Date(review.booking.event_date).toLocaleDateString()
-                                                }}</span>
+                                            }}</span>
                                         </div>
                                         <div class="flex items-center space-x-1">
                                             <span>Booking: {{ review.booking.id }}</span>
                                         </div>
-                                        <div class="flex items-center space-x-1">
+                                        <!-- <div class="flex items-center space-x-1">
                                             <span>{{ review.helpful_votes }} found helpful</span>
-                                        </div>
+                                        </div> -->
                                     </div>
                                     <span>{{ new Date(review.date).toLocaleDateString() }}</span>
                                 </div>
@@ -446,15 +382,12 @@ const getStatusText = (review) => {
                                     </button>
 
                                     <div class="flex items-center space-x-4">
-                                        <button class="text-gray-500 hover:text-gray-700 transition-colors text-sm">
-                                            Share
-                                        </button>
-                                        <button class="text-gray-500 hover:text-gray-700 transition-colors text-sm">
+                                        <!-- {{ console.log('USERRR: ', review) }} -->
+                                        <button @click="reportCustomer(review.user)"
+                                            class="text-gray-500 hover:text-gray-700 transition-colors text-sm">
                                             Report
                                         </button>
-                                        <button class="text-gray-500 hover:text-gray-700">
-                                            <MoreVertical class="h-5 w-5" />
-                                        </button>
+
                                     </div>
                                 </div>
                             </div>
@@ -497,7 +430,7 @@ const getStatusText = (review) => {
                         </div>
 
                         <!-- Quick Stats -->
-                        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-200">
+                        <!-- <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-200">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Review Insights</h3>
                             <div class="space-y-4">
                                 <div class="flex justify-between items-center">
@@ -513,7 +446,7 @@ const getStatusText = (review) => {
                                     <span class="font-medium">67%</span>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
 
                         <!-- Response Tips -->
                         <div class="bg-blue-50 rounded-xl p-5 border border-blue-200">
@@ -592,6 +525,8 @@ const getStatusText = (review) => {
                 </div>
             </div>
         </div>
+
+        <CustomerReportDialog v-if="showReportCustomer" v-model:show="showReportCustomer" :customer="customer" />
     </VendorLayout>
 </template>
 

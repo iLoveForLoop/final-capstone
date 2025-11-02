@@ -8,8 +8,9 @@ import { router } from '@inertiajs/vue3';
 import { useToast } from 'vue-toastification';
 import Pagination from '@/Components/Pagination.vue';
 import { push } from 'notivue';
+import { useConfirmDialog } from '@/Composables/useConfirmDialog';
 
-const toast = useToast();
+const { confirm } = useConfirmDialog()
 
 const props = defineProps({
     categories: {
@@ -28,8 +29,17 @@ const categoryCreateModal = ref(null);
 const categoryEditModal = ref(null);
 const search = ref('');
 
-const deleteCategory = (categoryId) => {
-    if (confirm('Are you sure do you want to delete this category?')) {
+const deleteCategory = async (categoryId) => {
+
+    const confirmed = await confirm({
+        title: 'Delete Category',
+        message: 'Are you sure do you want to delete this category? This action cannot be undone.',
+        type: 'danger',
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+    })
+
+    if (confirmed) {
         router.delete(route('admin.categories.destroy', categoryId), {
             onSuccess: () => {
                 // toast.success('Category deleted successfully');

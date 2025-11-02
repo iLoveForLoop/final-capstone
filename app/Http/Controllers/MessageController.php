@@ -337,4 +337,22 @@ class MessageController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function getUnreadMessagesCount()
+    {
+        $user = auth()->user();
+
+        // Get conversations where user is a participant
+        $userConversations = Conversation::whereJsonContains('participants', $user->id)
+            ->pluck('id');
+
+        $unreadCount = Message::whereIn('conversation_id', $userConversations)
+            ->where('user_id', '!=', $user->id) // Messages from other users
+            ->whereNull('read_at')
+            ->count();
+
+        return response()->json([
+            'unread_count' => $unreadCount
+        ]);
+    }
+
 }

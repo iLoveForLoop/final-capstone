@@ -10,7 +10,8 @@ class PhotographyService extends Model
 
     protected $casts = [
         'deliverables' => 'array',
-        'specifications' => 'array'
+        'specifications' => 'array',
+        'studio_shoot_available' => 'boolean'
     ];
 
     public function service(){

@@ -401,7 +401,8 @@ const markNotificationAsRead = async (notificationId) => {
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
                         <div class="flex justify-between items-center mb-5">
                             <h2 class="text-lg font-semibold text-gray-800">Recent Bookings</h2>
-                            <a href="#" class="text-sm text-indigo-600 hover:underline">View All</a>
+                            <Link :href="route('vendor.bookings.index')"
+                                class="text-sm text-indigo-600 hover:underline">View All</Link>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
@@ -450,7 +451,7 @@ const markNotificationAsRead = async (notificationId) => {
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap">
                                             <div class="text-sm font-medium text-gray-900">{{ booking.formatted_amount
-                                                }}</div>
+                                            }}</div>
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap">
                                             <div class="flex items-center">

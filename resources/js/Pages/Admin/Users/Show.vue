@@ -3,6 +3,8 @@ import TestLayout from '@/Layouts/TestLayout.vue';
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { useToast } from 'vue-toastification';
+import { useUserActions } from '@/Composables/useUserActions';
+import StatusAction from '@/Components/Admin/StatusAction.vue';
 
 const toast = useToast();
 const props = defineProps({
@@ -41,10 +43,49 @@ const resetPassword = () => {
         }
     });
 };
+
+const {
+    showActionModal,
+    currentUser,
+    currentAction,
+    suspendForm,
+    banForm,
+    deleteForm,
+    minDateTime,
+    availableActions,
+    openActionModal,
+    closeActionModal,
+    performSuspend,
+    performBan,
+    performActivate,
+    performDelete,
+    isSuspended
+} = useUserActions();
+
+
 </script>
 
 <template>
     <TestLayout>
+
+
+        <div v-if="showActionModal" class="fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-300 z-40"
+            @click="closeActionModal">
+        </div>
+
+        <transition enter-active-class="transform transition ease-in-out duration-300"
+            enter-from-class="translate-x-full" enter-to-class="translate-x-0"
+            leave-active-class="transform transition ease-in-out duration-300" leave-from-class="translate-x-0"
+            leave-to-class="translate-x-full">
+            <div v-if="showActionModal" class="fixed inset-y-0 right-0 pl-10 max-w-full flex z-50">
+                <StatusAction :currentUser="currentUser" :availableActions="availableActions"
+                    @close-action-modal="closeActionModal" @perform-suspend="performSuspend"
+                    @perform-delete="performDelete" @perform-ban="performBan" v-model:suspendForm="suspendForm"
+                    v-model:banForm="banForm" v-model:currentAction="currentAction" v-model:deleteForm="deleteForm" />
+            </div>
+        </transition>
+
+
         <div class="p-6 space-y-6 bg-gray-50 min-h-screen">
             <!-- Header -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -60,9 +101,9 @@ const resetPassword = () => {
                         class="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition">
                         Reset Password
                     </button>
-                    <button @click="showSuspendModal = true"
+                    <button @click="openActionModal(user)"
                         class="px-4 py-2 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 transition">
-                        Suspend User
+                        Update User Status
                     </button>
                 </div>
             </div>
@@ -75,8 +116,12 @@ const resetPassword = () => {
                     <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                         <div class="p-6 flex flex-col items-center text-center">
                             <div class="relative">
-                                <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow">
-                                    {{ console.log(user.image_url) }}
+                                <div class="w-24 h-24 rounded-full overflow-hidden border-4 shadow" :class="{
+                                    'border-green-500': user.status === 'active',
+                                    'border-red-500': user.status === 'banned',
+                                    'border-yello-500': user.status === 'suspended',
+                                }">
+                                    <!-- {{ console.log(user.image_url) }} -->
                                     <template v-if="user.image_url">
                                         <img :src="user.image_url" :alt="user.name" class="w-full h-full object-cover">
                                     </template>
@@ -87,10 +132,7 @@ const resetPassword = () => {
                                         </div>
                                     </template>
                                 </div>
-                                <span :class="{
-                                    'bg-green-500': user.status === 'active',
-                                    'bg-red-500': user.status !== 'active'
-                                }" class="absolute bottom-0 right-0 w-5 h-5 rounded-full border-2 border-white"></span>
+
                             </div>
                             <h2 class="mt-4 text-xl font-semibold text-gray-800">{{ user.name }}</h2>
                             <p class="text-sm text-gray-500">{{ user.email }}</p>
@@ -122,7 +164,7 @@ const resetPassword = () => {
                     </div>
 
                     <!-- Quick Stats -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 space-y-4">
+                    <!-- <div class="bg-white rounded-xl shadow-sm p-6 space-y-4">
                         <h3 class="text-lg font-semibold text-gray-800">Quick Stats</h3>
                         <div class="space-y-3">
                             <div class="flex justify-between items-center">
@@ -140,7 +182,7 @@ const resetPassword = () => {
                                     0 }})</span>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
 
                 <!-- Right Column - Main Content -->
@@ -182,6 +224,11 @@ const resetPassword = () => {
                                         <div>
                                             <p class="text-xs text-gray-500">Email</p>
                                             <p class="text-sm font-medium">{{ user.email }}</p>
+                                        </div>
+                                        {{ console.log('Number: ', user) }}
+                                        <div v-if="user.client">
+                                            <p class="text-xs text-gray-500">Contact Number</p>
+                                            <p class="text-sm font-medium">{{ user.client.contact_number }}</p>
                                         </div>
                                         <div>
                                             <p class="text-xs text-gray-500">Status</p>
@@ -230,10 +277,7 @@ const resetPassword = () => {
                                         <p class="text-xs text-gray-500">Location</p>
                                         <p class="text-sm font-medium">{{ user.vendor.location || 'N/A' }}</p>
                                     </div>
-                                    <div>
-                                        <p class="text-xs text-gray-500">Category</p>
-                                        <p class="text-sm font-medium">{{ user.vendor.category?.name || 'N/A' }}</p>
-                                    </div>
+
                                 </div>
 
                                 <div>
@@ -249,18 +293,7 @@ const resetPassword = () => {
                                     </div>
                                 </div>
 
-                                <div>
-                                    <p class="text-xs text-gray-500">Services Offered</p>
-                                    <div class="mt-2 flex flex-wrap gap-2">
-                                        <span v-for="(service, index) in user.vendor.services" :key="index"
-                                            class="px-3 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">
-                                            {{ service }}
-                                        </span>
-                                        <span v-if="!user.vendor.services?.length" class="text-sm text-gray-400">No
-                                            services
-                                            listed</span>
-                                    </div>
-                                </div>
+
 
                                 <div>
                                     <p class="text-xs text-gray-500">Business Description</p>
@@ -275,7 +308,7 @@ const resetPassword = () => {
                                     <div v-for="(activity, index) in user.activities" :key="index"
                                         class="flex items-start">
                                         <div class="flex-shrink-0 mt-1">
-                                            <div class="h-2 w-2 rounded-full bg-indigo-500"></div>
+                                            <!-- <div class="h-2 w-2 rounded-full bg-indigo-500"></div> -->
                                         </div>
                                         <div class="ml-3">
                                             <p class="text-sm font-medium">{{ activity.description }}</p>
@@ -293,7 +326,7 @@ const resetPassword = () => {
         </div>
 
         <!-- Suspend User Modal -->
-        <div v-if="showSuspendModal" class="fixed inset-0 z-50 overflow-y-auto">
+        <!-- <div v-if="showSuspendModal" class="fixed inset-0 z-50 overflow-y-auto">
             <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 transition-opacity" aria-hidden="true">
                     <div class="absolute inset-0 bg-gray-500 opacity-75" @click="showSuspendModal = false"></div>
@@ -332,7 +365,7 @@ const resetPassword = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <!-- Reset Password Modal -->
         <div v-if="showResetPasswordModal" class="fixed inset-0 z-50 overflow-y-auto">

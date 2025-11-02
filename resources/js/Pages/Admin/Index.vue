@@ -3,6 +3,7 @@ import TestLayout from '@/Layouts/TestLayout.vue'
 import { ref, computed } from 'vue'
 import { Users, Store, FileClock, Calendar, ChevronRight } from 'lucide-vue-next'
 import BookingTrendsChart from '@/Components/Charts/BookingTrendsChart.vue'
+import { router } from '@inertiajs/vue3'
 
 const props = defineProps({
     stats: {
@@ -110,7 +111,8 @@ const pendingVendors = ref([
                                         </span>
                                     </div>
                                 </div>
-                                <button class="text-gray-400 hover:text-primary-600 transition-colors">
+                                <button @click="router.visit(route('admin.vendor-application.index'))"
+                                    class="text-gray-400 hover:text-primary-600 transition-colors">
                                     <ChevronRight class="h-5 w-5" />
                                 </button>
                             </div>
@@ -146,9 +148,6 @@ const pendingVendors = ref([
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Bookings</th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -162,7 +161,7 @@ const pendingVendors = ref([
                                         </div>
                                         <div class="ml-4">
                                             <div class="text-sm font-medium text-gray-900">{{ vendor.user?.name ?? 'N/A'
-                                                }}</div>
+                                            }}</div>
                                             <div class="text-sm text-gray-500">{{ vendor.business_name }}</div>
                                         </div>
                                     </div>
@@ -189,14 +188,7 @@ const pendingVendors = ref([
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {{ vendor.bookings_count }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span :class="{
-                                        'bg-green-100 text-green-800': vendor.is_available,
-                                        'bg-red-100 text-red-800': !vendor.is_available
-                                    }" class="px-2 py-1 text-xs font-medium rounded-full">
-                                        {{ vendor.is_available ? 'Active' : 'Inactive' }}
-                                    </span>
-                                </td>
+
                             </tr>
                         </tbody>
                     </table>

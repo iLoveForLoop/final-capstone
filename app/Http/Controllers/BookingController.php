@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendBookingCancellationEmailJob;
+use App\Jobs\SendBookingCompletedEmailJob;
+use App\Jobs\SendBookingDeclineEmailJob;
 use App\Mail\Customer\BookingCancelledMail;
 use App\Mail\Customer\BookingCompletedMail;
+use App\Mail\Customer\BookingDeclineMail;
 use App\Mail\Vendor\BookingRequestMail;
 use App\Mail\Vendor\VendorBookingCancelledMail;
 use App\Models\Booking;
@@ -195,10 +199,10 @@ class BookingController extends Controller
     {
         $vendor = auth()->user()->vendor;
 
-        // $booking = $vendor->bookings()
-        //     ->where('id', $id)
-        //     ->where('status', 'pending')
-        //     ->firstOrFail();
+        $booking = $vendor->bookings()
+            ->where('id', $id)
+            ->where('status', 'pending')
+            ->firstOrFail();
 
         // $booking->update([
         //     'status' => 'confirmed'
@@ -228,9 +232,9 @@ class BookingController extends Controller
             ->where('status', 'pending')
             ->firstOrFail();
 
-        $booking->update([
-            'status' => 'declined'
-        ]);
+        // $booking->update([
+        //     'status' => 'declined'
+        // ]);
 
         // Optional: Send notification to user
         // $this->sendBookingCancellationNotification($booking, $request->get('reason'));
@@ -239,7 +243,10 @@ class BookingController extends Controller
         $booking->load(['service.vendor.user', 'user']);
 
 
-        // Mail::to($booking->user->email)->queue(new BookingCancelledMail($booking, $request->reason));
+
+
+        // Mail::to($booking->user->email)->queue(new BookingDeclineMail($booking, $request->reason));
+        SendBookingDeclineEmailJob::dispatch($booking, $request->reason);
 
 
 
@@ -259,13 +266,18 @@ class BookingController extends Controller
             ->where('status', 'confirmed')
             ->firstOrFail();
 
-        $booking->update([
-            'status' => 'cancelled'
-        ]);
+        // $booking->update([
+        //     'status' => 'cancelled'
+        // ]);
 
          $booking->load(['service.vendor.user', 'user']);
 
+        //  Mail::to($booking->user->email)->queue(new BookingCancelledMail($booking, $request->reason));
+        SendBookingCancellationEmailJob::dispatch($booking, $request->reason);
+
          return back()->with('success', 'Booking has been cancelled.');
+
+
     }
 
     /**
@@ -280,9 +292,11 @@ class BookingController extends Controller
             ->where('status', 'confirmed')
             ->firstOrFail();
 
-        $booking->update([
-            'status' => 'completed'
-        ]);
+        // $booking->update([
+        //     'status' => 'completed'
+        // ]);
+
+        SendBookingCompletedEmailJob::dispatch($booking);
 
         // $booking->load(['service.vendor.user', 'user']);
 

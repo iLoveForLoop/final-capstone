@@ -414,10 +414,10 @@ onUnmounted(() => {
                                 class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                 <Video class="h-5 w-5" />
                             </button> -->
-                            <button
+                            <!-- <button
                                 class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                 <MoreVertical class="h-5 w-5" />
-                            </button>
+                            </button> -->
                         </div>
                     </div>
                 </div>
@@ -462,13 +462,13 @@ onUnmounted(() => {
 
                 <!-- Message Input -->
                 <div class="bg-white border-t border-gray-200 p-4 shadow-md">
-                    <div class="flex items-end space-x-2">
-                        <div class="flex">
+                    <div class="flex items-center space-x-2">
+                        <!-- <div class="flex">
                             <button
                                 class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                 <Image class="h-5 w-5" />
                             </button>
-                        </div>
+                        </div> -->
 
                         <div class="flex-1 relative">
                             <textarea v-model="messageText" @keydown.enter.exact.prevent="sendMessage"

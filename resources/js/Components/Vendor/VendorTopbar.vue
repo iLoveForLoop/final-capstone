@@ -11,7 +11,10 @@ import {
     CreditCard,
     Star,
     AlertCircle,
-    Loader2
+    Loader2,
+    Search,
+    HelpCircle,
+    Menu
 } from 'lucide-vue-next'
 import MyDropdown from '../MyDropdown.vue'
 import { useUIStore } from '@/store/ui'
@@ -30,6 +33,36 @@ const lgQuery = window.matchMedia('(min-width: 1024px)')
 function handleScreenChange(e) {
     showingSidebar.value = e.matches
 }
+
+// Dynamic greeting based on time of day
+const currentGreeting = computed(() => {
+    const hour = new Date().getHours();
+
+    if (hour >= 5 && hour < 12) {
+        return 'Good morning';
+    } else if (hour >= 12 && hour < 17) {
+        return 'Good afternoon';
+    } else if (hour >= 17 && hour < 21) {
+        return 'Good evening';
+    } else {
+        return 'Good night';
+    }
+});
+
+// Optional: Add emoji based on time of day
+const greetingEmoji = computed(() => {
+    const hour = new Date().getHours();
+
+    if (hour >= 5 && hour < 12) {
+        return '☀️';
+    } else if (hour >= 12 && hour < 17) {
+        return '🌤️';
+    } else if (hour >= 17 && hour < 21) {
+        return '🌙';
+    } else {
+        return '✨';
+    }
+});
 
 // Close dropdown when clicking outside
 function handleClickOutside(event) {
@@ -180,130 +213,212 @@ const title = computed(() => {
 </script>
 
 <template>
-    <nav class="border-b border-gray-800 bg-gray-900">
+    <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <!-- Primary Navigation Menu -->
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="px-4 sm:px-6 lg:px-8">
             <div class="flex h-16 justify-between items-center">
-                <!-- Left side -->
-                <div class="flex items-center space-x-8">
-                    <p class="text-lg font-semibold text-white tracking-wide">
-                        {{ title }}
-                    </p>
+                <!-- Left Section: Greeting and Page Context -->
+                <div class="flex items-center">
+                    <div class="flex items-center space-x-3">
+                        <div class="hidden sm:block">
+                            <h1 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                {{ currentGreeting }}, {{ page.props?.auth?.user.vendor.business_name }} {{
+                                    greetingEmoji
+                                }}
+                            </h1>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                {{ new Date().toLocaleDateString('en-US', {
+                                    weekday: 'long',
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                }) }}
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Right side -->
-                <div class="flex items-center space-x-4">
-                    <!-- Notification Bell -->
-                    <div class="relative" id="notification-dropdown">
-                        <button id="notification-bell" @click="toggleNotificationDropdown"
-                            class="relative p-2 text-gray-300 hover:bg-gray-800 hover:text-white rounded-full focus:outline-none transition-all duration-200"
-                            :disabled="isLoading">
-                            <!-- Loading state -->
-                            <Loader2 v-if="isLoading" class="w-6 h-6 animate-spin" />
-                            <Bell v-else class="w-6 h-6" />
+                <!-- Right Section: Controls & User -->
+                <div class="flex items-center space-x-3">
+                    <!-- Search -->
+                    <!-- <div class="hidden md:block relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Search class="h-4 w-4 text-gray-400" />
+                        </div>
+                        <input type="text" placeholder="Search..."
+                            class="pl-10 pr-4 py-2 w-64 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                    </div> -->
 
-                            <!-- Badge -->
-                            <span v-if="hasUnreadNotifications"
-                                class="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-600 rounded-full">
-                                {{ unreadCount > 9 ? '9+' : unreadCount }}
-                            </span>
-                        </button>
+                    <!-- Action Icons -->
+                    <div class="flex items-center space-x-1">
+                        <!-- Help -->
+                        <!-- <button
+                            class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200">
+                            <HelpCircle class="w-5 h-5" />
+                        </button> -->
 
-                        <!-- Notification Dropdown -->
-                        <transition enter-active-class="transition ease-out duration-200"
-                            enter-from-class="transform opacity-0 scale-95"
-                            enter-to-class="transform opacity-100 scale-100"
-                            leave-active-class="transition ease-in duration-75"
-                            leave-from-class="transform opacity-100 scale-100"
-                            leave-to-class="transform opacity-0 scale-95">
-                            <div v-if="showNotificationDropdown"
-                                class="absolute right-0 z-50 mt-2 w-96 bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                                <!-- Header -->
-                                <div class="flex justify-between items-center mb-5">
-                                    <div class="flex items-center space-x-3">
-                                        <h2 class="text-lg font-semibold text-gray-800">
-                                            Notifications
-                                        </h2>
-                                        <span v-if="hasUnreadNotifications"
-                                            class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                                            {{ unreadCount }}
-                                        </span>
-                                    </div>
-                                    <div class="flex items-center space-x-2">
-                                        <button @click="refreshNotifications"
-                                            class="text-sm text-gray-500 hover:text-gray-700" :disabled="isLoading"
-                                            title="Refresh notifications">
-                                            <Loader2 v-if="isLoading" class="w-4 h-4 animate-spin" />
-                                            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                            </svg>
-                                        </button>
-                                        <button @click="openNotificationDrawer"
-                                            class="text-sm text-indigo-600 hover:underline">
-                                            View All
-                                        </button>
-                                    </div>
-                                </div>
+                        <!-- Notification Bell -->
+                        <div class="relative" id="notification-dropdown">
+                            <button id="notification-bell" @click="toggleNotificationDropdown"
+                                class="relative p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200 focus:outline-none"
+                                :disabled="isLoading">
+                                <!-- Loading state -->
+                                <Loader2 v-if="isLoading" class="w-5 h-5 animate-spin" />
+                                <Bell v-else class="w-5 h-5" />
 
-                                <!-- Error State -->
-                                <div v-if="error" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                                    <p class="text-sm text-red-600">{{ error }}</p>
-                                    <button @click="refreshNotifications"
-                                        class="mt-2 text-xs text-red-800 hover:underline">
-                                        Try again
-                                    </button>
-                                </div>
+                                <!-- Badge -->
+                                <span v-if="hasUnreadNotifications"
+                                    class="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full border-2 border-white dark:border-gray-800">
+                                    {{ unreadCount > 9 ? '9+' : unreadCount }}
+                                </span>
+                            </button>
 
-                                <!-- Notifications List -->
-                                <ul class="space-y-4">
-                                    <li v-for="notification in recentNotifications" :key="notification.id"
-                                        class="flex items-start cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                                        @click="markNotificationAsRead(notification.id)">
-                                        <div class="flex-shrink-0 mt-1 mr-3">
-                                            <div :class="getNotificationIconClass(notification)">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                    v-html="getNotificationIconSVG(notification.icon)">
-                                                </svg>
+                            <!-- Notification Dropdown -->
+                            <transition enter-active-class="transition ease-out duration-200"
+                                enter-from-class="transform opacity-0 scale-95"
+                                enter-to-class="transform opacity-100 scale-100"
+                                leave-active-class="transition ease-in duration-75"
+                                leave-from-class="transform opacity-100 scale-100"
+                                leave-to-class="transform opacity-0 scale-95">
+                                <div v-if="showNotificationDropdown"
+                                    class="absolute right-0 top-full z-50 mt-2 w-96 overflow-hidden rounded-xl border border-gray-200 bg-white dark:bg-gray-800 shadow-lg">
+
+                                    <!-- Header -->
+                                    <div
+                                        class="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center space-x-2">
+                                                <h3 class="font-semibold text-gray-900 dark:text-white">Notifications
+                                                </h3>
+                                                <span v-if="hasUnreadNotifications"
+                                                    class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">
+                                                    {{ unreadCount }}
+                                                </span>
+                                            </div>
+                                            <div class="flex items-center space-x-3">
+                                                <button @click="refreshNotifications"
+                                                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-200"
+                                                    :disabled="isLoading" title="Refresh notifications">
+                                                    <Loader2 v-if="isLoading" class="w-4 h-4 animate-spin" />
+                                                    <svg v-else class="w-4 h-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                    </svg>
+                                                </button>
+                                                <button v-if="hasUnreadNotifications" @click="markAllAsRead"
+                                                    class="text-xs font-medium text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 transition-colors duration-200"
+                                                    :disabled="isLoading">
+                                                    Mark all read
+                                                </button>
                                             </div>
                                         </div>
+                                    </div>
 
-                                        <div class="flex-1 min-w-0">
-                                            <p :class="{
-                                                'font-medium text-gray-900': !notification.read,
-                                                'text-gray-500': notification.read,
-                                            }" class="text-sm">{{ notification.title }}</p>
-                                            <p class="text-sm text-gray-600 mt-1">{{ notification.text }}</p>
-                                            <p class="text-xs text-gray-400 mt-1">{{ notification.time }}</p>
-                                        </div>
-                                        <div v-if="!notification.read" class="ml-2 mt-1">
-                                            <span class="h-2 w-2 rounded-full bg-blue-500 block"></span>
-                                        </div>
-                                    </li>
-                                    <li v-if="!isLoading && recentNotifications.length === 0"
-                                        class="text-center py-4 text-gray-400 text-sm">
-                                        No notifications
-                                    </li>
-                                    <li v-if="isLoading && notifications.length === 0"
-                                        class="text-center py-4 text-gray-400 text-sm">
-                                        <Loader2 class="w-5 h-5 animate-spin mx-auto mb-2" />
-                                        Loading notifications...
-                                    </li>
-                                </ul>
+                                    <!-- Error State -->
+                                    <div v-if="error"
+                                        class="m-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                        <p class="text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+                                        <button @click="refreshNotifications"
+                                            class="mt-2 text-xs text-red-800 dark:text-red-300 hover:underline">
+                                            Try again
+                                        </button>
+                                    </div>
 
-                                <!-- Footer Actions -->
-                                <div v-if="hasUnreadNotifications" class="mt-4 pt-4 border-t border-gray-100">
-                                    <button @click="markAllAsRead"
-                                        class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200"
-                                        :disabled="isLoading">
-                                        Mark all as read
-                                    </button>
+                                    <!-- Notifications List -->
+                                    <div class="max-h-96 overflow-y-auto">
+                                        <!-- Loading -->
+                                        <div v-if="isLoading && notifications.length === 0" class="p-8 text-center">
+                                            <Loader2 class="w-6 h-6 animate-spin mx-auto mb-2 text-purple-600" />
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">Loading notifications...
+                                            </p>
+                                        </div>
+
+                                        <!-- Empty -->
+                                        <div v-else-if="!isLoading && recentNotifications.length === 0"
+                                            class="p-8 text-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto mb-2 text-gray-400"
+                                                width="24" height="24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M10 21h4a2 2 0 0 0 2-2v-1H8v1a2 2 0 0 0 2 2z" />
+                                                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                                            </svg>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">No notifications yet</p>
+                                            <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">We'll notify you
+                                                when something arrives</p>
+                                        </div>
+
+                                        <!-- Notifications -->
+                                        <div v-else>
+                                            <div v-for="notification in recentNotifications" :key="notification.id"
+                                                @click="markNotificationAsRead(notification.id)"
+                                                class="group cursor-pointer border-b border-gray-100 dark:border-gray-700 p-4 transition-colors duration-150 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                                :class="{ 'bg-purple-50/50 dark:bg-purple-900/20': !notification.read }">
+
+                                                <div class="flex items-start space-x-3">
+                                                    <!-- Notification Icon -->
+                                                    <div class="flex-shrink-0 mt-0.5"
+                                                        :class="getNotificationIconClass(notification)">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            v-html="getNotificationIconSVG(notification.icon)">
+                                                        </svg>
+                                                    </div>
+
+                                                    <!-- Content -->
+                                                    <div class="min-w-0 flex-1">
+                                                        <div class="flex items-center justify-between">
+                                                            <p :class="{
+                                                                'font-medium text-gray-900 dark:text-white': !notification.read,
+                                                                'text-gray-500 dark:text-gray-400': notification.read,
+                                                            }" class="truncate">
+                                                                {{ notification.title }}
+                                                            </p>
+                                                            <span v-if="!notification.read"
+                                                                class="h-2 w-2 flex-shrink-0 rounded-full bg-purple-600"></span>
+                                                        </div>
+
+                                                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                                                            {{ notification.text }}
+                                                        </p>
+
+                                                        <div class="mt-2 flex items-center justify-between">
+                                                            <p class="text-xs text-gray-400 dark:text-gray-500">
+                                                                {{ notification.time }}
+                                                            </p>
+
+                                                            <div
+                                                                class="flex items-center space-x-1 opacity-0 transition-opacity group-hover:opacity-100">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="12"
+                                                                    height="12" fill="none" stroke="currentColor"
+                                                                    stroke-width="2" stroke-linecap="round"
+                                                                    stroke-linejoin="round" class="text-gray-400">
+                                                                    <path d="M20 6L9 17l-5-5" />
+                                                                </svg>
+                                                                <span class="text-xs text-gray-400">Mark read</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Footer -->
+                                    <div
+                                        class="border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4">
+                                        <button type="button" @click="openNotificationDrawer"
+                                            class="w-full text-center text-sm font-medium text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 transition-colors duration-200">
+                                            View all notifications
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        </transition>
+
+                            </transition>
+                        </div>
                     </div>
 
                     <!-- User Dropdown -->
@@ -311,20 +426,11 @@ const title = computed(() => {
                         <MyDropdown />
                     </div>
 
-                    <!-- Hamburger -->
-                    <div class="-me-2 flex items-center sm:hidden">
+                    <!-- Mobile menu button -->
+                    <div class="flex items-center sm:hidden">
                         <button @click="showingNavigationDropdown = !showingNavigationDropdown"
-                            class="inline-flex items-center justify-center rounded-md p-2 text-gray-300 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors duration-200">
-                            <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                                <path
-                                    :class="{ hidden: showingNavigationDropdown, 'inline-flex': !showingNavigationDropdown }"
-                                    stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 6h16M4 12h16M4 18h16" />
-                                <path
-                                    :class="{ hidden: !showingNavigationDropdown, 'inline-flex': showingNavigationDropdown }"
-                                    stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                            class="inline-flex items-center justify-center p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <Menu class="h-6 w-6" />
                         </button>
                     </div>
                 </div>
@@ -332,19 +438,28 @@ const title = computed(() => {
         </div>
 
         <!-- Responsive Navigation Menu -->
-        <transition enter-active-class="transition ease-out duration-200"
-            enter-from-class="transform opacity-0 -translate-y-2" enter-to-class="transform opacity-100 translate-y-0"
-            leave-active-class="transition ease-in duration-150" leave-from-class="transform opacity-100 translate-y-0"
-            leave-to-class="transform opacity-0 -translate-y-2">
-            <div v-if="showingNavigationDropdown" class="sm:hidden">
-                <div class="space-y-1 pb-3 pt-2">
-                    <Link :href="route('dashboard')"
-                        class="block px-4 py-2 text-gray-200 hover:bg-gray-800 hover:text-white rounded-md transition-colors duration-200">
-                    Dashboard
-                    </Link>
+        <div :class="{
+            block: showingNavigationDropdown,
+            hidden: !showingNavigationDropdown,
+        }" class="sm:hidden border-t border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800">
+            <!-- Mobile Search -->
+            <div class="px-4 pt-3 pb-2">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Search class="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input type="text" placeholder="Search..."
+                        class="pl-10 pr-4 py-2 w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
                 </div>
             </div>
-        </transition>
+
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <Link :href="route('dashboard')"
+                    class="block px-3 py-2 rounded-lg text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50 dark:hover:text-white dark:hover:bg-gray-700 transition-colors duration-200">
+                Dashboard
+                </Link>
+            </div>
+        </div>
     </nav>
 
     <!-- 🔔 Full Notification Drawer (Side Panel) -->
@@ -363,12 +478,13 @@ const title = computed(() => {
             leave-active-class="transition-transform ease-in duration-200" leave-from-class="transform translate-x-0"
             leave-to-class="transform translate-x-full">
             <div v-if="ui.isVendorNotificationOpen"
-                class="fixed right-0 top-0 z-50 h-full w-96 bg-white shadow-xl flex flex-col">
+                class="fixed right-0 top-0 z-50 h-full w-96 bg-white dark:bg-gray-800 shadow-xl flex flex-col border-l border-gray-200 dark:border-gray-700">
                 <!-- Header -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 m-4 mb-0">
+                <div
+                    class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border-b border-gray-200 dark:border-gray-700 p-5 m-4 mb-0">
                     <div class="flex justify-between items-center mb-5">
                         <div class="flex items-center space-x-3">
-                            <h2 class="text-lg font-semibold text-gray-800">
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
                                 All Notifications
                             </h2>
                             <span v-if="hasUnreadNotifications"
@@ -378,7 +494,7 @@ const title = computed(() => {
                         </div>
                         <div class="flex items-center space-x-2">
                             <button @click="refreshNotifications"
-                                class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                                class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors duration-200"
                                 :disabled="isLoading" title="Refresh notifications">
                                 <Loader2 v-if="isLoading" class="w-5 h-5 animate-spin" />
                                 <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -387,16 +503,16 @@ const title = computed(() => {
                                 </svg>
                             </button>
                             <button @click="ui.toggleVendorNotificationOpen"
-                                class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                                class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors duration-200">
                                 <X class="w-5 h-5" />
                             </button>
                         </div>
                     </div>
 
                     <!-- Action Bar -->
-                    <div v-if="hasUnreadNotifications" class="border-t border-gray-100 pt-4">
+                    <div v-if="hasUnreadNotifications" class="border-t border-gray-200 dark:border-gray-600 pt-4">
                         <button @click="markAllAsRead"
-                            class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200"
+                            class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors duration-200"
                             :disabled="isLoading">
                             Mark all as read
                         </button>
@@ -404,19 +520,22 @@ const title = computed(() => {
                 </div>
 
                 <!-- Error State -->
-                <div v-if="error" class="mx-4 mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p class="text-sm text-red-600">{{ error }}</p>
-                    <button @click="refreshNotifications" class="mt-2 text-xs text-red-800 hover:underline">
+                <div v-if="error"
+                    class="mx-4 mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                    <p class="text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+                    <button @click="refreshNotifications"
+                        class="mt-2 text-xs text-red-800 dark:text-red-300 hover:underline">
                         Try again
                     </button>
                 </div>
 
                 <!-- Notifications List -->
                 <div class="flex-1 overflow-y-auto p-4">
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-5">
                         <ul class="space-y-4">
                             <li v-for="notification in notifications" :key="notification.id"
-                                class="flex items-start cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors group"
+                                class="flex items-start cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-3 rounded-lg transition-colors duration-200 group"
                                 @click="markNotificationAsRead(notification.id)">
                                 <div class="flex-shrink-0 mt-1 mr-3">
                                     <div :class="getNotificationIconClass(notification)">
@@ -430,42 +549,36 @@ const title = computed(() => {
 
                                 <div class="flex-1 min-w-0">
                                     <p :class="{
-                                        'font-medium text-gray-900': !notification.read,
-                                        'text-gray-500': notification.read,
+                                        'font-medium text-gray-900 dark:text-white': !notification.read,
+                                        'text-gray-500 dark:text-gray-400': notification.read,
                                     }" class="text-sm">{{ notification.title }}</p>
-                                    <p class="text-sm text-gray-600 mt-1">{{ notification.text }}</p>
-                                    <p class="text-xs text-gray-400 mt-1">{{ notification.time }}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">{{ notification.text }}</p>
+                                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ notification.time }}</p>
                                 </div>
 
                                 <div class="flex items-center space-x-2">
                                     <div v-if="!notification.read" class="mt-1">
                                         <span class="h-2 w-2 rounded-full bg-blue-500 block"></span>
                                     </div>
-                                    <!-- Optional: Remove button (uncomment if you want this feature) -->
-                                    <!-- <button
-                                        @click="removeNotification(notification.id, $event)"
-                                        class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all duration-200"
-                                        title="Remove notification"
-                                    >
-                                        <X class="w-4 h-4" />
-                                    </button> -->
                                 </div>
                             </li>
 
                             <!-- Loading state -->
                             <li v-if="isLoading && notifications.length === 0"
-                                class="text-center py-8 text-gray-400 text-sm">
-                                <Loader2 class="w-8 h-8 text-gray-300 mx-auto mb-4 animate-spin" />
-                                <p class="font-medium text-gray-900 mb-2">Loading notifications...</p>
-                                <p>Please wait while we fetch your notifications</p>
+                                class="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
+                                <Loader2 class="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-4 animate-spin" />
+                                <p class="font-medium text-gray-900 dark:text-white mb-2">Loading notifications...</p>
+                                <p class="text-gray-500 dark:text-gray-400">Please wait while we fetch your
+                                    notifications</p>
                             </li>
 
                             <!-- Empty state -->
                             <li v-if="!isLoading && notifications.length === 0"
-                                class="text-center py-8 text-gray-400 text-sm">
-                                <Bell class="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                                <p class="font-medium text-gray-900 mb-2">No notifications</p>
-                                <p>When you receive notifications, they'll appear here</p>
+                                class="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
+                                <Bell class="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                                <p class="font-medium text-gray-900 dark:text-white mb-2">No notifications</p>
+                                <p class="text-gray-500 dark:text-gray-400">When you receive notifications, they'll
+                                    appear here</p>
                             </li>
                         </ul>
                     </div>
@@ -494,20 +607,11 @@ const title = computed(() => {
     background: #94a3b8;
 }
 
-/* Loading animation */
-@keyframes pulse-fade {
-
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.5;
-    }
+.dark .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #4b5563;
 }
 
-.animate-pulse-fade {
-    animation: pulse-fade 2s ease-in-out infinite;
+.dark .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
 }
 </style>

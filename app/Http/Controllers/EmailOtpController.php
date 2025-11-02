@@ -6,6 +6,7 @@ use App\Mail\EmailOtpMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Models\EmailOtp;
+use App\Models\User;
 use Carbon\Carbon;
 
 class EmailOtpController extends Controller
@@ -13,6 +14,13 @@ class EmailOtpController extends Controller
     public function sendOtp(Request $request)
     {
         $request->validate(['email' => 'required|email']);
+
+        $emailExist = User::where('email', $request->email)->exists();
+        if($emailExist){
+            return response()->json([
+                'message' => 'This email is already registered. Please use a different email.'
+            ], 409);
+        }
 
         // Find a non-expired OTP for this email
         $existingOtp = EmailOtp::where('email', $request->email)

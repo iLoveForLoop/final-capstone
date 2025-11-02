@@ -16,6 +16,7 @@ import {
 } from 'lucide-vue-next';
 import { useUIStore } from '@/store/ui';
 import { useNotificationStore } from '@/store/notification';
+import { useNavbarStore } from '@/store/navbarStore'; // Import your navbar store
 import NewNavLink from '../NewNavLink.vue';
 import { onMounted, onUnmounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
@@ -26,21 +27,70 @@ const ui = ref(useUIStore())
 const notificationStore = useNotificationStore()
 const { bookingUnreadCount, isInitialized } = storeToRefs(notificationStore)
 
-onMounted(async () => {
-    // Initialize notifications if not already done
-    // if (!isInitialized.value) {
-    //     try {
-    //         await notificationStore.initializeNotifications()
-    //     } catch (error) {
-    //         console.error('Failed to initialize notifications in sidebar:', error)
-    //     }
-    // }
+// Get the navbar store
+const navbarStore = useNavbarStore()
+const { unreadMessages } = storeToRefs(navbarStore)
+
+// Polling interval in milliseconds (e.g., every 30 seconds)
+const POLLING_INTERVAL = 10000
+let pollingTimer = null
+
+// Function to refresh conversations data
+const refreshConversations = async () => {
+    try {
+        await navbarStore.loadConversations()
+    } catch (error) {
+        console.error('Failed to refresh conversations:', error)
+    }
+}
+
+// Start polling
+const startPolling = () => {
+    // Refresh immediately
+    refreshConversations()
+
+    // Then set up interval
+    pollingTimer = setInterval(refreshConversations, POLLING_INTERVAL)
+}
+
+// Stop polling
+const stopPolling = () => {
+    if (pollingTimer) {
+        clearInterval(pollingTimer)
+        pollingTimer = null
+    }
+}
+
+// Start polling when component mounts
+onMounted(() => {
+    // Initialize conversations data if not already loaded
+    if (navbarStore.conversations.length === 0) {
+        navbarStore.loadConversations()
+    }
+    startPolling()
+})
+
+// Stop polling when component unmounts
+onUnmounted(() => {
+    stopPolling()
+})
+
+// Optional: Start/stop polling when tab visibility changes
+const handleVisibilityChange = () => {
+    if (document.hidden) {
+        stopPolling()
+    } else {
+        startPolling()
+    }
+}
+
+onMounted(() => {
+    document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 
 onUnmounted(() => {
-    // Note: Don't cleanup here if the store is used in multiple components
-    // The cleanup should be handled in a higher-level component or when the user logs out
-    // notificationStore.cleanup()
+    document.removeEventListener('visibilitychange', handleVisibilityChange)
+    stopPolling()
 })
 </script>
 
@@ -120,8 +170,10 @@ onUnmounted(() => {
                         </span>
                     </NewNavLink>
 
+                    <!-- Messages with unread count from navbar store -->
                     <NewNavLink :href="route('vendor.messages.index')"
-                        :active="route().current('vendor.messages.index')" :isCollapsed="ui.sidebarCollapsed">
+                        :active="route().current('vendor.messages.index')" :notificationCount="unreadMessages"
+                        :isCollapsed="ui.sidebarCollapsed">
                         <template #icon>
                             <MessageSquare class="h-5 w-5" />
                         </template>
@@ -136,7 +188,7 @@ onUnmounted(() => {
                             <UserCircle class="h-5 w-5" />
                         </template>
                         <span class="text-gray-300 truncate" v-if="!ui.sidebarCollapsed">
-                            Profile Settings
+                            Profile
                         </span>
                     </NewNavLink>
 
@@ -153,19 +205,6 @@ onUnmounted(() => {
 
                 <!-- Bottom spacer -->
                 <div class="flex-grow"></div>
-
-                <!-- Optional: Bottom section for user/profile -->
-                <!-- <div class="px-4 py-3 border-t border-gray-800">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <img class="h-8 w-8 rounded-full" src="https://via.placeholder.com/32" alt="User avatar">
-                        </div>
-                        <div v-if="!ui.sidebarCollapsed" class="ml-3">
-                            <p class="text-sm font-medium text-white">User Name</p>
-                            <p class="text-xs font-medium text-gray-400">View profile</p>
-                        </div>
-                    </div>
-                </div> -->
             </div>
         </div>
     </div>

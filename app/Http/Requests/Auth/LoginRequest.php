@@ -41,6 +41,9 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
+
+
+
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
@@ -49,10 +52,21 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+
         // --- THIS IS THE NEW LOGIC YOU NEED TO ADD ---
 
         // Get the user who was just authenticated
         $user = Auth::user();
+
+        // if ($user->isBanned()) {
+        //     Auth::logout();
+
+        //     throw ValidationException::withMessages([
+        //         'email' => 'Your account has been permanently banned. Please contact support for more information.',
+        //     ]);
+        // }
+
+
         // dd($user->hasRole('vendor'));
         // Check if the user's 'is_approved' column is true (or 1)
         if($user->hasRole('vendor')){

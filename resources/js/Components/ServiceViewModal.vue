@@ -333,111 +333,23 @@ defineExpose({
                             <!-- Basic Information Grid -->
                             <div key="photography-basic" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                 <!-- Duration -->
-                                <div v-if="serviceData.duration" class="bg-gray-50 rounded-lg p-3 sm:p-4">
-                                    <div class="flex items-center mb-2">
-                                        <div
-                                            class="w-5 h-5 sm:w-6 sm:h-6 bg-[#E6F4F6] rounded-lg flex items-center justify-center mr-2 sm:mr-3">
-                                            <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#239BA7]" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                        </div>
-                                        <h5 class="text-xs sm:text-sm font-medium text-gray-900">Duration</h5>
-                                    </div>
-                                    <p class="text-base sm:text-lg font-semibold text-gray-900">{{ serviceData.duration
-                                        }}</p>
-                                </div>
+
 
                                 <!-- Number of Photographers -->
-                                <div class="bg-gray-50 rounded-lg p-3 sm:p-4">
-                                    <div class="flex items-center mb-2">
-                                        <div
-                                            class="w-5 h-5 sm:w-6 sm:h-6 bg-[#E6F4F6] rounded-lg flex items-center justify-center mr-2 sm:mr-3">
-                                            <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#239BA7]" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                            </svg>
-                                        </div>
-                                        <h5 class="text-xs sm:text-sm font-medium text-gray-900">Photographers</h5>
-                                    </div>
-                                    <p class="text-base sm:text-lg font-semibold text-gray-900">
-                                        {{ serviceData.number_of_photographers || 1 }}
-                                        <span class="text-xs sm:text-sm font-normal text-gray-500">
-                                            photographer{{ (serviceData.number_of_photographers || 1) > 1 ? 's' : '' }}
-                                        </span>
-                                    </p>
-                                </div>
+
 
                                 <!-- Hours of Coverage -->
-                                <div v-if="serviceData.hours_of_coverage" class="bg-gray-50 rounded-lg p-3 sm:p-4">
-                                    <div class="flex items-center mb-2">
-                                        <div
-                                            class="w-5 h-5 sm:w-6 sm:h-6 bg-[#E6F4F6] rounded-lg flex items-center justify-center mr-2 sm:mr-3">
-                                            <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#239BA7]" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
-                                        </div>
-                                        <h5 class="text-xs sm:text-sm font-medium text-gray-900">Coverage Hours</h5>
-                                    </div>
-                                    <p class="text-base sm:text-lg font-semibold text-gray-900">
-                                        {{ serviceData.hours_of_coverage }}
-                                        <span class="text-xs sm:text-sm font-normal text-gray-500">hours</span>
-                                    </p>
-                                </div>
+
 
                                 <!-- Delivery Time -->
-                                <div class="bg-gray-50 rounded-lg p-3 sm:p-4">
-                                    <div class="flex items-center mb-2">
-                                        <div
-                                            class="w-5 h-5 sm:w-6 sm:h-6 bg-[#E6F4F6] rounded-lg flex items-center justify-center mr-2 sm:mr-3">
-                                            <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#239BA7]" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                            </svg>
-                                        </div>
-                                        <h5 class="text-xs sm:text-sm font-medium text-gray-900">Delivery Time</h5>
-                                    </div>
-                                    <p class="text-base sm:text-lg font-semibold text-gray-900">
-                                        {{ serviceData.delivery_time_days || 30 }}
-                                        <span class="text-xs sm:text-sm font-normal text-gray-500">days</span>
-                                    </p>
-                                </div>
+
                             </div>
 
                             <!-- Equipment -->
-                            <div v-if="serviceData.equipment?.length" key="photography-equipment">
-                                <h5 class="text-xs sm:text-sm font-medium text-gray-900 mb-3">Equipment Included</h5>
-                                <div class="bg-gray-50 rounded-lg p-3 sm:p-4">
-                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                        <span v-for="equipment in serviceData.equipment" :key="equipment"
-                                            class="inline-flex items-center text-xs sm:text-sm px-2 sm:px-3 py-1 bg-white text-gray-700 rounded border">
-                                            {{ equipment }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+
 
                             <!-- Deliverables -->
-                            <div v-if="serviceData.deliverables?.length" key="photography-deliverables">
-                                <h5 class="text-xs sm:text-sm font-medium text-gray-900 mb-3">Deliverables</h5>
-                                <div class="bg-gray-50 rounded-lg p-3 sm:p-4">
-                                    <ul class="space-y-2">
-                                        <li v-for="deliverable in serviceData.deliverables" :key="deliverable"
-                                            class="flex items-start text-xs sm:text-sm text-gray-700">
-                                            <span
-                                                class="inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#239BA7] rounded-full mt-1.5 sm:mt-2 mr-2 sm:mr-3 flex-shrink-0"></span>
-                                            <span>{{ deliverable }}</span>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
+
 
                             <!-- Specifications -->
                             <div v-if="serviceData.specifications?.length" key="photography-specs">

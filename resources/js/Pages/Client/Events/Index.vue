@@ -7,11 +7,13 @@ import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction';
 import { useUIStore } from '@/store/ui';
 import ClientLayout from '@/Layouts/ClientLayout.vue';
+import QuickBookingStepperModal from '@/Components/QuickBookingStepperModal.vue';
 
 const props = defineProps({
     events: {
         type: Object
-    }
+    },
+    categories: Object
 })
 
 const ui = ref(useUIStore())
@@ -292,10 +294,13 @@ onMounted(() => {
         }
     });
 });
+
+const eventModal = ref(null)
 </script>
 
 <template>
     <ClientLayout>
+        <QuickBookingStepperModal ref="eventModal" :categories="categories" />
         <div class="min-h-screen bg-gray-50">
 
 
@@ -308,7 +313,7 @@ onMounted(() => {
                             <p class="text-gray-600">Plan, organize, and manage all your events in one place</p>
                         </div>
                         <div class="flex space-x-3">
-                            <button @click="openCreateEventModal"
+                            <button @click="eventModal.open()"
                                 class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center space-x-2">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -322,7 +327,7 @@ onMounted(() => {
             </div>
 
             <!-- Stats Section -->
-            <div class="max-w-7xl mx-auto px-6 py-6">
+            <!-- <div class="max-w-7xl mx-auto px-6 py-6">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                         <div class="flex items-center">
@@ -392,7 +397,7 @@ onMounted(() => {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
             <!-- View Toggle & Filters -->
             <div class="bg-white border-b border-gray-200">
@@ -428,17 +433,7 @@ onMounted(() => {
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                         </div>
 
-                        <!-- Event Type -->
-                        <!-- <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Event Type</label>
-                        <select v-model="selectedEventType"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="all">All Types</option>
-                            <option v-for="type in eventTypes" :key="type.value" :value="type.value">
-                                {{ type.icon }} {{ type.label }}
-                            </option>
-                        </select>
-                    </div> -->
+
 
                         <!-- Status -->
                         <div>
@@ -454,17 +449,7 @@ onMounted(() => {
                             </select>
                         </div>
 
-                        <!-- Priority -->
-                        <!-- <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
-                        <select v-model="selectedPriority"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="all">All Priority</option>
-                            <option value="high">High</option>
-                            <option value="medium">Medium</option>
-                            <option value="low">Low</option>
-                        </select>
-                    </div> -->
+
                     </div>
 
                     <div v-if="!ui.isEventCalendarView" class="mt-4 flex items-center justify-between">
@@ -564,20 +549,7 @@ onMounted(() => {
                                     </div>
                                 </div>
 
-                                <!-- Progress Bar -->
-                                <!-- <div class="mb-4">
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="text-sm font-medium text-gray-600">Tasks Progress</span> -->
-                                <!-- <span class="text-sm text-gray-500">
-                                        {{event.tasks.filter(t => t.completed).length}}/{{ event.tasks.length }}
-                                    </span> -->
-                                <!-- </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2"> -->
-                                <!-- <div class="bg-blue-600 h-2 rounded-full"
-                                        :style="{ width: event.tasks.length > 0 ? (event.tasks.filter(t => t.completed).length / event.tasks.length * 100) + '%' : '0%' }">
-                                    </div> -->
-                                <!-- </div>
-                            </div> -->
+
 
                                 <!-- Services Preview -->
                                 <div v-if="event.services.length > 0" class="flex flex-wrap gap-2">
@@ -627,42 +599,7 @@ onMounted(() => {
                             </div>
                         </div>
 
-                        <!-- Quick Actions -->
-                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                            <div class="space-y-3">
-                                <button @click="openCreateEventModal"
-                                    class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-                                    Create New Event
-                                </button>
-                                <button
-                                    class="w-full border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm">
-                                    Browse Services
-                                </button>
-                                <button
-                                    class="w-full border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm">
-                                    View Templates
-                                </button>
-                            </div>
-                        </div>
 
-                        <!-- Event Categories -->
-                        <!-- <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Event Categories</h3>
-                        <div class="space-y-2">
-                            <div v-for="type in eventTypes" :key="type.value"
-                                class="flex items-center justify-between p-2 rounded hover:bg-gray-50 cursor-pointer"
-                                @click="selectedEventType = type.value; ui.toggleEventCalendarView">
-                                <div class="flex items-center space-x-3">
-                                    <span class="text-lg">{{ type.icon }}</span>
-                                    <span class="text-sm text-gray-700">{{ type.label }}</span>
-                                </div>
-                                <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                                    {{mockEvents.filter(e => e.type === type.value).length}}
-                                </span>
-                            </div>
-                        </div>
-                    </div> -->
                     </div>
                 </div>
             </div>
@@ -675,10 +612,10 @@ onMounted(() => {
                         <!-- Modal Header -->
                         <div class="flex items-start justify-between mb-6">
                             <div class="flex items-start space-x-4">
-                                <div class="p-3 rounded-lg text-3xl"
+                                <!-- <div class="p-3 rounded-lg text-3xl"
                                     :style="{ backgroundColor: selectedEvent.color + '20' }">
                                     {{ getEventTypeInfo(selectedEvent.type).icon }}
-                                </div>
+                                </div> -->
                                 <div>
                                     <h2 class="text-2xl font-bold text-gray-900 mb-2">{{ selectedEvent.title }}</h2>
                                     <div class="flex items-center space-x-2 mb-2">
@@ -741,16 +678,7 @@ onMounted(() => {
                                         <span class="text-gray-600">Location:</span>
                                         <span class="ml-2 font-medium">{{ selectedEvent.location }}</span>
                                     </div>
-                                    <div class="flex items-center text-sm">
-                                        <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1">
-                                            </path>
-                                        </svg>
-                                        <span class="text-gray-600">Budget:</span>
-                                        <span class="ml-2 font-medium">{{ formatPrice(selectedEvent.budget) }}</span>
-                                    </div>
+
                                 </div>
                             </div>
 
@@ -778,32 +706,10 @@ onMounted(() => {
                             </div>
                         </div>
 
-                        <!-- Tasks -->
-                        <!-- <div class="mb-6">
-                        <h3 class="font-semibold text-gray-900 mb-3">Tasks & Checklist</h3>
-                        <div v-if="selectedEvent.tasks.length > 0" class="space-y-2">
-                            <div v-for="(task, index) in selectedEvent.tasks" :key="index"
-                                class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div class="flex items-center space-x-3">
-                                    <input type="checkbox" :checked="task.completed"
-                                        class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                                    <span :class="[
-                                        'text-sm',
-                                        task.completed ? 'line-through text-gray-500' : 'text-gray-900'
-                                    ]">
-                                        {{ task.task }}
-                                    </span>
-                                </div>
-                                <span class="text-xs text-gray-500">Due: {{ formatDate(task.dueDate) }}</span>
-                            </div>
-                        </div>
-                        <div v-else class="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-lg">
-                            No tasks added yet
-                        </div>
-                    </div> -->
+
 
                         <!-- Action Buttons -->
-                        <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+                        <!-- <div class="flex items-center justify-between pt-6 border-t border-gray-200">
                             <div class="flex space-x-3">
                                 <button
                                     class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
@@ -822,134 +728,11 @@ onMounted(() => {
                                 class="px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors text-sm">
                                 Delete Event
                             </button>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
 
-            <!-- Create Event Modal -->
-            <div v-if="showCreateEventModal"
-                class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div class="bg-white rounded-lg max-w-2xl w-full max-h-screen overflow-y-auto">
-                    <div class="p-6">
-                        <!-- Modal Header -->
-                        <div class="flex items-center justify-between mb-6">
-                            <h2 class="text-2xl font-bold text-gray-900">Create New Event</h2>
-                            <button @click="showCreateEventModal = false" class="text-gray-400 hover:text-gray-600">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
-                        </div>
-
-                        <!-- Form -->
-                        <form @submit.prevent="createEvent" class="space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <!-- Event Title -->
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Event Title *</label>
-                                    <input v-model="newEvent.title" type="text" required
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Enter event title">
-                                </div>
-
-                                <!-- Event Type -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Event Type *</label>
-                                    <select v-model="newEvent.type" required
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                                        <option value="">Select event type</option>
-                                        <option v-for="type in eventTypes" :key="type.value" :value="type.value">
-                                            {{ type.icon }} {{ type.label }}
-                                        </option>
-                                    </select>
-                                </div>
-
-                                <!-- Priority -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
-                                    <select v-model="newEvent.priority"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                                        <option value="low">Low</option>
-                                        <option value="medium">Medium</option>
-                                        <option value="high">High</option>
-                                    </select>
-                                </div>
-
-                                <!-- Date -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Event Date *</label>
-                                    <input v-model="newEvent.date" type="date" required
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                                </div>
-
-                                <!-- Time -->
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
-                                        <input v-model="newEvent.startTime" type="time"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">End Time</label>
-                                        <input v-model="newEvent.endTime" type="time"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                                    </div>
-                                </div>
-
-                                <!-- Location -->
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                                    <input v-model="newEvent.location" type="text"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Enter event location">
-                                </div>
-
-                                <!-- Budget -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Budget (PHP)</label>
-                                    <input v-model="newEvent.budget" type="number" min="0"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="0">
-                                </div>
-
-                                <!-- Reminder -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Reminder</label>
-                                    <select v-model="newEvent.reminder"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                                        <option value="none">No reminder</option>
-                                        <option value="1hour">1 hour before</option>
-                                        <option value="1day">1 day before</option>
-                                        <option value="1week">1 week before</option>
-                                    </select>
-                                </div>
-
-                                <!-- Description -->
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                                    <textarea v-model="newEvent.description" rows="3"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Add event description, notes, or special requirements..."></textarea>
-                                </div>
-                            </div>
-
-                            <!-- Form Actions -->
-                            <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
-                                <button type="button" @click="showCreateEventModal = false"
-                                    class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                                    Cancel
-                                </button>
-                                <button type="submit"
-                                    class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                                    Create Event
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
         </div>
     </ClientLayout>
 </template>

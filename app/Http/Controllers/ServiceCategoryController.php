@@ -90,4 +90,14 @@ class ServiceCategoryController extends Controller
 
         return back()->with('success', 'Category deleted with successfully');
     }
+
+    public function getCategories(){
+
+        $categories = ServiceCategory::all();
+
+        return response()->json([
+            'success' => true,
+            'data' => $categories
+        ]);
+    }
 }

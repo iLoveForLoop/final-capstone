@@ -10,6 +10,7 @@ import { Input } from '@/Components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select'
 import { Textarea } from '@/Components/ui/textarea'
 import { router, useForm } from '@inertiajs/vue3'
+import VendorReportDialog from './VendorReportDialog.vue'
 
 const props = defineProps({
     vendor: {
@@ -216,57 +217,8 @@ const chatVendor = () => {
         </div>
 
         <!-- Report Dialog -->
-        <Dialog :open="showReportModal" @update:open="showReportModal = $event">
-            <DialogContent class="sm:max-w-md">
-                <DialogHeader>
-                    <DialogTitle>Report Vendor</DialogTitle>
-                    <DialogDescription>
-                        Please provide details about your concern regarding {{ vendor.name }}.
-                        We take all reports seriously and will review them within 24 hours.
-                    </DialogDescription>
-                </DialogHeader>
-
-                <div class="grid gap-4 py-4">
-                    <!-- Reason Selection -->
-                    <div class="grid gap-2">
-                        <Label for="reason" class="text-sm font-medium">Reason for report *</Label>
-                        <Select v-model="reportForm.reason">
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a reason" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Inappropriate behavior">Inappropriate Behavior</SelectItem>
-                                <SelectItem value="Fake Profile">Fake Profile or Information</SelectItem>
-                                <SelectItem value="Spam Scam">Spam or Scam</SelectItem>
-                                <SelectItem value="Poor Service">Poor Service Quality</SelectItem>
-                                <SelectItem value="Unprofessional">Unprofessional Conduct</SelectItem>
-                                <SelectItem value="Inactivity">Inactivity</SelectItem>
-                                <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    <!-- Details -->
-                    <div class="grid gap-2">
-                        <Label for="description" class="text-sm font-medium">Detailed description *</Label>
-                        <Textarea id="description" v-model="reportForm.description"
-                            placeholder="Please provide specific details about your concern..." class="min-h-32" />
-                    </div>
-                </div>
-
-                <DialogFooter class="flex flex-col sm:flex-row gap-2">
-                    <Button variant="outline" @click="closeReportModal" :disabled="isSubmittingReport">
-                        Cancel
-                    </Button>
-                    <Button @click="submitReport"
-                        :disabled="isSubmittingReport || !reportForm.reason || !reportForm.description"
-                        class="bg-red-600 hover:bg-red-700">
-                        <span v-if="isSubmittingReport">Submitting...</span>
-                        <span v-else>Submit Report</span>
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+        <VendorReportDialog v-model:show="showReportModal" :vendor="vendor" :report-form="reportForm"
+            :is-submitting="isSubmittingReport" @submit="submitReport" @cancel="closeReportModal" />
     </div>
 </template>
 

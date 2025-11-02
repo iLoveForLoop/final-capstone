@@ -161,7 +161,7 @@ class UserController extends Controller
     public function show(User $user)
 {
 
-    $user->load(['roles', 'vendor']);
+    $user->load(['roles', 'vendor', 'client']);
     $userData = [];
 
     if($user->hasRole('vendor')){
@@ -178,11 +178,13 @@ class UserController extends Controller
         'id' => $user->id,
         'name' => $user->name,
         'email' => $user->email,
-        'vendor' => $user->vendor,
+        'vendor' => $user->vendor ?? null,
+        'client' => $user->client ?? null,
         'roles' => $user->roles,
         'created_at' => $user->created_at,
         'image_url' => $user->getFirstMediaUrl('images'),
-        'activities' => $user->activities->map(function ($activity) {
+        'status' => $user->status,
+        'activities' => $user->activities->sortByDesc('created_at')->values()->map(function ($activity) {
             return [
                 'description' => $activity->description,
                 'causer_id' => $activity->causer_id,
@@ -410,7 +412,7 @@ class UserController extends Controller
 
                         // dd($user->email);
 
-                        Mail::to($user->email)->queue(new UserBanMail($user, $role));
+                        // Mail::to($user->email)->queue(new UserBanMail($user, $role));
                         // Log the ban
                         activity()
                             ->causedBy(auth()->user())

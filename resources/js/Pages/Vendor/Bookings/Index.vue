@@ -129,7 +129,15 @@ const closeModals = () => {
     showCompleteModal.value = false
     // selectedBooking.value = null
     declineReason.value = ''
+    cancelReason.value = ''
     bookingDetailsModal.value.close()
+}
+
+const handleCancel = () => {
+    showAcceptModal.value = false
+    showCancelModal.value = false
+    showDeclineModal.value = false
+    showCompleteModal.value = false
 }
 
 // Action functions with loading states
@@ -185,7 +193,7 @@ const cancelBooking = () => {
         },
         onError: () => {
             delete loadingActions.value[selectedBooking.value.raw_id]
-        }
+        },
     })
 }
 
@@ -262,7 +270,7 @@ onMounted(async () => {
 
 <template>
     <VendorLayout>
-        <VendorAcceptanceModal ref="vendorAcceptanceModal" />
+        <VendorAcceptanceModal ref="vendorAcceptanceModal" v-model:bookingDetailsModal="bookingDetailsModal" />
 
         <!-- View Booking Details -->
         <BookingDetailsModal ref="bookingDetailsModal" @accept-booking="openAcceptModal"
@@ -271,22 +279,23 @@ onMounted(async () => {
 
         <!-- Accept Booking Modal -->
         <AcceptBookingModal :showAcceptModal="showAcceptModal" :selectedBooking="selectedBooking" :isLoading="isLoading"
-            @close-modals="closeModals" @accept-booking="acceptBooking" :formatDate="formatDate" />
+            @close-modals="closeModals" @accept-booking="acceptBooking" :formatDate="formatDate"
+            @cancel="handleCancel" />
 
         <!-- Decline Booking Modal -->
         <DeclineBookingModal :showDeclineModal="showDeclineModal" :selectedBooking="selectedBooking"
             :isLoading="isLoading" @close-modals="closeModals" @decline-booking="declineBooking"
-            :formatDate="formatDate" v-model:declineReason="declineReason" />
+            :formatDate="formatDate" v-model:declineReason="declineReason" @cancel="handleCancel" />
 
         <!-- Complete Booking Modal -->
         <CompleteBookingModal :showCompleteModal=showCompleteModal :selectedBooking="selectedBooking"
             :isLoading="isLoading" @close-modals="closeModals" :formatDate="formatDate"
-            @complete-booking="completeBooking" />
+            @complete-booking="completeBooking" @cancel="handleCancel" />
 
         <!-- Cancel Booking Modal -->
         <CancelBookingModal :showCancelModal="showCancelModal" :selectedBooking="selectedBooking" :isLoading="isLoading"
             @close-modals="closeModals" @cancel-booking="cancelBooking" :formatDate="formatDate"
-            v-model:cancelReason="cancelReason" />
+            v-model:cancelReason="cancelReason" @cancel="handleCancel" />
 
         <div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
             <div class="max-w-7xl mx-auto">
@@ -298,11 +307,11 @@ onMounted(async () => {
                             <p class="mt-1 text-sm text-gray-500">Manage and track all your bookings</p>
                         </div>
                         <div class="flex items-center gap-3">
-                            <button @click="exportBookings"
+                            <!-- <button @click="exportBookings"
                                 class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 <Download class="h-4 w-4 mr-2" />
                                 Export
-                            </button>
+                            </button> -->
                             <span class="text-sm text-gray-500">
                                 {{ bookings.total }} {{ bookings.total === 1 ? 'booking' : 'bookings' }}
                             </span>

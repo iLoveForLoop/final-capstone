@@ -10,7 +10,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class BookingDeclineMail extends Mailable
+class BookingDeclineMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
@@ -40,8 +40,9 @@ class BookingDeclineMail extends Mailable
      */
     public function content(): Content
     {
+
         return new Content(
-            markdown: 'emails.customer.booking_decline',
+            markdown: 'emails.customer.booking_declined',
         );
     }
 

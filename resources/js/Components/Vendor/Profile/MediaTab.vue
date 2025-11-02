@@ -16,10 +16,14 @@ const showcaseVideos = defineModel('showcaseVideos');
 <template>
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-semibold">Showcase Videos</h2>
-        <button v-if="isEditing" @click="emit('show-video-modal')"
+        <button v-if="isEditing && showcaseVideos.length < 1" @click="emit('show-video-modal')"
             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
             Add Video
         </button>
+        <p v-else-if="isEditing" class="text-red-500 text-sm">
+            Only one showcase video is allowed.
+        </p>
+
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

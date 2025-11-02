@@ -118,7 +118,7 @@ onMounted(() => {
                 <p class="text-gray-600 mb-6">{{ error }}</p>
                 <div class="flex flex-col sm:flex-row gap-3 justify-center">
                     <Button @click="retryFetch" class="bg-indigo-600 hover:bg-indigo-700">
-                        <Loader2 :size="16" class="mr-2" :class="{ 'animate-spin': isLoading }" />
+                        <Loader2 :size="16" class="mr-2" :class="[isLoading ? 'animate-spin' : '']" />
                         Try Again
                     </Button>
                     <Button variant="outline" @click="$router.go(-1)">
@@ -169,7 +169,7 @@ onMounted(() => {
             </div>
 
             <!-- Additional Actions -->
-            <div class="mt-12 p-6 bg-gray-50 rounded-xl border border-gray-200">
+            <!-- <div class="mt-12 p-6 bg-gray-50 rounded-xl border border-gray-200">
                 <div class="text-center">
                     <h3 class="text-lg font-semibold text-gray-900 mb-2">Need Something Custom?</h3>
                     <p class="text-gray-600 mb-4">Don't see exactly what you're looking for? Contact us to discuss
@@ -179,7 +179,7 @@ onMounted(() => {
                         Request Custom Quote
                     </Button>
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
 </template>

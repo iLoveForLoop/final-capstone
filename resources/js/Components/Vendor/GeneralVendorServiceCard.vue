@@ -10,6 +10,8 @@ import { push } from 'notivue';
 import { isPricePackage } from '@/utils/packageIdentifier';
 import ViewVideographyService from './Videography/ViewVideographyService.vue';
 import EditVideographyServiceForm from './Videography/EditVideographyServiceForm.vue';
+import EditGeneralServiceForm from './General/EditGeneralServiceForm.vue';
+import ViewGeneralService from './General/ViewGeneralService.vue';
 
 
 const toast = useToast();
@@ -29,10 +31,12 @@ const toggleAvailability = (service) => {
     router.patch(route('vendor.services.toggle-availability', service.id), {}, {
         preserveScroll: true,
         onSuccess: () => {
-            toast.success(`Service ${service.is_available ? 'deactivated' : 'activated'} successfully`);
+            // toast.success(`Service ${service.is_available ? 'deactivated' : 'activated'} successfully`);
+            push.success(`Service ${service.is_available ? 'deactivated' : 'activated'} successfully`);
         },
         onError: () => {
-            toast.error('Failed to update service availability');
+            // toast.error('Failed to update service availability');
+            push.error('Failed to update service availability');
         }
     });
 };
@@ -87,6 +91,7 @@ const openViewModal = () => {
 
 
 
+
 </script>
 
 <template>
@@ -98,6 +103,9 @@ const openViewModal = () => {
         <ViewCateringService v-if="showViewModal && service.category.name === 'Catering'" :service="selectedService"
             :catering-service="selectedCateringService" @close="showViewModal = false" />
         <ViewVideographyService v-if="showViewModal && service.category.name === 'Videography'"
+            :service="selectedService" @close="showViewModal = false" />
+        <ViewGeneralService
+            v-if="showViewModal && service.category.name !== 'Videography' && service.category.name !== 'Catering' && service.category.name !== 'Photography'"
             :service="selectedService" @close="showViewModal = false" />
 
         <!-- Service Card -->
@@ -247,13 +255,17 @@ const openViewModal = () => {
                             :category_id="service.service_category_id" @close="closeEditModal"
                             @updated="handleServiceUpdated" />
 
-                        <EditCateringServiceForm v-if="service.category.name === 'Catering'" :service="service"
+                        <EditCateringServiceForm v-else-if="service.category.name === 'Catering'" :service="service"
                             :catering-service="service.catering_service" @close="closeEditModal"
                             @updated="handleServiceUpdated" />
 
-                        <EditVideographyServiceForm v-if="service.category.name === 'Videography'" :service="service"
-                            :category_id="service.service_category_id" @close="closeEditModal"
+                        <EditVideographyServiceForm v-else-if="service.category.name === 'Videography'"
+                            :service="service" :category_id="service.service_category_id" @close="closeEditModal"
                             @updated="handleServiceUpdated" />
+
+                        <EditGeneralServiceForm v-else :service="service" :category_id="service.service_category_id"
+                            @close="closeEditModal" @updated="handleServiceUpdated"
+                            :selectedCategory="service.category.name" />
 
 
                     </div>

@@ -11,6 +11,7 @@ import { useForm, usePage } from '@inertiajs/vue3'
 import { push } from 'notivue'
 import { ref, reactive, computed, watch } from 'vue'
 import { onUnmounted } from 'vue'
+import { router } from '@inertiajs/vue3';
 
 
 const page = usePage()
@@ -397,6 +398,12 @@ onUnmounted(() => {
 
 // Watch for password changes to update strength
 watch(() => formData.password, checkPasswordStrength)
+
+const goBack = () => {
+    // router.visit('/'); // Go back to home page, or use router.get('/previous-route') for specific route
+    // Alternatively, you can use window.history.back() for browser back:
+    window.history.back();
+};
 </script>
 
 <template>
@@ -404,7 +411,21 @@ watch(() => formData.password, checkPasswordStrength)
         <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-4 sm:py-8">
             <div class="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8">
                 <!-- Header -->
-                <div class="text-center mb-6 sm:mb-10">
+                <!-- Header -->
+                <!-- Header with Back Button -->
+                <div class="text-center mb-6 sm:mb-10 relative px-2">
+                    <!-- Back Button - Mobile: Left aligned, Desktop: More prominent -->
+                    <button @click="goBack"
+                        class="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 flex items-center text-gray-600 hover:text-gray-900 transition-colors group">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2 group-hover:-translate-x-1 transition-transform"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        <span class="text-sm font-medium hidden sm:inline">Back</span>
+                        <span class="text-sm font-medium sm:hidden">Back</span>
+                    </button>
+
                     <div class="flex justify-center mb-3 sm:mb-4">
                         <div
                             class="w-10 h-10 sm:w-12 sm:h-12 bg-purple-500 rounded-lg flex items-center justify-center shadow-sm">
@@ -416,9 +437,10 @@ watch(() => formData.password, checkPasswordStrength)
                             </svg>
                         </div>
                     </div>
-                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Vendor Registration</h1>
-                    <p class="text-sm sm:text-base text-gray-600 px-2">Complete your profile to start accepting bookings
-                    </p>
+                    <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 px-8 sm:px-0">Vendor
+                        Registration</h1>
+                    <p class="text-xs sm:text-sm lg:text-base text-gray-600">Complete your profile to start accepting
+                        bookings</p>
                 </div>
 
                 <!-- Progress Section -->
@@ -426,7 +448,7 @@ watch(() => formData.password, checkPasswordStrength)
                     <div class="flex justify-between items-center mb-3">
                         <span class="text-xs sm:text-sm font-medium text-gray-700">Step {{ currentStep }} of {{
                             totalSteps
-                            }}</span>
+                        }}</span>
                         <span class="text-xs sm:text-sm font-medium text-purple-500">{{ Math.round((currentStep /
                             totalSteps)
                             * 100) }}% Complete</span>

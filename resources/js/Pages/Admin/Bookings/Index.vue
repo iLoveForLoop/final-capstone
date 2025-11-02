@@ -1,26 +1,29 @@
 <script setup>
 import TestLayout from '@/Layouts/TestLayout.vue';
-import { ref, computed } from 'vue';
+import { ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import Pagination from '@/Components/Pagination.vue';
+import debounce from 'lodash/debounce';
 
 const props = defineProps({
-    bookings: {
-        type: Object,
-        required: true
-    },
-    filters: {
-        type: Object,
-        default: () => ({
-            status: 'all',
-            search: ''
-        })
-    }
+    bookings: Object,
+    filters: Object,
 });
 
+// Reactive refs for filters
 const status = ref(props.filters.status || 'all');
 const search = ref(props.filters.search || '');
 
+// Debounced search
+const debouncedSearch = debounce(() => {
+    applyFilters();
+}, 400);
+
+// Watchers
+watch(status, () => applyFilters());
+watch(search, () => debouncedSearch());
+
+// Status options
 const statusOptions = [
     { value: 'all', label: 'All Statuses' },
     { value: 'pending', label: 'Pending' },
@@ -29,7 +32,9 @@ const statusOptions = [
     { value: 'cancelled', label: 'Cancelled' }
 ];
 
+// Helper functions
 const formatDate = (dateString) => {
+    if (!dateString) return '-';
     const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
     return new Date(dateString).toLocaleDateString(undefined, options);
 };
@@ -38,16 +43,19 @@ const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amount);
 };
 
+// Main function to trigger filter updates
 const applyFilters = () => {
-    router.get(route('admin.bookings'), {
+    router.get(route('admin.bookings.index'), {
         status: status.value,
         search: search.value
     }, {
         preserveState: true,
-        replace: true
+        replace: true,
+        preserveScroll: true,
     });
 };
 </script>
+
 
 <template>
     <TestLayout>
@@ -65,7 +73,7 @@ const applyFilters = () => {
                 <div class="flex flex-col md:flex-row gap-4">
                     <div class="flex-1">
                         <label class="block text-xs font-medium text-gray-500 mb-1">Status</label>
-                        <select v-model="status" @change="applyFilters"
+                        <select v-model="status"
                             class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                             <option v-for="option in statusOptions" :key="option.value" :value="option.value">
                                 {{ option.label }}
@@ -75,7 +83,7 @@ const applyFilters = () => {
                     <div class="flex-1">
                         <label class="block text-xs font-medium text-gray-500 mb-1">Search</label>
                         <div class="relative">
-                            <input v-model="search" @input="applyFilters" type="text" placeholder="Search bookings..."
+                            <input v-model="search" type="text" placeholder="Search bookings..."
                                 class="w-full border border-gray-200 rounded-lg px-3 py-2 pl-9 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500" />
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
@@ -168,7 +176,8 @@ const applyFilters = () => {
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex justify-end gap-3">
-                                        <button class="text-indigo-600 hover:text-indigo-900">
+                                        <button @click="$inertia.visit(route('admin.bookings.show', { id: booking.id }))"
+                                            class="text-indigo-600 hover:text-indigo-900">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                                 stroke-linecap="round" stroke-linejoin="round"

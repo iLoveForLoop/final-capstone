@@ -14,6 +14,7 @@ class ReviewController extends Controller
     {
         $vendor = auth()->user()->vendor;
 
+
         if (!$vendor) {
             abort(403, 'Not a vendor.');
         }
@@ -25,17 +26,17 @@ class ReviewController extends Controller
             ->map(function ($review) {
                 return [
                     'id' => $review->id,
-
+                    'user' => $review->user,
                     'customer' => [
                         'name'     => $review->user->client->full_name ?? $review->user->name,
-                        'avatar'   => $review->user->getFirstMediaUrl('images') ?? null,
+                        'avatar'   => $review->user->getFirstMediaUrl('avatar') ?? null,
                         'verified' => true, // you can set logic here if only "paid" bookings are verified
                     ],
 
                     'service' => $review->booking?->service?->name ?? 'Unknown Service',
 
                     'booking' => [
-                        'id'         => 'BK-' . str_pad($review->booking?->id ?? 0, 6, '0', STR_PAD_LEFT),
+                        'id'         => 'BK-' . str_pad($review->booking?->id ?? 0, 5, '0', STR_PAD_LEFT),
                         'date'       => $review->booking?->created_at?->format('Y-m-d'),
                         'event_date' => $review->booking?->event?->event_date?->format('Y-m-d'),
                     ],
@@ -131,7 +132,9 @@ class ReviewController extends Controller
      */
     public function destroy(Review $review)
     {
-        //
+        $review->delete();
+
+        return back()->with('success', 'Review deleted successfully.');
     }
 
     public function updateResponse(Request $request, Review $review){

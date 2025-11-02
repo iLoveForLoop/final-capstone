@@ -104,13 +104,13 @@ defineExpose({
                         <CateringServiceForm @close="show = false" v-if="selectedCategory === 'Catering'"
                             :category_id="selectedCategoryId" />
 
-                        <PhotographyServiceForm @close="show = false" v-if="selectedCategory === 'Photography'"
+                        <PhotographyServiceForm @close="show = false" v-else-if="selectedCategory === 'Photography'"
                             :category_id="selectedCategoryId" />
 
-                        <VideographyServiceForm @close="show = false" v-if="selectedCategory === 'Videography'"
+                        <VideographyServiceForm @close="show = false" v-else-if="selectedCategory === 'Videography'"
                             :category_id="selectedCategoryId" />
 
-                        <GeneralServiceForm @close="show = false" v-else :category_id="selectedCategoryId"
+                        <GeneralServiceForm v-else @close="show = false" :category_id="selectedCategoryId"
                             :selectedCategory="selectedCategory" />
 
                     </div>

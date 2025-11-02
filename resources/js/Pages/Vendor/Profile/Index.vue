@@ -8,6 +8,7 @@ import BasicInfo from '@/Components/Vendor/Profile/BasicInfo.vue';
 import Specialties from '@/Components/Vendor/Profile/Specialties.vue';
 import Portfolio from '@/Components/Vendor/Profile/Portfolio.vue';
 import MediaTab from '@/Components/Vendor/Profile/MediaTab.vue';
+import PermitTab from '@/Components/Vendor/Profile/PermitTab.vue';
 
 const props = defineProps({
     vendor: {
@@ -18,6 +19,10 @@ const props = defineProps({
         default: () => []
     },
     showcaseVideos: {
+        type: Array,
+        default: () => []
+    },
+    permitFiles: {
         type: Array,
         default: () => []
     }
@@ -45,14 +50,19 @@ const formData = useForm({
     currency: props.vendor.currency ?? 'USD',
     packageTypes: props.vendor.package_types || [],
     socialMedia: props.vendor.social_media || {
-        instagram: '',
         facebook: '',
-        twitter: '',
-        linkedin: ''
+        instagram: '',
+
+        // twitter: '',
+        // linkedin: ''
     },
+    latitude: null,
+    longitude: null,
     portfolioImages: [],
+    permitFiles: [],
     showcaseVideos: [],
     removedImageIds: [],
+    removedPermitIds: [],
     removedVideoIds: [],
     _method: 'PUT'
 });
@@ -61,6 +71,10 @@ const formData = useForm({
 
 // Gallery and Media - using existing media if available
 const portfolioImages = ref(props.portfolioImages);
+const permitFiles = ref(props.permitFiles)
+
+const originalPermitFiles = [...permitFiles.value];
+
 const removedImageIds = ref([]) // for tracking deleted ones
 
 const originalPortfolioImages = [...portfolioImages.value];
@@ -80,6 +94,7 @@ const newVideoFile = ref(null); // Changed from URL to file
 const newVideoPreview = ref(null);
 const newImageFiles = ref([]); // For multiple image uploads
 const newImagePreviews = ref([]);
+const showPermitUpload = ref(false);
 
 // Backup of form data for cancel functionality
 let formDataBackup = null;
@@ -107,6 +122,7 @@ const toggleEdit = () => {
             packageTypes: [...formData.packageTypes],
             socialMedia: { ...formData.socialMedia },
             portfolioImages: [...portfolioImages.value],
+            permitFiles: [...permitFiles.value],
             showcaseVideos: [...showcaseVideos.value]
         };
     } else {
@@ -133,11 +149,13 @@ const toggleEdit = () => {
             // Restore portfolio images and videos
             portfolioImages.value = [...formDataBackup.portfolioImages];
             showcaseVideos.value = [...formDataBackup.showcaseVideos];
+            permitFiles.value = [...formDataBackup.permitFiles];
 
             // Clear any uploaded files
             formData.profileImageFile = null;
             formData.portfolioImages = [];
             formData.showcaseVideos = [];
+            formData.permitFiles = [];
         }
     }
 
@@ -149,7 +167,7 @@ const saveChanges = () => {
 
     // Append all scalar fields
     Object.keys(formData).forEach((key) => {
-        if (!['portfolioImages', 'showcaseVideos', 'socialMedia'].includes(key)) {
+        if (!['portfolioImages', 'showcaseVideos', 'socialMedia', 'permitFiles'].includes(key)) {
             if (formData[key] !== null && formData[key] !== undefined) {
                 submitData.append(key, formData[key])
             }
@@ -164,6 +182,10 @@ const saveChanges = () => {
         submitData.append(`portfolioImages[${index}]`, file)
     })
 
+    formData.permitFiles.forEach((file, index) => {
+        submitData.append(`permitFiles[${index}]`, file) // Add this
+    })
+
     // Append removed ids
     formData.removedImageIds.forEach((id, index) => {
         submitData.append(`removedImageIds[${index}]`, id)
@@ -174,14 +196,17 @@ const saveChanges = () => {
         data: submitData,
         onSuccess: () => {
             // 🔑 Refresh props from backend
-            router.reload({ only: ['vendor', 'portfolioImages', 'showcaseVideos'] })
+            router.reload({ only: ['vendor', 'portfolioImages', 'showcaseVideos', 'permitFiles'] })
 
             // Reset editing mode
             // isEditing.value = false
 
             // Optionally reset local upload arrays
             formData.portfolioImages = []
+            formData.permitFiles = [] // Add this
             formData.removedImageIds = []
+            formData.removedPermitIds = [] // Add this
+
         },
     })
 
@@ -191,8 +216,63 @@ const saveChanges = () => {
     isEditing.value = false
 }
 
-const addSpecialty = () => {
-    const newSpecialty = prompt('Enter new specialty:');
+// Add permit file handling methods
+const handlePermitFilesUpload = (event) => {
+    const files = Array.from(event.target.files);
+
+    if (files.length === 0) {
+        alert('Please select valid files.');
+        return;
+    }
+
+    // Add to form data
+    files.forEach(file => {
+        formData.permitFiles.push(file);
+    });
+
+    // Create previews for images, show file names for documents
+    files.forEach(file => {
+        if (file.type.includes('image/')) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                permitFiles.value.push({
+                    url: e.target.result,
+                    name: file.name,
+                    type: 'image'
+                });
+            };
+            reader.readAsDataURL(file);
+        } else {
+            permitFiles.value.push({
+                name: file.name,
+                type: 'document',
+                size: (file.size / 1024 / 1024).toFixed(2) + ' MB'
+            });
+        }
+    });
+
+    showPermitUpload.value = false;
+};
+
+const removePermit = (index) => {
+    const permit = permitFiles.value[index]
+
+    // If it's an existing permit (from backend, has id)
+    if (permit.id) {
+        formData.removedPermitIds.push(permit.id)
+    }
+
+    // Remove from UI preview
+    permitFiles.value.splice(index, 1)
+
+    // Also remove from new uploads if it was added there
+    if (formData.permitFiles.length > index) {
+        formData.permitFiles.splice(index, 1)
+    }
+}
+
+const addSpecialty = (newSpecialty) => {
+
     if (newSpecialty && newSpecialty.trim()) {
         formData.specialties.push(newSpecialty.trim());
     }
@@ -347,6 +427,14 @@ watch(
     }
 )
 
+// Add watch for permitFiles
+watch(
+    () => props.permitFiles,
+    (newVal) => {
+        permitFiles.value = [...newVal]
+    }
+)
+
 </script>
 
 <template>
@@ -389,6 +477,35 @@ watch(
                     <div v-show="activeTab === 'media'" class="p-8">
                         <MediaTab :isEditing="isEditing" v-model:showcaseVideos="showcaseVideos"
                             @show-video-modal="showVideoModal = true" @remove-video="removeVideo" />
+                    </div>
+
+                    <!-- Permits Tab -->
+                    <div v-show="activeTab === 'permits'" class="p-8">
+                        <PermitTab v-model:permitFiles="permitFiles" :isEditing="isEditing"
+                            @show-permit-upload="showPermitUpload = true" @remove-permit="removePermit" />
+                    </div>
+                </div>
+
+                <!-- Permit Upload Modal -->
+                <div v-if="showPermitUpload"
+                    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                        <h3 class="text-lg font-semibold mb-4">Upload Permit Files</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Select Files</label>
+                                <input type="file" @change="handlePermitFilesUpload" multiple
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                                <p class="text-xs text-gray-500 mt-1">You can select multiple files (PDF, DOC, Images,
+                                    etc.)</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-end space-x-3 mt-6">
+                            <button @click="showPermitUpload = false"
+                                class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                Cancel
+                            </button>
+                        </div>
                     </div>
                 </div>
 

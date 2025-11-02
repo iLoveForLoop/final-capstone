@@ -18,13 +18,14 @@
     <div
         style="max-width:600px; margin:0 auto; background:#fff; border-radius:8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
         <!-- Header -->
-        <table width="100%" cellpadding="0" cellspacing="0"
+        <table width="100%" cellpadding="0" align="center" cellspacing="0"
             style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);">
             <tr>
-                <td style="padding: 30px 20px; text-align: center;">
-                    <h1
-                        style="color: #ffffff; font-size: 28px; font-weight: 600; margin: 0 0 8px 0; letter-spacing: -0.5px;">
-                        Eventory</h1>
+                <td align="center" valign="middle" style="padding: 30px 20px; text-align: center;">
+                    <div
+                        style="color:#ffffff; font-size:28px; font-weight:600; margin:0; letter-spacing:-0.5px; font-family:Helvetica, Arial, sans-serif; text-align: center;">
+                        Eventory
+                    </div>
                 </td>
             </tr>
         </table>
@@ -35,7 +36,7 @@
                 <td style="padding: 20px; text-align: center;">
                     <div
                         style="display: inline-block; background: #8b5cf6; color: #ffffff; padding: 12px 24px; border-radius: 24px; font-weight: 600; font-size: 14px;">
-                        🎉 Service Completed Successfully
+                        Service Completed Successfully
                     </div>
                 </td>
             </tr>

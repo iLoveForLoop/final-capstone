@@ -21,10 +21,11 @@
         <table width="100%" cellpadding="0" cellspacing="0"
             style="background: linear-gradient(135deg, #ef4444, #f87171);">
             <tr>
-                <td style="padding: 30px 20px; text-align: center;">
+                <td align="center" valign="middle" style="padding: 30px 20px; text-align: center;">
                     <h1
-                        style="color: #ffffff; font-size: 28px; font-weight: 600; margin: 0 0 8px 0; letter-spacing: -0.5px;">
-                        Eventory</h1>
+                        style="color: #ffffff; font-size: 28px; font-weight: 600; margin: 0; letter-spacing: -0.5px; text-align: center;">
+                        Eventory
+                    </h1>
                 </td>
             </tr>
         </table>
@@ -126,11 +127,6 @@
                             <td style="padding: 20px;">
                                 <table width="100%" cellpadding="0" cellspacing="0">
                                     <tr>
-                                        <td width="40" style="vertical-align: top;">
-                                            <div
-                                                style="background: #0ea5e9; color: #ffffff; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-size: 14px; font-weight: bold;">
-                                                💰</div>
-                                        </td>
                                         <td style="padding-left: 12px;">
                                             <p
                                                 style="color: #0369a1; font-size: 14px; font-weight: 600; margin: 0 0 4px 0;">

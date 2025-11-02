@@ -92,7 +92,7 @@ const handleKeydown = (event) => {
                     class="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full max-h-[90vh] overflow-y-auto">
 
                     <!-- Modal header -->
-                    <div class="bg-white px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
+                    <div class="px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
                         <div class="flex items-center justify-between">
                             <div>
                                 <h3 class="text-2xl font-bold text-gray-900">

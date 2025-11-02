@@ -60,9 +60,9 @@ class BookingObserver
 
                         // Mail::to($booking->user->email)->queue(new BookingConfirmedMail($booking));
                         // dd($booking->user->client->contact_number);
-                        // SendBookingConfirmedEmailJob::dispatch($booking)->chain([
-                        //     new SendBookingConfirmedSmsJob($booking)
-                        // ]);
+                        SendBookingConfirmedEmailJob::dispatch($booking)->chain([
+                            new SendBookingConfirmedSmsJob($booking)
+                        ]);
                         // SendBookingConfirmedEmailJob::dispatch($booking);
                     }
                     break;
@@ -81,6 +81,7 @@ class BookingObserver
                             new SendBookingCompletedSmsJob($booking)
                         ]);
                         // SendBookingCompletedSmsJob::dispatch($booking);
+                        // SendBookingCompletedEmailJob::dispatch($booking);
                     }
                     break;
 

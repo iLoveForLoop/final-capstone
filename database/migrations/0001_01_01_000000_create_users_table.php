@@ -20,7 +20,7 @@ return new class extends Migration
 
             //new additions
             $table->enum('status', ['active', 'suspended', 'banned'])->default('active');
-            $table->timestamp('suspended_until')->nullable(); // auto-unsuspend after this time
+            $table->timestamp('suspended_until')->nullable();
             $table->text('suspension_reason')->nullable();
             $table->text('ban_reason')->nullable();
 

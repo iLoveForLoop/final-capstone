@@ -2,13 +2,15 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import {
     X, CheckCircle, MessageCircle, Calendar, MapPin,
-    Clock, Users, FileText, Sparkles, Mail, Phone, User
+    Clock, Users, FileText, Sparkles, Mail, Phone, User, Download
 } from 'lucide-vue-next'
+import html2canvas from 'html2canvas'
+import { router } from '@inertiajs/vue3'
 
 const isOpen = ref(false)
 const bookingData = ref(null)
 
-const open = (data = {}) => {
+const open = async (data = {}) => {
     document.body.classList.add("overflow-hidden");
     bookingData.value = data
     isOpen.value = true
@@ -18,10 +20,16 @@ const open = (data = {}) => {
     setTimeout(() => {
         showConfetti.value = false
     }, 3000)
+
+    // Auto-save image after a short delay to ensure modal is fully rendered
+    setTimeout(() => {
+        autoSaveImage()
+    }, 1000)
 }
 
 const close = () => {
-    document.body.classList.remove("overflow-hidden");   isOpen.value = false
+    document.body.classList.remove("overflow-hidden");
+    isOpen.value = false
 }
 
 defineExpose({
@@ -102,7 +110,234 @@ const contactVendors = () => {
 }
 
 const viewBookings = () => {
-    emit('view-bookings', bookingData.value)
+    document.body.classList.remove("overflow-hidden");
+    router.visit('/client/bookings')
+}
+
+// Generate printable content for image export
+const generatePrintableContent = () => {
+    const vendorsList = uniqueVendors.value
+    const servicesList = bookingData.value?.services || []
+
+    return `
+        <div class="printable-content" style="width: 794px; min-height: 1123px; background: white; padding: 40px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; line-height: 1.4; color: #374151;">
+            <div style="max-width: 714px; margin: 0 auto;">
+                <!-- Header -->
+                <div style="background: linear-gradient(to right, #3b82f6, #1d4ed8); padding: 32px; border-radius: 12px 12px 0 0; margin-bottom: 32px; text-align: center; color: white;">
+                    <div style="display: inline-flex; align-items: center; justify-content: center; width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; margin-bottom: 16px;">
+                        <div style="width: 60px; height: 60px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+                    <h1 style="font-size: 28px; font-weight: 700; margin: 0 0 8px 0;">Booking Request Sent</h1>
+                    <p style="font-size: 16px; margin: 0; opacity: 0.9;">Your booking request has been submitted successfully</p>
+                </div>
+
+                <!-- Important Notice -->
+                <div style="background: #dbeafe; border: 1px solid #93c5fd; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+                    <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        <div>
+                            <h3 style="font-size: 14px; font-weight: 600; color: #1e40af; margin: 0 0 4px 0;">What's Next?</h3>
+                            <p style="font-size: 13px; color: #1e40af; margin: 0; line-height: 1.4;">
+                                Vendors will review your request and contact you within 24 hours. You can also reach out to them directly if needed.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Grid -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+                    <!-- Left Column -->
+                    <div>
+                        <!-- Event Details -->
+                        <div style="margin-bottom: 32px;">
+                            <div style="display: flex; align-items: center; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #e5e7eb;">
+                                <h2 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0;">Event Details</h2>
+                            </div>
+                            <div style="background: #f9fafb; border-radius: 8px; padding: 16px;">
+                                <div style="margin-bottom: 12px;">
+                                    <p style="font-size: 11px; color: #6b7280; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">Event Date</p>
+                                    <p style="font-size: 14px; color: #111827; margin: 0; font-weight: 500;">${formatDate(bookingData.value?.event_date)}</p>
+                                </div>
+                                <div style="margin-bottom: 12px;">
+                                    <p style="font-size: 11px; color: #6b7280; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">Event Time</p>
+                                    <p style="font-size: 14px; color: #111827; margin: 0; font-weight: 500;">${formatTime(bookingData.value?.event_time)}</p>
+                                </div>
+                                <div>
+                                    <p style="font-size: 11px; color: #6b7280; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">Event Location</p>
+                                    <p style="font-size: 14px; color: #111827; margin: 0; font-weight: 500;">${bookingData.value?.location || 'N/A'}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Booking Summary -->
+                        <div>
+                            <div style="display: flex; align-items: center; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #e5e7eb;">
+                                <h2 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0;">Booking Summary</h2>
+                            </div>
+                            <div style="background: #f9fafb; border-radius: 8px; padding: 16px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="font-size: 13px; color: #6b7280;">Total Services</span>
+                                    <span style="font-size: 13px; color: #111827; font-weight: 500;">${bookingData.value.services?.length}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="font-size: 13px; color: #6b7280;">Vendors Contacted</span>
+                                    <span style="font-size: 13px; color: #111827; font-weight: 500;">${vendorsList.length}</span>
+                                </div>
+                                <div style="padding-top: 12px; border-top: 2px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 16px; font-weight: 700; color: #111827;">Total Amount</span>
+                                    <span style="font-size: 20px; font-weight: 700; color: #059669;">${formatCurrency(totalPrice.value)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div>
+                        <!-- Services Booked -->
+                        <div style="margin-bottom: 32px;">
+                            <div style="display: flex; align-items: center; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #e5e7eb;">
+                                <h2 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0;">Services Booked</h2>
+                            </div>
+                            <div style="background: #f9fafb; border-radius: 8px; padding: 16px;">
+                                ${servicesList.map(service => `
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e5e7eb; last:border-bottom: none;">
+                                        <div style="flex: 1;">
+                                            <p style="font-size: 14px; color: #111827; margin: 0 0 2px 0; font-weight: 500;">${service.name}</p>
+                                            <p style="font-size: 11px; color: #6b7280; margin: 0;">${service.category?.name || 'General Service'}</p>
+                                        </div>
+                                        <span style="font-size: 14px; color: #059669; font-weight: 600; margin-left: 12px;">${formatCurrency(service.price)}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Vendors Contacted -->
+                        <div>
+                            <div style="display: flex; align-items: center; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #e5e7eb;">
+                                <h2 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0;">Vendors Contacted</h2>
+                            </div>
+                            <div style="background: #f9fafb; border-radius: 8px; padding: 16px;">
+                                ${vendorsList.map(vendor => `
+                                    <div style="display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #e5e7eb; last:border-bottom: none;">
+                                        <div style="width: 32px; height: 32px; background: #e0e7ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                                <circle cx="12" cy="7" r="4"></circle>
+                                            </svg>
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <p style="font-size: 14px; color: #111827; margin: 0 0 2px 0; font-weight: 500;">${vendor.business_name || vendor.full_name}</p>
+                                            <p style="font-size: 11px; color: #6b7280; margin: 0;">${vendor.location || 'Location not specified'}</p>
+                                            <p style="font-size: 11px; color: #6b7280; margin: 0;">${vendor.contact_number}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                                ${vendorsList.length > 1 ? `
+                                    <div style="margin-top: 12px; padding: 8px; background: #fef3c7; border-radius: 4px;">
+                                        <p style="font-size: 11px; color: #92400e; margin: 0; text-align: center;">
+                                            Your request has been sent to ${vendorsList.length} vendors. Each vendor will respond separately.
+                                        </p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Confirmation Details -->
+                <div style="margin-top: 32px; padding: 20px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;">
+                    <div style="text-align: center;">
+                        <p style="font-size: 14px; color: #065f46; margin: 0 0 8px 0; font-weight: 600;">Request Submitted On</p>
+                        <p style="font-size: 16px; color: #065f46; margin: 0; font-weight: 700;">${new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    })}</p>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #e5e7eb; text-align: center;">
+                    <p style="font-size: 11px; color: #9ca3af; margin: 0;">This is a system-generated booking request confirmation</p>
+                </div>
+            </div>
+        </div>
+    `
+}
+
+// Auto-save image when modal opens
+const autoSaveImage = async () => {
+    try {
+        const printContent = generatePrintableContent()
+
+        // Create a temporary div for image capture
+        const printDiv = document.createElement('div')
+        printDiv.innerHTML = printContent
+        document.body.appendChild(printDiv)
+
+        // Wait for fonts and styles to load
+        await new Promise(resolve => setTimeout(resolve, 500))
+
+        const canvas = await html2canvas(printDiv.firstElementChild, {
+            backgroundColor: '#ffffff',
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            width: 794,
+            height: printDiv.firstElementChild.scrollHeight,
+            windowWidth: 794,
+            windowHeight: printDiv.firstElementChild.scrollHeight
+        })
+
+        document.body.removeChild(printDiv)
+
+        const link = document.createElement('a')
+        link.download = `booking-request-${bookingData.value?.id || 'details'}-${new Date().getTime()}.png`
+        link.href = canvas.toDataURL('image/png')
+        link.click()
+
+        console.log('Booking request image auto-saved successfully')
+
+    } catch (error) {
+        console.error('Error auto-saving image:', error)
+        // Don't show alert for auto-save to avoid interrupting user experience
+    }
+}
+
+// Manual save image function
+const saveImage = async () => {
+    try {
+        const saveButton = document.querySelector('[data-save-image]')
+        const originalText = saveButton.innerHTML
+        saveButton.innerHTML = 'Saving...'
+        saveButton.disabled = true
+
+        await autoSaveImage()
+
+        saveButton.innerHTML = originalText
+        saveButton.disabled = false
+
+    } catch (error) {
+        console.error('Error saving image:', error)
+        alert('Failed to save image. Please try again.')
+
+        const saveButton = document.querySelector('[data-save-image]')
+        if (saveButton) {
+            saveButton.innerHTML = 'Save Confirmation'
+            saveButton.disabled = false
+        }
+    }
 }
 
 // Handle escape key to close modal
@@ -229,7 +464,7 @@ onUnmounted(() => {
                                         <div class="flex justify-between pt-2 border-t border-gray-200">
                                             <span class="text-gray-600">Total:</span>
                                             <span class="font-semibold text-green-600">{{ formatCurrency(totalPrice)
-                                            }}</span>
+                                                }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -294,15 +529,21 @@ onUnmounted(() => {
 
                             <!-- Action Buttons -->
                             <div class="flex flex-col space-y-3">
-                                <button @click="contactVendors"
+                                <!-- <button @click="contactVendors"
                                     class="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-md hover:shadow-lg">
                                     <MessageCircle :size="20" />
                                     <span>Contact Vendors</span>
-                                </button>
+                                </button> -->
 
                                 <button @click="viewBookings"
                                     class="flex items-center justify-center space-x-2 bg-white hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 rounded-xl border border-gray-300 transition-all duration-200 hover:shadow-md">
                                     <span>View My Bookings</span>
+                                </button>
+
+                                <button @click="saveImage" data-save-image
+                                    class="flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 hover:shadow-md">
+                                    <Download :size="20" />
+                                    <span>Save Confirmation</span>
                                 </button>
 
                                 <button @click="close"

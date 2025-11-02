@@ -3,10 +3,16 @@ import TestLayout from '@/Layouts/TestLayout.vue';
 import { ref, computed, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { useToast } from 'vue-toastification';
-import ServiceCreateModal from '@/Components/Admin/ServiceCreateModal.vue';
+import AdminEditServiceForm from '@/Components/Admin/Services/AdminEditServiceForm.vue';
+import AdminViewService from '@/Components/Admin/Services/AdminViewService.vue';
+import { useConfirmDialog } from '@/Composables/useConfirmDialog';
+import Pagination from '@/Components/Pagination.vue';
+
 
 const toast = useToast();
-const serviceCreateModal = ref(null)
+
+const { confirm } = useConfirmDialog()
+
 
 const props = defineProps({
     services: Object,
@@ -27,10 +33,50 @@ const category = ref(props.filters.category || 'all')
 const vendor = ref(props.filters.vendor || 'all')
 const search = ref(props.filters.search || '')
 
+const selectedService = ref(null)
+const showEditModal = ref(false)
+const showViewModal = ref(false)
+
+function openEditModal(service) {
+    selectedService.value = service
+    showEditModal.value = true
+}
+
+function closeEditModal() {
+    showEditModal.value = false
+    selectedService.value = null
+}
+
+function openViewModal(service) {
+    selectedService.value = service
+    showViewModal.value = true
+}
+
+function closeViewModal() {
+    showViewModal.value = false
+    selectedService.value = null
+}
+
+function handleUpdated() {
+    closeEditModal()
+    toast.success('Service updated successfully')
+    router.reload({ preserveScroll: true })
+}
 
 
-const deleteService = (serviceId) => {
-    if (confirm('Are you sure you want to delete this service?')) {
+
+
+const deleteService = async (serviceId) => {
+
+    const confirmed = await confirm({
+        title: 'Delete Service',
+        message: 'Are you sure do you want to delete this service? This action cannot be undone.',
+        type: 'danger',
+        confirmText: 'Yes, Delete',
+        cancelText: 'Cancel'
+    })
+
+    if (confirmed) {
         // In a real implementation, you would call an API endpoint here
         router.delete(route('admin.service.destroy', serviceId), {
             onSuccess: () => {
@@ -59,10 +105,54 @@ watch([vendor, category, search], () => {
         replace: true
     })
 })
+
+
+
 </script>
 
 <template>
     <TestLayout>
+        <!-- Edit Modal -->
+        <div v-if="showEditModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog"
+            aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <!-- Background overlay -->
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
+                    @click="closeEditModal"></div>
+
+                <!-- Modal panel -->
+                <div
+                    class="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                    <!-- Modal header -->
+                    <div class="bg-white px-6 py-4 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-gray-900">
+                                Edit Service: {{ selectedService?.name }}
+                            </h3>
+                            <button @click="closeEditModal" class="text-gray-400 hover:text-gray-500">
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Modal content -->
+                    <div class="bg-white p-6">
+                        <AdminEditServiceForm v-if="selectedService" :service="selectedService"
+                            :category_id="selectedService.service_category_id"
+                            :selectedCategory="selectedService.category.name" @close="closeEditModal"
+                            @updated="handleUpdated" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <AdminViewService v-if="selectedService && showViewModal" :selectedService="selectedService"
+            :showViewModal="showViewModal" @close="closeViewModal" />
+
+
         <div class="p-6 space-y-6 bg-gray-50 min-h-screen">
             <!-- Header Section -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -70,16 +160,7 @@ watch([vendor, category, search], () => {
                     <h1 class="text-2xl font-bold text-gray-800">Service Management</h1>
                     <p class="text-gray-500 text-sm mt-1">Manage all platform services and offerings</p>
                 </div>
-                <button @click="serviceCreateModal.show()"
-                    class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center gap-2 text-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        class="lucide lucide-plus">
-                        <path d="M5 12h14" />
-                        <path d="M12 5v14" />
-                    </svg>
-                    Add Service
-                </button>
+
             </div>
 
             <!-- Filters -->
@@ -191,7 +272,8 @@ watch([vendor, category, search], () => {
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex justify-end gap-3">
-                                        <button class="text-indigo-600 hover:text-indigo-900">
+                                        <button @click="openViewModal(service)"
+                                            class="text-indigo-600 hover:text-indigo-900">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                                 stroke-linecap="round" stroke-linejoin="round"
@@ -200,7 +282,8 @@ watch([vendor, category, search], () => {
                                                 <circle cx="12" cy="12" r="3" />
                                             </svg>
                                         </button>
-                                        <button class="text-yellow-600 hover:text-yellow-900">
+                                        <button @click="openEditModal(service)"
+                                            class="text-yellow-600 hover:text-yellow-900">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                                 stroke-linecap="round" stroke-linejoin="round"
@@ -235,13 +318,13 @@ watch([vendor, category, search], () => {
                 </div>
 
                 <!-- Pagination - You can add your pagination component here -->
-                <!-- <Pagination :links="services.links" /> -->
+                <Pagination :data="services" />
 
 
-
-                <ServiceCreateModal ref="serviceCreateModal" :vendors="vendors" />
             </div>
         </div>
+
+
     </TestLayout>
 </template>
 

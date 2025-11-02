@@ -2,6 +2,7 @@
 import BookingCard from '@/Components/Client/Booking/BookingCard.vue';
 import BookingFilters from '@/Components/Client/Booking/BookingFilters.vue';
 import StatsSection from '@/Components/Client/Booking/StatsSection.vue';
+import QuickBookingStepperModal from '@/Components/QuickBookingStepperModal.vue';
 import ClientLayout from '@/Layouts/ClientLayout.vue';
 import { ref, computed } from 'vue';
 
@@ -31,6 +32,7 @@ const selectedCategory = ref('all');
 const selectedStatus = ref('all');
 const selectedDateRange = ref('all');
 const viewMode = ref('list');
+
 
 // Computed filtered bookings
 const filteredBookings = computed(() => {
@@ -176,10 +178,15 @@ const getPaymentStatusColor = (status) => {
     };
     return colors[status] || 'text-gray-600';
 };
+
+const eventModal = ref(null)
+
 </script>
 
 <template>
+
     <ClientLayout>
+        <QuickBookingStepperModal ref="eventModal" :categories="categories" />
         <div class="min-h-screen bg-gray-50">
 
             <!-- Header Section -->
@@ -191,7 +198,7 @@ const getPaymentStatusColor = (status) => {
                             <p class="text-gray-600">Manage your service bookings and reservations</p>
                         </div>
                         <div>
-                            <button
+                            <button @click="eventModal.open()"
                                 class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
                                 New Booking
                             </button>
@@ -201,7 +208,7 @@ const getPaymentStatusColor = (status) => {
             </div>
 
             <!-- Stats Section -->
-            <StatsSection :bookingStats="bookingStats" />
+            <!-- <StatsSection :bookingStats="bookingStats" /> -->
 
             <!-- Filters Section -->
             <BookingFilters v-model:searchQuery="searchQuery" v-model:selectedCategory="selectedCategory"

@@ -64,7 +64,7 @@ defineProps({
                 </CardContent>
             </Card>
 
-            <Card>
+            <!-- <Card>
                 <CardHeader>
                     <CardTitle>Service Features</CardTitle>
                 </CardHeader>
@@ -92,7 +92,7 @@ defineProps({
                         </div>
                     </div>
                 </CardContent>
-            </Card>
+            </Card> -->
         </div>
     </div>
 </template>

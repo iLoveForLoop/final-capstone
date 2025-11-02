@@ -18,16 +18,19 @@ const portfolioImages = defineModel('portfolioImages')
 <template>
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-semibold">Portfolio Gallery</h2>
-        <button v-if="isEditing" @click="emit('show-image-upload')"
+        <button v-if="isEditing && portfolioImages.length < 9" @click="emit('show-image-upload')"
             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
             Upload Images
         </button>
+        <p v-else-if="isEditing" class="text-red-500 text-sm">
+            You can only upload up to 9 images.
+        </p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <div v-for="(image, index) in portfolioImages" :key="index" class="relative group">
+        <div v-for="(image, index) in portfolioImages" :key="index" class="relative group z-40">
             <!-- {{ console.log(image) }} -->
-            <img :src="image.url" :alt="`Portfolio image ${index + 1}`"
+            <img :src="image.url" :alt="`Portfolio image ${index + 1}`" loading="lazy"
                 class="w-full h-48 object-cover rounded-lg shadow-sm" />
             <div v-if="isEditing"
                 class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
@@ -43,14 +46,14 @@ const portfolioImages = defineModel('portfolioImages')
         </div>
 
         <!-- Upload placeholder -->
-        <div v-if="isEditing" @click="emit('show-image-upload')"
+        <div v-if="isEditing && portfolioImages.length < 9" @click="emit('show-image-upload')"
             class="border-2 border-dashed border-gray-300 rounded-lg h-48 flex flex-col items-center justify-center text-gray-500 hover:border-blue-400 transition-colors cursor-pointer">
             <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6">
-                </path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
             <span class="font-medium">Add Image</span>
         </div>
+
     </div>
 </template>
 

@@ -38,7 +38,6 @@ import ClientLayout from '@/Layouts/ClientLayout.vue';
 
 const eventModal = ref(null)
 
-
 defineProps({
     services: {
         type: Object,
@@ -58,6 +57,16 @@ const showFiltersDialog = ref(false);
 
 // Animation state
 const animatedElements = ref([]);
+
+// Background images data with improved styling
+const backgroundImages = ref([
+    { url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=300&h=200&fit=crop', delay: 0, position: { x: 5, y: 14 }, brightness: '1.1', saturation: '1.1' },
+    { url: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=300&h=200&fit=crop', delay: 4, position: { x: 25, y: 5 }, brightness: '1.15', saturation: '1.1' },
+    { url: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=300&h=200&fit=crop', delay: 3, position: { x: 12, y: 26 }, brightness: '1.12', saturation: '1.08' },
+    { url: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=300&h=200&fit=crop', delay: 3, position: { x: 65, y: 27 }, brightness: '1.12', saturation: '1.08' },
+    { url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=300&h=200&fit=crop', delay: 2, position: { x: 65, y: 8 }, brightness: '1.09', saturation: '1.06' },
+    { url: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=300&h=200&fit=crop', delay: 1, position: { x: 85, y: 17 }, brightness: '1.07', saturation: '1.09' }
+]);
 
 // Initialize animation observer
 onMounted(() => {
@@ -129,15 +138,6 @@ const clearFilters = () => {
     showFiltersDialog.value = false
 }
 
-
-// Check for active filters from URL params (not temporary state)
-// const hasActiveFilters = computed(() => {
-//     return !!(search.value ||
-//         (selectedCategories.value && selectedCategories.value.length > 0) ||
-//         selectedPriceRange.value ||
-//         selectedRating.value);
-// });
-
 // Get active filter count
 const activeFilterCount = computed(() => {
     let count = 0;
@@ -153,40 +153,42 @@ const activeFilterCount = computed(() => {
 <template>
     <ClientLayout>
 
-
-
         <Head title="Home" />
         <QuickBookingStepperModal ref="eventModal" :categories="categories" />
 
-        <div class="min-h-screen bg-gradient-to-br from-gray-300 via-white to-gray-500 relative overflow-hidden">
-            <!-- Enhanced animated background -->
+        <div class="min-h-screen bg-gradient-to-br from-gray-300 via-white to-gray-500  relative overflow-hidden">
+            <!-- Enhanced animated background with floating event images -->
             <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-                <div
-                    class="absolute -top-40 -right-32 w-80 h-80 bg-blue-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000">
+                <!-- Floating collage of event service pictures -->
+                <div class="absolute inset-0">
+                    <div class="collage-grid">
+                        <div class="collage-item" v-for="(img, index) in backgroundImages" :key="index" :style="{
+                            backgroundImage: `url(${img.url})`,
+                            animationDelay: `${img.delay}s`,
+                            left: `${img.position.x}%`,
+                            top: `${img.position.y}%`,
+                            filter: `brightness(${img.brightness}) saturate(${img.saturation})`
+                        }">
+                            <div class="image-overlay"></div>
+                        </div>
+                    </div>
                 </div>
-                <div
-                    class="absolute top-60 -left-20 w-80 h-80 bg-purple-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000">
-                </div>
-                <div
-                    class="absolute -bottom-20 left-40 w-80 h-80 bg-teal-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob">
-                </div>
-            </div>
 
-            <div class="absolute inset-0">
+                <!-- Subtle gradient overlays for better contrast -->
+                <div class="absolute inset-0 bg-gradient-to-br from-blue-50/40 via-transparent to-purple-50/30"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-white/60 via-transparent to-transparent"></div>
+
+                <!-- Keep the original gradient blobs but with adjusted colors -->
                 <div
-                    class="absolute top-1/4 left-3/4 w-52 h-52 bg-teal-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000">
+                    class="absolute -top-40 -right-32 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000">
                 </div>
-                <!-- <div class="absolute animate-float-delayed top-1/3 right-1/3 w-5 h-5 bg-purple-300 rounded-full opacity-80">
+                <div
+                    class="absolute top-60 -left-20 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000">
+                </div>
+                <div
+                    class="absolute -bottom-20 left-40 w-80 h-80 bg-teal-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob">
+                </div>
             </div>
-            <div class="absolute animate-float-slow top-2/3 left-1/5 w-10 h-10 bg-pink-400 rounded-full opacity-40">
-            </div>
-            <div class="absolute animate-float top-1/2 right-1/4 w-6 h-6 bg-blue-300 rounded-full opacity-70"></div>
-            <div
-                class="absolute animate-float-delayed bottom-1/4 left-2/3 w-5 h-5 bg-purple-400 rounded-full opacity-50">
-            </div> -->
-            </div>
-
-
 
             <!-- Hero Section -->
             <section class="relative z-10">
@@ -201,13 +203,14 @@ const activeFilterCount = computed(() => {
 
                         <!-- Search Bar -->
                         <div
-                            class="bg-white/80 backdrop-blur-sm border border-gray-200/60 rounded-xl p-4 max-w-2xl mx-auto mb-10 shadow-lg reveal-animation animation-delay-100">
+                            class="bg-white/90 backdrop-blur-md border border-gray-200/60 rounded-xl p-4 max-w-2xl mx-auto mb-10 shadow-lg reveal-animation animation-delay-100">
                             <div class="flex flex-col sm:flex-row gap-3">
                                 <!-- Search Input -->
                                 <div class="flex-1 relative">
                                     <Search class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
                                         :size="20" />
-                                    <input v-model="search" type="text" placeholder="Search vendors or services..."
+                                    <input v-model="search" type="text" @keyup.enter="handleSearch"
+                                        placeholder="Search vendors or services..."
                                         class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all duration-300 shadow-sm">
                                 </div>
 
@@ -246,21 +249,21 @@ const activeFilterCount = computed(() => {
                 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="grid grid-cols-2 lg:grid-cols-3 gap-6">
                         <div
-                            class="text-center bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 reveal-animation">
+                            class="text-center bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 reveal-animation">
                             <div class="text-3xl font-bold text-blue-600 mb-2">3</div>
                             <div class="text-sm text-gray-600 font-medium flex items-center justify-center">
                                 <Calendar class="h-4 w-4 mr-1" /> Active Bookings
                             </div>
                         </div>
                         <div
-                            class="text-center bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 reveal-animation animation-delay-100">
+                            class="text-center bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 reveal-animation animation-delay-100">
                             <div class="text-3xl font-bold text-blue-600 mb-2">12</div>
                             <div class="text-sm text-gray-600 font-medium flex items-center justify-center">
                                 <Users class="h-4 w-4 mr-1" /> Completed Events
                             </div>
                         </div>
                         <div
-                            class="text-center bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 reveal-animation animation-delay-200">
+                            class="text-center bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 reveal-animation animation-delay-200">
                             <div class="text-3xl font-bold text-blue-600 mb-2">8</div>
                             <div class="text-sm text-gray-600 font-medium flex items-center justify-center">
                                 <Heart class="h-4 w-4 mr-1" /> Saved Vendors
@@ -295,8 +298,6 @@ const activeFilterCount = computed(() => {
                 </div>
             </section>
 
-
-
             <!-- Footer -->
             <footer class="bg-gradient-to-b from-gray-900 to-gray-800 text-white py-16 relative z-10">
                 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -307,81 +308,6 @@ const activeFilterCount = computed(() => {
                                 Connecting event planners with trusted local vendors.
                             </p>
                         </div>
-
-                        <!-- <div class="reveal-animation animation-delay-100">
-                        <h3 class="font-semibold mb-5 text-lg">Platform</h3>
-                        <ul class="space-y-3 text-sm">
-                            <li>
-                                <Link href="/dashboard"
-                                    class="text-gray-400 hover:text-white transition-colors duration-300">Dashboard
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/bookings"
-                                    class="text-gray-400 hover:text-white transition-colors duration-300">My Bookings
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/services"
-                                    class="text-gray-400 hover:text-white transition-colors duration-300">Browse
-                                Services</Link>
-                            </li>
-                            <li>
-                                <Link href="/vendors"
-                                    class="text-gray-400 hover:text-white transition-colors duration-300">Find Vendors
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div class="reveal-animation animation-delay-200">
-                        <h3 class="font-semibold mb-5 text-lg">Categories</h3>
-                        <ul class="space-y-3 text-sm">
-                            <li>
-                                <Link href="/categories/catering"
-                                    class="text-gray-400 hover:text-white transition-colors duration-300">Catering
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/categories/photography"
-                                    class="text-gray-400 hover:text-white transition-colors duration-300">Photography
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/categories/sound-systems"
-                                    class="text-gray-400 hover:text-white transition-colors duration-300">Audio &
-                                Sound</Link>
-                            </li>
-                            <li>
-                                <Link href="/categories/entertainers"
-                                    class="text-gray-400 hover:text-white transition-colors duration-300">
-                                Entertainment</Link>
-                            </li>
-                        </ul>
-                    </div> -->
-
-                        <!-- <div class="reveal-animation animation-delay-300">
-                        <h3 class="font-semibold mb-5 text-lg">Support</h3>
-                        <ul class="space-y-3 text-sm">
-                            <li>
-                                <Link href="/help"
-                                    class="text-gray-400 hover:text-white transition-colors duration-300">Help Center
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/contact"
-                                    class="text-gray-400 hover:text-white transition-colors duration-300">Contact</Link>
-                            </li>
-                            <li>
-                                <Link href="/about"
-                                    class="text-gray-400 hover:text-white transition-colors duration-300">About</Link>
-                            </li>
-                            <li>
-                                <Link href="/privacy"
-                                    class="text-gray-400 hover:text-white transition-colors duration-300">Privacy</Link>
-                            </li>
-                        </ul>
-                    </div> -->
                     </div>
 
                     <div class="border-t border-gray-800 mt-12 pt-8 reveal-animation">
@@ -525,38 +451,45 @@ const activeFilterCount = computed(() => {
             </DialogContent>
         </Dialog>
     </ClientLayout>
-
 </template>
 
 <style>
+@keyframes blob {
+    0% {
+        transform: translate(0px, 0px) scale(1);
+    }
+
+    33% {
+        transform: translate(30px, -50px) scale(1.1);
+    }
+
+    66% {
+        transform: translate(-20px, 20px) scale(0.9);
+    }
+
+    100% {
+        transform: translate(0px, 0px) scale(1);
+    }
+}
+
 @keyframes float {
 
     0%,
     100% {
-        transform: translateY(0) scale(1);
-        opacity: 0.2;
+        transform: translateY(0) rotate(0deg) scale(1);
     }
 
-    50% {
-        transform: translateY(-20px) scale(1.05);
-        opacity: 0.25;
-    }
-}
-
-@keyframes reveal {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
+    33% {
+        transform: translateY(-30px) rotate(2deg) scale(1.02);
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    66% {
+        transform: translateY(15px) rotate(-1deg) scale(0.98);
     }
 }
 
-.animate-float {
-    animation: float 8s ease-in-out infinite;
+.animate-blob {
+    animation: blob 7s infinite;
 }
 
 .animation-delay-2000 {
@@ -598,49 +531,77 @@ const activeFilterCount = computed(() => {
     transition-delay: 500ms;
 }
 
+/* Enhanced Collage background styles */
+.collage-grid {
+    position: absolute;
+    width: 120%;
+    height: 120%;
+    top: -10%;
+    left: -10%;
+}
 
-/* BLOB */
-@keyframes blob {
-    0% {
-        transform: translate(0px, 0px) scale(1);
+.collage-item {
+    position: absolute;
+    width: 380px;
+    height: 300px;
+    border-radius: 16px;
+    background-size: cover;
+    background-position: center;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        0 2px 8px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    animation: float 20s ease-in-out infinite;
+    opacity: 0.7;
+    transform-origin: center;
+    overflow: hidden;
+    transition: all 0.5s ease;
+}
+
+.collage-item:hover {
+    opacity: 0.9;
+    transform: scale(1.05);
+}
+
+.collage-item:nth-child(odd) {
+    animation-duration: 25s;
+}
+
+.collage-item:nth-child(even) {
+    animation-duration: 30s;
+}
+
+/* Diagonal movement effect with subtle rotation */
+.collage-item {
+    transform: rotate(-3deg);
+}
+
+.collage-item:nth-child(even) {
+    transform: rotate(2deg);
+}
+
+.collage-item:nth-child(3n) {
+    transform: rotate(1deg);
+}
+
+.collage-item:nth-child(4n) {
+    transform: rotate(-2deg);
+}
+
+/* Image overlay for better contrast */
+.image-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+    border-radius: 16px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .collage-item {
+        width: 200px;
+        height: 140px;
+        opacity: 0.5;
     }
-
-    33% {
-        transform: translate(30px, -50px) scale(1.1);
-    }
-
-    66% {
-        transform: translate(-20px, 20px) scale(0.9);
-    }
-
-    100% {
-        transform: translate(0px, 0px) scale(1);
-    }
-}
-
-.animate-blob {
-    animation: blob 7s infinite;
-}
-
-.animation-delay-2000 {
-    animation-delay: 2s;
-}
-
-.animation-delay-4000 {
-    animation-delay: 4s;
-}
-
-.animate-float {
-    animation: float 6s ease-in-out infinite;
-}
-
-.animate-float-delayed {
-    animation: float-delayed 8s ease-in-out infinite;
-    animation-delay: 2s;
-}
-
-.animate-float-slow {
-    animation: float-slow 10s ease-in-out infinite;
-    animation-delay: 1s;
 }
 </style>
