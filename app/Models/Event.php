@@ -43,9 +43,18 @@ class Event extends Model
         return 'unknown'; // fallback
     }
 
-    protected $casts = [
-        'event_date' => 'datetime',
-        // 'end_date'   => 'datetime',
+        public function getStartAttribute()
+        {
+            if ($this->event_time) {
+                return $this->event_date->format('Y-m-d') . 'T' . date('H:i:s', strtotime($this->event_time));
+            }
+            return $this->event_date->format('Y-m-d');
+        }
+
+
+        protected $casts = [
+        'event_date' => 'date',
+        'event_time' => 'string'
     ];
 
     protected $guarded = [];

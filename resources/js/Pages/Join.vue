@@ -105,14 +105,14 @@
                             </Link>
 
                             <!-- Selection Indicator -->
-                            <div :class="[
+                            <!-- <div :class="[
                                 'absolute top-4 right-4 w-5 h-5 rounded-full border-2 transition-all duration-300 flex items-center justify-center reveal-animation animation-delay-500',
                                 selectedRole === 'organizer'
                                     ? 'border-blue-500 bg-blue-500'
                                     : 'border-gray-300 group-hover:border-blue-300'
                             ]">
                                 <Check v-if="selectedRole === 'organizer'" class="w-3 h-3 text-white" />
-                            </div>
+                            </div> -->
                         </div>
                     </div>
 
@@ -174,14 +174,14 @@
                             </Link>
 
                             <!-- Selection Indicator -->
-                            <div :class="[
+                            <!-- <div :class="[
                                 'absolute top-4 right-4 w-5 h-5 rounded-full border-2 transition-all duration-300 flex items-center justify-center reveal-animation animation-delay-600',
                                 selectedRole === 'vendor'
                                     ? 'border-purple-500 bg-purple-500'
                                     : 'border-gray-300 group-hover:border-purple-300'
                             ]">
                                 <Check v-if="selectedRole === 'vendor'" class="w-3 h-3 text-white" />
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 </section>

@@ -436,8 +436,18 @@ onMounted(() => {
                 const conv = res.data;
 
                 const message = {
+                    // id: conv.id,
+                    // sender: conv.title,
+                    // initials: getInitials(conv.title),
+                    // message: conv.last_message?.content || 'No messages yet',
+                    // time: formatTimestamp(conv.last_message?.created_at),
+                    // read: conv.unread_count === 0,
+                    // online: false,
+                    // chatMessages: [],
+
                     id: conv.id,
                     sender: conv.title,
+                    avatar: conv.otherUserAvatar,
                     initials: getInitials(conv.title),
                     message: conv.last_message?.content || 'No messages yet',
                     time: formatTimestamp(conv.last_message?.created_at),

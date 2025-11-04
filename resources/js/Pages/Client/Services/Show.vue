@@ -2,7 +2,7 @@
 import BookingModal from '@/Components/Client/BookingModal.vue'
 import ClientNavbar from '@/Components/ClientNavbar.vue'
 import { Link, router } from '@inertiajs/vue3'
-import { Heart, Share2 } from 'lucide-vue-next'
+import { Heart, HeartIcon, Link2, LinkIcon, Share2 } from 'lucide-vue-next'
 import { Toggle } from 'reka-ui'
 import { ref, onMounted } from 'vue'
 import { useToast } from 'vue-toastification'
@@ -78,8 +78,8 @@ const isDateDisabled = (date) => {
 // Navigation tabs
 const tabs = ref([
     { id: 'overview', name: 'Overview' },
-    { id: 'vendor', name: 'About Vendor' },
-    { id: 'reviews', name: 'Reviews' }
+    // { id: 'vendor', name: 'About Vendor' },
+    // { id: 'reviews', name: 'Reviews' }
 ])
 
 // Methods
@@ -156,18 +156,6 @@ onMounted(async () => {
     <BookingModal ref="bookingModal" :service="service" :time="selectedTime" :date="selectedDate" :pax="guestCount" />
     <ClientNavbar />
     <div class="min-h-screen bg-gray-50">
-        <!-- <ClientNavbar /> -->
-        <!-- Header Navigation -->
-        <!-- <div class="bg-[#bad6d8] shadow-sm border-b">
-            <div class="max-w-7xl mx-auto px-4 py-3">
-                <button @click="goBack" class="flex items-center text-gray-600 hover:text-gray-900 transition-colors">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                    </svg>
-                    Back to Services
-                </button>
-            </div>
-        </div> -->
 
         <div class="max-w-7xl mx-auto px-4 py-8">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -241,7 +229,10 @@ onMounted(async () => {
                                 </div>
 
                                 <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ service.name }}</h1>
-                                <div class="flex items-center space-x-4 text-gray-600">
+                                <Link :href="route('client.vendor.show', { id: service.vendor.id })"
+                                    class="text-lg font-bold text-indigo-600">{{ service.vendor.business_name }}
+                                </Link>
+                                <div class="flex items-center space-x-4 text-gray-600 mt-2">
                                     <div class="flex items-center">
                                         <svg class="w-5 h-5 text-yellow-400 mr-1" fill="currentColor"
                                             viewBox="0 0 20 20">
@@ -262,16 +253,18 @@ onMounted(async () => {
                                 </div>
                             </div>
                             <div class="flex space-x-2">
+                                <button
+                                    class="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                    <Link2 class="w-5 h-5" />
+                                </button>
                                 <button @click="toggleFavorite"
                                     class="p-2 border border-gray-300 rounded-lg  transition-colors"
                                     :class="{ 'bg-red-500 text-white': service.is_favorite }">
                                     {{ console.log('is fav: ', service.is_favorite) }}
                                     <Heart class="w-5 h-5" />
+
                                 </button>
-                                <button
-                                    class="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                                    <Share2 class="w-5 h-5" />
-                                </button>
+
                             </div>
                         </div>
 
@@ -435,7 +428,8 @@ onMounted(async () => {
                                         required>
                                 </div>
 
-                                <div v-if="guestCount >= service.minimumGuests" class="bg-blue-50 p-3 rounded-lg">
+                                <div v-if="guestCount >= service.minimumGuests && service.category_name == 'Catering'"
+                                    class="bg-blue-50 p-3 rounded-lg">
                                     <div class="text-sm text-blue-700">
                                         <span class="font-medium">Estimated Total: {{ formatPrice(service.price *
                                             guestCount) }}</span>

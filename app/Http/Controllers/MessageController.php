@@ -250,6 +250,10 @@ class MessageController extends Controller
             })
             ->first();
 
+        $existingOtherUser = $existingConversation->users()
+                ->where('id', '!=', $user->id)
+                ->first();
+
         if ($existingConversation) {
             return response()->json([
                 'id' => $existingConversation->id,
@@ -259,6 +263,7 @@ class MessageController extends Controller
                 'last_message' => $existingConversation->lastMessage,
                 'unread_count' => $existingConversation->getUnreadCountForUser($user->id),
                 'participants' => $existingConversation->users()->get(['id', 'name', 'email']),
+                'otherUserAvatar' => $existingOtherUser?->getFirstMediaUrl('avatar'),
                 'already_exists' => true
             ]);
         }
@@ -271,6 +276,10 @@ class MessageController extends Controller
             'last_message_at' => now()
         ]);
 
+        $newOtherUser = $conversation->users()
+                ->where('id', '!=', $user->id)
+                ->first();
+
         return response()->json([
             'id' => $conversation->id,
             'title' => $conversation->getDisplayName($user->id),
@@ -279,6 +288,7 @@ class MessageController extends Controller
             'last_message' => $conversation->lastMessage,
             'unread_count' => $conversation->getUnreadCountForUser($user->id),
             'participants' => $conversation->users()->get(['id', 'name', 'email']),
+            'otherUserAvatar' => $newOtherUser?->getFirstMediaUrl('avatar'),
             'already_exists' => false
         ]);
     }

@@ -1,11 +1,12 @@
 <script setup>
 import BookingCard from '@/Components/Client/Booking/BookingCard.vue';
 import BookingFilters from '@/Components/Client/Booking/BookingFilters.vue';
-import StatsSection from '@/Components/Client/Booking/StatsSection.vue';
 import QuickBookingStepperModal from '@/Components/QuickBookingStepperModal.vue';
 import ClientLayout from '@/Layouts/ClientLayout.vue';
-import { ref, computed } from 'vue';
-
+import { ref, watch } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { debounce } from 'lodash';
+import { Calendar, Plus, BarChart3 } from 'lucide-vue-next';
 
 const props = defineProps({
     bookings: {
@@ -13,6 +14,18 @@ const props = defineProps({
     },
     categories: {
         type: Array
+    },
+    filters: Object,
+    booking_stats: {
+        type: Object,
+        default: () => ({
+            total: 0,
+            confirmed: 0,
+            pending: 0,
+            completed: 0,
+            cancelled: 0,
+            total_spent: 0
+        })
     }
 })
 
@@ -25,260 +38,159 @@ const bookingStatuses = [
     { value: 'cancelled', label: 'Cancelled', color: 'red' }
 ];
 
+// Reactive filters - these will trigger backend filtering via API calls
+const searchQuery = ref(props.filters.search || '');
+const selectedCategory = ref(props.filters.category || 'all');
+const selectedStatus = ref(props.filters.status || 'all');
+const selectedDateRange = ref(props.filters.date_range || 'all');
+const showFilters = ref(false);
 
-// Reactive filters
-const searchQuery = ref('');
-const selectedCategory = ref('all');
-const selectedStatus = ref('all');
-const selectedDateRange = ref('all');
-const viewMode = ref('list');
-
-
-// Computed filtered bookings
-const filteredBookings = computed(() => {
-    let filtered = props.bookings.data;
-
-    // Search filter
-    if (searchQuery.value) {
-        const query = searchQuery.value.toLowerCase();
-        filtered = filtered.filter(booking =>
-            booking.title.toLowerCase().includes(query) ||
-            booking.id.toLowerCase().includes(query) ||
-            booking.provider.name.toLowerCase().includes(query) ||
-            booking.location.toLowerCase().includes(query)
-        );
-    }
-
-    // Category filter
-    if (selectedCategory.value !== 'all') {
-        filtered = filtered.filter(booking => booking.category.id == selectedCategory.value);
-    }
-
-    // Status filter
-    if (selectedStatus.value !== 'all') {
-        filtered = filtered.filter(booking => booking.status === selectedStatus.value);
-    }
-
-    // Date range filter
-    if (selectedDateRange.value !== 'all') {
-        const today = new Date();
-        filtered = filtered.filter(booking => {
-            const eventDate = new Date(booking.eventDate);
-            switch (selectedDateRange.value) {
-                case 'upcoming':
-                    return eventDate >= today;
-                case 'past':
-                    return eventDate < today;
-                case 'thisMonth':
-                    return eventDate.getMonth() === today.getMonth() && eventDate.getFullYear() === today.getFullYear();
-                default:
-                    return true;
-            }
-        });
-    }
-
-    return {
-        data: filtered,
-        total: filtered.length
-    };
-});
-
-// Booking statistics
-const bookingStats = computed(() => {
-    const stats = {
-        total: props.bookings.data.length,
-        confirmed: 0,
-        pending: 0,
-        completed: 0,
-        cancelled: 0,
-        totalSpent: 0,
-        totalPaid: 0,
-        totalBalance: 0
-    };
-
-    props.bookings.data.forEach(booking => {
-        stats[booking.status]++;
-
-        const price = Number(booking.raw_amount) || 0;
-        const amountPaid = Number(booking.amountPaid) || 0;
-        const balanceAmount = Number(booking.balanceAmount) || 0;
-
-        if (booking.status === 'completed') stats.totalSpent += price;
-
-        stats.totalPaid += amountPaid;
-        stats.totalBalance += balanceAmount;
+// Watch filters and make API calls to backend for filtering
+watch([searchQuery, selectedCategory, selectedStatus, selectedDateRange], debounce(() => {
+    router.get(route('client.bookings.index'), {
+        search: searchQuery.value,
+        category: selectedCategory.value,
+        status: selectedStatus.value,
+        date_range: selectedDateRange.value,
+    }, {
+        preserveScroll: true,
+        preserveState: true,
+        replace: true,
     });
-
-    return stats;
-});
-
+}, 500));
 
 const clearFilters = () => {
     searchQuery.value = '';
     selectedCategory.value = 'all';
     selectedStatus.value = 'all';
     selectedDateRange.value = 'all';
+    showFilters.value = false;
+    router.get(route('client.bookings.index'));
 };
 
-// Booking actions
-const cancelBooking = (bookingId) => {
-    if (confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
-        const booking = props.bookings.data.find(b => b.id === bookingId);
-        if (booking) {
-            booking.status = 'cancelled';
-            alert('Booking cancelled successfully. You will receive a confirmation email shortly.');
-        }
-    }
+const toggleFilters = () => {
+    showFilters.value = !showFilters.value;
 };
 
-const rescheduleBooking = (bookingId) => {
-    alert(`Reschedule booking ${bookingId} - This would open a date picker modal.`);
-};
-
-const contactProvider = (booking) => {
-    alert(`Contact ${booking.provider.name}:\nPhone: ${booking.provider.phone}\nEmail: ${booking.provider.email}`);
-};
-
-const downloadInvoice = (bookingId) => {
-    alert(`Downloading invoice for booking ${bookingId}...`);
-};
-
-// Helper functions
-const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-PH', {
-        style: 'currency',
-        currency: 'PHP'
-    }).format(price);
-};
-
-const formatDate = (dateStr) => {
-    return new Date(dateStr).toLocaleDateString('en-PH', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-};
-
-const getStatusColor = (status) => {
-    const colors = {
-        confirmed: 'bg-green-100 text-green-800',
-        pending: 'bg-yellow-100 text-yellow-800',
-        completed: 'bg-blue-100 text-blue-800',
-        cancelled: 'bg-red-100 text-red-800'
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800';
-};
-
-const getPaymentStatusColor = (status) => {
-    const colors = {
-        paid: 'text-green-600',
-        partial: 'text-yellow-600',
-        unpaid: 'text-red-600',
-        refunded: 'text-blue-600'
-    };
-    return colors[status] || 'text-gray-600';
-};
-
-const eventModal = ref(null)
-
+const eventModal = ref(null);
 </script>
 
 <template>
-
     <ClientLayout>
         <QuickBookingStepperModal ref="eventModal" :categories="categories" />
-        <div class="min-h-screen bg-gray-50">
+        <div class="min-h-screen bg-gray-50/30">
 
             <!-- Header Section -->
-            <div class="bg-white border-b border-gray-200">
-                <div class="max-w-7xl mx-auto px-6 py-8">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h1 class="text-3xl font-bold text-gray-900 mb-2">My Bookings</h1>
-                            <p class="text-gray-600">Manage your service bookings and reservations</p>
+            <div class="bg-white border-b border-gray-200/60">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div class="flex items-center space-x-3 sm:space-x-4">
+                            <div class="p-2 bg-blue-50 rounded-lg">
+                                <Calendar class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                            </div>
+                            <div>
+                                <h1 class="text-xl sm:text-2xl font-bold text-gray-900">My Bookings</h1>
+                                <p class="text-gray-600 text-xs sm:text-sm">Manage your service bookings and
+                                    reservations</p>
+                            </div>
                         </div>
-                        <div>
-                            <button @click="eventModal.open()"
-                                class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                                New Booking
-                            </button>
+                        <button @click="eventModal?.open()"
+                            class="w-full sm:w-auto bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium flex items-center justify-center space-x-2 shadow-sm hover:shadow-md">
+                            <Plus class="w-4 h-4" />
+                            <span>New Booking</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Section - Uses backend stats that don't change with filters -->
+            <div class="bg-white border-b border-gray-200/60">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+                        <div class="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4 text-center">
+                            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">{{ booking_stats.total
+                            }}
+                            </div>
+                            <div class="text-xs sm:text-sm text-gray-600">Total</div>
+                        </div>
+                        <div class="bg-green-50 rounded-lg sm:rounded-xl p-3 sm:p-4 text-center">
+                            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-green-600">{{
+                                booking_stats.confirmed }}</div>
+                            <div class="text-xs sm:text-sm text-green-600">Confirmed</div>
+                        </div>
+                        <div class="bg-amber-50 rounded-lg sm:rounded-xl p-3 sm:p-4 text-center">
+                            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-amber-600">{{
+                                booking_stats.pending
+                            }}</div>
+                            <div class="text-xs sm:text-sm text-amber-600">Pending</div>
+                        </div>
+                        <div class="bg-blue-50 rounded-lg sm:rounded-xl p-3 sm:p-4 text-center">
+                            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600">{{
+                                booking_stats.completed }}</div>
+                            <div class="text-xs sm:text-sm text-blue-600">Completed</div>
+                        </div>
+                        <div class="bg-red-50 rounded-lg sm:rounded-xl p-3 sm:p-4 text-center">
+                            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-red-600">{{
+                                booking_stats.cancelled
+                            }}</div>
+                            <div class="text-xs sm:text-sm text-red-600">Cancelled</div>
+                        </div>
+                        <div class="bg-purple-50 rounded-lg sm:rounded-xl p-3 sm:p-4 text-center">
+                            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-purple-600">
+                                {{ new Intl.NumberFormat('en-PH', {
+                                    style: 'currency', currency: 'PHP'
+                                }).format(booking_stats.total_spent) }}
+                            </div>
+                            <div class="text-xs sm:text-sm text-purple-600">Est. Total Spent</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Stats Section -->
-            <!-- <StatsSection :bookingStats="bookingStats" /> -->
-
-            <!-- Filters Section -->
+            <!-- Filters Section - These trigger API calls to backend -->
             <BookingFilters v-model:searchQuery="searchQuery" v-model:selectedCategory="selectedCategory"
                 v-model:selectedStatus="selectedStatus" v-model:selectedDateRange="selectedDateRange"
-                :categories="categories" :bookingStatuses="bookingStatuses" :totalBookings="filteredBookings.total"
-                @clear-filters="clearFilters" />
+                :categories="categories" :bookingStatuses="bookingStatuses" :totalBookings="bookings.total"
+                :showFilters="showFilters" @clear-filters="clearFilters" @toggle-filters="toggleFilters" />
 
-            <!-- Bookings List -->
-            <div class="max-w-7xl mx-auto px-6 py-8">
-                <div v-if="filteredBookings.data.length > 0" class="space-y-6">
-                    <div v-for="booking in filteredBookings.data" :key="booking.id"
-                        class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+            <!-- Bookings List - Uses backend-filtered data directly -->
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+                <div v-if="bookings.data.length > 0" class="space-y-3 sm:space-y-4">
+                    <div v-for="booking in bookings.data" :key="booking.id"
+                        class="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200/60 hover:shadow-md transition-all duration-200">
                         <BookingCard :booking="booking" />
                     </div>
-
                 </div>
 
                 <!-- Empty State -->
-                <div v-else-if="bookings.data.length === 0" class="text-center py-16">
-                    <svg class="mx-auto h-16 w-16 text-gray-400 mb-6" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
-                            d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
-                        </path>
-                    </svg>
-                    <h3 class="text-xl font-medium text-gray-900 mb-3">No bookings yet</h3>
-                    <p class="text-gray-600 mb-6 max-w-sm mx-auto">
-                        You haven't made any bookings yet. Start browsing our services to make your first reservation.
-                    </p>
-                    <button
-                        class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                        Browse Services
-                    </button>
+                <div v-else-if="bookings.data.length === 0"
+                    class="text-center py-12 sm:py-16 bg-white rounded-lg sm:rounded-xl border border-gray-200/60">
+                    <div class="max-w-sm mx-auto px-4">
+                        <Calendar class="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mb-4 sm:mb-6" />
+                        <h3 class="text-lg sm:text-xl font-medium text-gray-900 mb-2 sm:mb-3">No bookings yet</h3>
+                        <p class="text-gray-600 text-sm sm:text-base mb-4 sm:mb-6">
+                            You haven't made any bookings yet. Start browsing our services to make your first
+                            reservation.
+                        </p>
+                        <button @click="eventModal?.open()"
+                            class="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                            Browse Services
+                        </button>
+                    </div>
                 </div>
 
                 <!-- No Results State -->
-                <div v-else class="text-center py-12">
-                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                        </path>
-                    </svg>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">No bookings found</h3>
-                    <p class="text-gray-600 mb-4">Try adjusting your search or filter criteria.</p>
-                    <button @click="clearFilters"
-                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
-                        Clear filters
-                    </button>
-                </div>
-            </div>
-
-            <!-- Quick Actions Footer -->
-            <div class="bg-white border-t border-gray-200">
-                <div class="max-w-7xl mx-auto px-6 py-6">
-                    <div class="flex items-center justify-between">
-                        <div class="text-sm text-gray-600">
-                            Need help with your bookings? <a href="#" class="text-blue-600 hover:text-blue-700">Contact
-                                Support</a>
-                        </div>
-                        <div class="flex space-x-3">
-                            <button
-                                class="bg-gray-100 text-gray-700 px-4 py-2 rounded hover:bg-gray-200 transition-colors text-sm">
-                                Export Bookings
-                            </button>
-                            <button
-                                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors text-sm">
-                                Browse Services
-                            </button>
-                        </div>
+                <div v-else
+                    class="text-center py-8 sm:py-12 bg-white rounded-lg sm:rounded-xl border border-gray-200/60">
+                    <div class="max-w-sm mx-auto px-4">
+                        <BarChart3 class="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mb-3 sm:mb-4" />
+                        <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">No bookings found</h3>
+                        <p class="text-gray-600 text-sm sm:text-base mb-3 sm:mb-4">Try adjusting your search or filter
+                            criteria.</p>
+                        <button @click="clearFilters"
+                            class="w-full sm:w-auto bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                            Clear filters
+                        </button>
                     </div>
                 </div>
             </div>

@@ -19,6 +19,7 @@ use App\Http\Controllers\ServiceCategoryController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SmsController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VendorAccountController;
 use App\Http\Controllers\VendorCalendarController;
 use App\Http\Controllers\VendorApplicationController;
 use App\Http\Controllers\VendorController;
@@ -64,6 +65,7 @@ Route::post('/email/verify-otp', [EmailOtpController::class, 'verifyOtp']);
 Route::get('/organizer-reg', function() {
 
     return inertia('Auth/OrganizerRegister');
+
 });
 
 //REPORTING
@@ -112,6 +114,9 @@ Route::prefix('admin')->as('admin.')->middleware(['auth', 'role:admin'])->group(
     Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
 
     Route::get('/settings', [AdminController::class, 'settingsPage'])->name('settings.index');
+
+    //Account
+    Route::get('/account', [AdminController::class, 'account'])->name('account.index');
 
 });
 
@@ -202,6 +207,10 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'role:vendor', 'user
 
     Route::get('/unread-messages-count', [MessageController::class, 'getUnreadMessagesCount']);
 
+    // Account
+    Route::get('/account', [VendorAccountController::class, 'index'])->name('account.index');
+
+
 });
 
 
@@ -236,7 +245,9 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client', 'user
     Route::get('/services/{service}', [ClientController::class, 'serviceShow'])->name('service.show');
 
     //Show Bookings
-    Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
+    Route::get('/bookings', [ClientController::class, 'bookings'])->name('bookings.index');
+
+
 
     //Favorites
     Route::get('/favorites', [FavoritesController::class, 'index'])->name('favorites.index');
@@ -262,6 +273,10 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client', 'user
     //cancel booking
     Route::patch('/bookings/{id}/cancel', [ClientController::class, 'cancelBooking'])->name('booking.cancel');
 
+
+    //profile
+    Route::get('/profile', [ClientController::class, 'profile'])->name('profile.index');
+    Route::resource('users', UserController::class);
 
 
 
@@ -289,7 +304,7 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client', 'user
 
 
 
-   //NOTIFICAIONS
+   //NOTIFICATIONS
    // Get client notifications
     Route::get('/notifications', [NotificationController::class, 'index'])
         ->name('client.notifications.index');

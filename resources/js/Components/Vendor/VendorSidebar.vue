@@ -192,7 +192,7 @@ onUnmounted(() => {
                         </span>
                     </NewNavLink>
 
-                    <NewNavLink :href="route('dashboard')" :active="route().current('dashboard')"
+                    <NewNavLink :href="route('vendor.account.index')" :active="route().current('vendor.account.index')"
                         :isCollapsed="ui.sidebarCollapsed">
                         <template #icon>
                             <Settings class="h-5 w-5" />

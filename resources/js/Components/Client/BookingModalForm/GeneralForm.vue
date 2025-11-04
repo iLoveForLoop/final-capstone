@@ -59,7 +59,7 @@ const isDateDisabled = (date) => {
     today.setHours(0, 0, 0, 0)
 
     return (
-        date < today ||
+        date <= today ||
         booked.value.some((b) => {
             const bookedDate = new Date(b)
             return (

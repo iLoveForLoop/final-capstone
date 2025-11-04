@@ -61,7 +61,7 @@ const calculatedPrice = () => {
                                 clip-rule="evenodd" />
                         </svg>
                         <span>Base Price: {{ formatPrice(service.catering_service.price)
-                        }}
+                            }}
                             per person</span>
                     </div>
                     <div class="flex items-center">
@@ -154,9 +154,9 @@ const calculatedPrice = () => {
                 <span class="text-gray-600">Date & Time:</span>
                 <span class="font-medium text-gray-900">{{ form.event_date }} at {{
                     form.event_time
-                }}</span>
+                    }}</span>
             </div>
-            <div v-if="form.pax" class="flex justify-between">
+            <div v-if="form.pax && service.category_name === 'Catering'" class="flex justify-between">
                 <span class="text-gray-600">Number of Guests:</span>
                 <span class="font-medium text-gray-900">{{ form.pax }} people</span>
             </div>
@@ -164,7 +164,7 @@ const calculatedPrice = () => {
                 <span class="text-gray-600">Description:</span>
                 <span class="font-medium text-gray-900 text-right max-w-xs">{{
                     form.description
-                }}</span>
+                    }}</span>
             </div>
         </div>
     </div>
@@ -183,17 +183,17 @@ const calculatedPrice = () => {
                 <span class="font-medium text-gray-900">{{ calculatedPrice() }}</span>
             </div>
             <div v-else class="flex justify-between">
-                <span class="text-gray-600">Service fee</span>
+                <span class="text-gray-600">Service price</span>
                 <span class="font-medium text-gray-900">{{
                     formatPrice(service.photography_service?.price
                         || service.price) }}</span>
             </div>
 
             <!-- Additional charges could be added here -->
-            <div class="flex justify-between text-green-600">
+            <!-- <div class="flex justify-between text-green-600">
                 <span>Discount</span>
                 <span>-{{ formatPrice(0) }}</span>
-            </div>
+            </div> -->
         </div>
 
         <div class="border-t border-blue-200 pt-3">
@@ -202,7 +202,7 @@ const calculatedPrice = () => {
                     Cost:</span>
                 <span class="text-2xl font-bold text-blue-600">{{
                     formatPrice(totalPrice)
-                }}</span>
+                    }}</span>
             </div>
         </div>
 

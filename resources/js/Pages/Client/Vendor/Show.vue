@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Star, MapPin, Home, Box } from 'lucide-vue-next'
+import { Star, MapPin, Home, Box, Scale } from 'lucide-vue-next'
 
 import { Card } from '@/Components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs'
@@ -11,6 +11,7 @@ import ReviewsTab from '@/Components/Client/Vendor/ReviewsTab.vue'
 import LocationTab from '@/Components/Client/Vendor/LocationTab.vue'
 import ServicesTab from '@/Components/Client/Vendor/ServicesTab.vue'
 import ClientNavbar from '@/Components/ClientNavbar.vue'
+import LegalsTab from '@/Components/Client/Vendor/LegalsTab.vue'
 
 
 const props = defineProps({
@@ -66,6 +67,15 @@ onMounted(() => {
                                 <span class="text-xs md:text-sm">Reviews</span>
                             </div>
                         </TabsTrigger>
+                        <TabsTrigger value="legal" class="flex-1 px-4 md:px-5 py-3 md:py-4 font-medium rounded-none transition-all duration-200
+               data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600
+               data-[state=active]:bg-transparent hover:text-indigo-500 text-gray-500 hover:bg-gray-50">
+                            <div class="flex flex-col items-center justify-center gap-1">
+
+                                <Scale :size="16" class="transition-colors" />
+                                <span class="text-xs md:text-sm">Legal</span>
+                            </div>
+                        </TabsTrigger>
                         <TabsTrigger value="location" class="flex-1 px-4 md:px-5 py-3 md:py-4 font-medium rounded-none transition-all duration-200
                data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600
                data-[state=active]:bg-transparent hover:text-indigo-500 text-gray-500 hover:bg-gray-50">
@@ -83,16 +93,22 @@ onMounted(() => {
                             <OverviewTab :vendor="vendor" />
                         </TabsContent>
 
+                        <TabsContent value="services">
+                            <ServicesTab :vendorId="vendor.id" />
+                        </TabsContent>
+
                         <TabsContent value="reviews">
                             <ReviewsTab :vendor="vendor" />
+                        </TabsContent>
+
+                        <TabsContent value="legal">
+                            <LegalsTab />
                         </TabsContent>
 
                         <TabsContent value="location">
                             <LocationTab :vendor="vendor" />
                         </TabsContent>
-                        <TabsContent value="services">
-                            <ServicesTab :vendorId="vendor.id" />
-                        </TabsContent>
+
 
                     </div>
                 </Tabs>

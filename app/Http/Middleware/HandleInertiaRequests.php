@@ -33,9 +33,20 @@ class HandleInertiaRequests extends Middleware
     {
 
         $user = Auth::user();
+
         $hasCatering = false;
         $avatar = null;
         $clientId = null;
+
+        if($user){
+            $user->load(['roles']);
+            $avatar = $user->getFirstMediaUrl('avatar');
+        }
+
+        if($user && $user->hasRole('vendor')){
+            $user->load(['client']);
+
+        }
 
 
 
@@ -49,7 +60,7 @@ class HandleInertiaRequests extends Middleware
                 )
                 : false;
 
-            $avatar = $user->getFirstMediaUrl('avatar');
+
         }
 
         if ($user && $user->hasRole('client')) {

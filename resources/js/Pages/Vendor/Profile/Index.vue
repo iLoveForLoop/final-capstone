@@ -9,6 +9,7 @@ import Specialties from '@/Components/Vendor/Profile/Specialties.vue';
 import Portfolio from '@/Components/Vendor/Profile/Portfolio.vue';
 import MediaTab from '@/Components/Vendor/Profile/MediaTab.vue';
 import PermitTab from '@/Components/Vendor/Profile/PermitTab.vue';
+import useFlash from '@/Composables/useFlash';
 
 const props = defineProps({
     vendor: {
@@ -434,6 +435,8 @@ watch(
         permitFiles.value = [...newVal]
     }
 )
+
+useFlash()
 
 </script>
 

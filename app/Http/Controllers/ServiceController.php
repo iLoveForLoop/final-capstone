@@ -393,12 +393,12 @@ private function checkServiceAvailabilityOnDate($service, $eventDate)
     }
 
     // Check if the service is already booked on this date with confirmed status
-    $hasBooking = \App\Models\Booking::where('service_id', $service->id)
-        ->where('booking_date', $eventDate)
-        ->whereIn('status', ['confirmed']) // Only confirmed/completed bookings block availability
-        ->exists();
+    $confirmedCount = \App\Models\Booking::where('service_id', $service->id)
+        ->whereDate('booking_date', $eventDate)
+        ->where('status', ['confirmed']) // Only confirmed/completed bookings block availability
+        ->count();
 
-    return !$hasBooking;
+    return $confirmedCount < 1;
 }
 
 }

@@ -7,8 +7,11 @@ use App\Models\Client;
 use App\Models\Service;
 use App\Models\ServiceCategory;
 use App\Models\Vendor;
+use Carbon\Carbon;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Inertia\Inertia;
 
 class ClientController extends Controller
 {
@@ -33,7 +36,8 @@ class ClientController extends Controller
             'vendor' => $service->vendor,
             'rating' => $service->vendor->averageRating(),
             'is_available' => $service->is_available,
-            'catering_service' => $service->cateringService ?? null
+            'catering_service' => $service->cateringService ?? null,
+            'minimumGuests' => $service->cateringService->min_pax ?? null,
         ]);
 
 
@@ -248,7 +252,8 @@ class ClientController extends Controller
             'vendor' => $service->vendor,
             'rating' => $service->vendor->averageRating(),
             'is_available' => $service->is_available,
-            'catering_service' => $service->cateringService ?? null
+            'catering_service' => $service->cateringService ?? null,
+            'minimumGuests' => $service->cateringService->min_pax ?? null,
 
         ])->toArray();
 
@@ -370,6 +375,7 @@ class ClientController extends Controller
 
         $user = auth()->user();
 
+
         $query = $user->events()->with(['bookings.service' => function ($q) {
             $q->with(['category', 'vendor']);
         }])->latest('created_at');
@@ -379,9 +385,9 @@ class ClientController extends Controller
         $events = $query->paginate(10)->withQueryString()->through(fn ($event) => [
             'id' => 'EVT' . str_pad($event->id, 3, '0', STR_PAD_LEFT),
             'title' => $event->name,
-            'start' => $event->event_date,
+            'start' => $event->start,
             'location' => $event->location,
-            'decription' => $event->description,
+            'description' => $event->description,
             'status' => $event->status,
             'services' => $event->bookings->map(fn ($booking) => [
                 'name' => $booking->service->category->name,
@@ -431,6 +437,10 @@ class ClientController extends Controller
                 'price' => $service->price,
                 'features' => $service->specifications // ??,
             ]),
+
+            'legalDocuments' => $vendor->getMedia('permitFiles')->map(fn($media) => [
+                'url' => $media->getUrl()
+            ]) ?? null,
 
             'ratingBreakdown' => $vendor->ratingBreakdown(),
 
@@ -537,6 +547,190 @@ class ClientController extends Controller
 
         return back()->with('success', 'Booking has been cancelled.');
     }
+
+
+
+
+
+
+
+
+
+
+    //BOOKING
+    public function bookings(Request $request){
+    $user = auth()->user();
+
+    // ✅ Ensure only clients can access this controller
+    if (!$user->hasRole('client')) {
+        return back()->with('error', 'Unauthorized.');
+    }
+
+    $categories = ServiceCategory::all();
+
+    // 🔹 Client bookings query
+    $query = $user->bookings()
+        ->with([
+            'service.category',
+            'service.cateringService',
+            'event',
+            'service.vendor',
+            'review',
+            'service.vendor.user'
+        ]);
+
+    // 🔹 Search filter
+    if ($request->filled('search')) {
+        $search = $request->get('search');
+        $query->where(function ($q) use ($search) {
+            $q->where('id', 'like', "%{$search}%")
+                ->orWhereHas('service', fn($sq) =>
+                    $sq->where('name', 'like', "%{$search}%"))
+                ->orWhereHas('event', fn($eq) =>
+                    $eq->where('name', 'like', "%{$search}%")
+                       ->orWhere('location', 'like', "%{$search}%"));
+        });
+    }
+
+    // 🔹 Status filter
+    if ($request->filled('status') && $request->get('status') !== 'all') {
+        $query->where('status', $request->get('status'));
+    }
+
+    // Category filter
+    if ($request->filled('category') && $request->get('category') !== 'all') {
+        $query->whereHas('service.category', function ($q) use ($request) {
+            $q->where('id', $request->get('category'));
+        });
+    }
+
+    // 🔹 Date range filter
+    if ($request->filled('date_range') && $request->get('date_range') !== 'all') {
+        $today = Carbon::now()->startOfDay();
+        switch ($request->get('date_range')) {
+            case 'today':
+                $query->whereDate('booking_date', $today);
+                break;
+            case 'week':
+                $query->whereBetween('booking_date', [$today, $today->copy()->addWeek()]);
+                break;
+            case 'month':
+                $query->whereMonth('booking_date', $today->month)
+                    ->whereYear('booking_date', $today->year);
+                break;
+            case 'upcoming':
+                $query->where('booking_date', '>=', $today);
+                break;
+            case 'past':
+                $query->where('booking_date', '<', $today);
+                break;
+        }
+    }
+
+    // 🔹 Sorting
+    $sortBy = $request->get('sort', 'date_desc');
+    switch ($sortBy) {
+        case 'date_desc':
+            $query->orderBy('created_at', 'desc');
+            break;
+        case 'price_asc':
+            $query->join('services', 'bookings.service_id', '=', 'services.id')
+                ->orderBy('services.price', 'asc')
+                ->select('bookings.*');
+            break;
+        case 'price_desc':
+            $query->join('services', 'bookings.service_id', '=', 'services.id')
+                ->orderBy('services.price', 'desc')
+                ->select('bookings.*');
+            break;
+        case 'date_asc':
+        default:
+            $query->orderBy('created_at', 'asc');
+            break;
+    }
+
+    // 🔹 Get ALL bookings for statistics (unfiltered)
+    $allBookings = $user->bookings()->with(['service'])->get();
+
+    // 🔹 Calculate statistics from ALL bookings
+    $bookingStats = [
+        'total' => $allBookings->count(),
+        'confirmed' => $allBookings->where('status', 'confirmed')->count(),
+        'pending' => $allBookings->where('status', 'pending')->count(),
+        'completed' => $allBookings->where('status', 'completed')->count(),
+        'cancelled' => $allBookings->where('status', 'cancelled')->count(),
+        'total_spent' => $allBookings->where('status', 'completed')->sum('service.price')
+    ];
+
+    // 🔹 Paginate + transform filtered results
+    $bookings = $query->paginate(20)->withQueryString()->through(function ($booking) {
+        $eventTime = $booking->event && $booking->event->event_time
+            ? Carbon::parse($booking->event->event_time)->format('g:i A')
+            : 'Time TBD';
+
+        $is_per_pax = $booking->service->cateringService
+            ? ($booking->service->cateringService->price ?? false) !== ($booking->service->cateringService->package_price ?? null)
+            : false;
+
+        return [
+            'f_id' => 'BK' . str_pad($booking->id, 3, '0', STR_PAD_LEFT),
+            'id' => $booking->id,
+            'event_name' => $booking->event->name ?? 'N/A',
+            'event_location' => $booking->event->location ?? 'N/A',
+            'date' => $booking->booking_date,
+            'event_date' => $booking->event->event_date ?? $booking->booking_date,
+            'time' => $eventTime,
+            'status' => $booking->status,
+            'price' => '₱' . number_format($booking->service->price ?? 0, 0),
+            'notes' => $booking->event->description ?? 'No additional notes',
+            'raw_amount' => $booking->service->price ?? 0,
+            'formatted_date' => Carbon::parse($booking->booking_date)->format('Y-m-d'),
+            'created_at' => $booking->created_at,
+            'service' => $booking->service,
+            'category' => $booking->service->category,
+            'is_per_pax' => $is_per_pax,
+            'service_image' => $booking->service->getFirstMediaUrl('images'),
+            'vendor' => $booking->service->vendor,
+            'vendor_avatar' => $booking->service->vendor->getFirstMediaUrl('images') ?? null,
+            'vendor_rating' => $booking->service->vendor->averageRating(),
+            'can_review' => !$booking->hasReviewFrom(auth()->id()),
+            'review' => $booking->review ? [
+                'id' => $booking->review->id,
+                'comment' => $booking->review->comment,
+                'reviewDate' => $booking->review->created_at,
+                'serviceName' => $booking->service->name,
+                'serviceProvider' => $booking->service->vendor->business_name,
+                'rating' => $booking->review->rating,
+                'vendorResponse' => [
+                    'message' => $booking->review->response,
+                    'date' => $booking->review->responded_at
+                ]
+            ] : null
+        ];
+    });
+
+    // 🔹 Return client view
+    return inertia('Client/Bookings/Index', [
+        'bookings' => $bookings,
+        'categories' => $categories,
+        'booking_stats' => $bookingStats, // Add stats here
+        'filters' => [
+            'search' => $request->get('search', ''),
+            'category' => $request->get('category', 'all'),
+            'status' => $request->get('status', 'all'),
+            'date_range' => $request->get('date_range', 'all'),
+        ]
+    ]);
+}
+
+
+    public function profile(Request $request){
+        return Inertia::render('Client/Profile/Index', [
+            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'status' => session('status'),
+        ]);
+    }
+
 
 
 }

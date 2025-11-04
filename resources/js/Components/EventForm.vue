@@ -12,6 +12,13 @@ const props = defineProps({
 
 const booked = ref([])
 
+const tom = ref(new Date())
+tom.value.setDate(tom.value.getDate() + 1)
+
+console.log('TOM', tom.value);
+
+
+
 
 const pickerDate = ref(null);
 const pickerTime = ref(null);
@@ -57,12 +64,12 @@ const updateEventTime = (time) => {
 
 
 onMounted(async () => {
-    // try {
-    //     const res = await axios.get(`/api/vendor/${props.vendorId}/booked-dates`);
-    //     booked.value = res.data.bookedDates || []
-    // } catch (error) {
-    //     console.error('Failed to fetch booked dates:', error)
-    // }
+    try {
+        const res = await axios.get(`/api/vendor/${props.vendorId}/booked-dates`);
+        booked.value = res.data.bookedDates || []
+    } catch (error) {
+        console.error('Failed to fetch booked dates:', error)
+    }
 
     console.log('Event Form Mounted');
 
@@ -116,9 +123,8 @@ function doesCategoryExist(categoryName) {
                         <span class="text-[#239BA7] ml-1">*</span>
                     </label>
                     <VueDatePicker v-model="pickerDate" @update:model-value="updateEventDate"
-                        :enable-time-picker="false" :min-date="new Date()" placeholder="Select date" class="w-full"
-                        auto-apply :teleport="true"
-                        :markers="booked.map(date => ({ date, type: 'dot', color: 'red' }))" />
+                        :enable-time-picker="false" :min-date="tom" placeholder="Select date" class="w-full" auto-apply
+                        :teleport="true" :markers="booked.map(date => ({ date, type: 'dot', color: 'red' }))" />
                     <p class="form-hint">When your event will occur</p>
                 </div>
 

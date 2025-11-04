@@ -35,7 +35,7 @@ class SendBookingSmsJob implements ShouldQueue
             return;
         }
 
-        $message = "Eventory: Hello {$booking->service->vendor->business_name}, your service has been booked by a client. View the booking details on your Eventory account.";
+        $message = "Eventory: Hello {$booking->service->vendor->business_name}, your service {$booking->service->name} was booked. View the booking details on your Eventory account.";
 
         try {
             $semaphoreService->send($vendor->contact_number, $message);

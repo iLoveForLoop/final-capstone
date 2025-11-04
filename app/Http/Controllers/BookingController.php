@@ -27,6 +27,7 @@ class BookingController extends Controller
      */
     public function index(Request $request)
     {
+        // dd('hi');
         $user = auth()->user();
         $categories = ServiceCategory::all();
 
@@ -204,9 +205,9 @@ class BookingController extends Controller
             ->where('status', 'pending')
             ->firstOrFail();
 
-        // $booking->update([
-        //     'status' => 'confirmed'
-        // ]);
+        $booking->update([
+            'status' => 'confirmed'
+        ]);
 
         // Optional: Send notification to user
         // $this->sendBookingConfirmationNotification($booking);
@@ -292,11 +293,11 @@ class BookingController extends Controller
             ->where('status', 'confirmed')
             ->firstOrFail();
 
-        // $booking->update([
-        //     'status' => 'completed'
-        // ]);
+        $booking->update([
+            'status' => 'completed'
+        ]);
 
-        SendBookingCompletedEmailJob::dispatch($booking);
+        // SendBookingCompletedEmailJob::dispatch($booking);
 
         // $booking->load(['service.vendor.user', 'user']);
 
@@ -617,8 +618,8 @@ class BookingController extends Controller
             ->whereHas('event', fn($q) => $q->whereDate('event_date', '>=', now()))
             ->with('event:id,event_date')
             ->get()
-            ->groupBy(fn($booking) => $booking->event->event_date->format('Y-m-d')) // group by event date
-            ->filter(fn($bookings) => $bookings->count() >= 2) // only keep dates with 2 or more confirmed bookings
+            ->groupBy(fn($booking) => $booking->event->event_date->format('Y-m-d'))
+            ->filter(fn($bookings) => $bookings->count() >= 1) // only keep dates with 1 or more confirmed bookings
             ->keys() // get just the date keys
             ->values();
 

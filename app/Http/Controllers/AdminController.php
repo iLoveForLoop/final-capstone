@@ -10,8 +10,10 @@ use App\Models\ServiceCategory;
 use App\Models\User;
 use App\Models\Vendor;
 use Carbon\Carbon;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class AdminController extends Controller
 {
@@ -509,6 +511,11 @@ class AdminController extends Controller
     }
 
 
-
+    public function account(Request $request){
+        return Inertia::render('Admin/Account/Index', [
+            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'status' => session('status'),
+        ]);
+    }
 
 }

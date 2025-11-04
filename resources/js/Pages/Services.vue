@@ -143,7 +143,7 @@ console.log(props.filters.categories)
                         <div class="relative flex-1">
                             <Search :size="18"
                                 class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                            <input v-model="searchQuery" type="text"
+                            <input v-model="searchQuery" type="text" @keyup.enter="handleSearch"
                                 placeholder="Search services, categories, vendors..."
                                 class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all duration-200 text-sm placeholder-gray-500">
                         </div>

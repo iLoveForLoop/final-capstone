@@ -6,7 +6,7 @@ import { Link, router } from '@inertiajs/vue3';
 import CancelBooking from './CancelBooking.vue';
 import VendorContactInformation from './VendorContactInformation.vue';
 import emitter from '@/utils/eventBus';
-// import { router } from '@inertiajs/vue3';
+import { MapPin, Calendar, Star, MessageCircle, XCircle, Eye, Target } from 'lucide-vue-next';
 
 const props = defineProps({
     booking: {
@@ -24,23 +24,26 @@ const formatPrice = (price) => {
 const formatDate = (dateStr) => {
     return new Date(dateStr).toLocaleDateString('en-PH', {
         year: 'numeric',
-        month: 'long',
+        month: 'short',
         day: 'numeric'
     });
 };
 
 const getStatusColor = (status) => {
     const colors = {
-        confirmed: 'bg-green-100 text-green-800',
-        pending: 'bg-yellow-100 text-yellow-800',
-        completed: 'bg-blue-100 text-blue-800',
-        cancelled: 'bg-red-100 text-red-800'
+        confirmed: 'bg-green-100 text-green-800 border-green-200',
+        pending: 'bg-amber-100 text-amber-800 border-amber-200',
+        completed: 'bg-blue-100 text-blue-800 border-blue-200',
+        cancelled: 'bg-red-100 text-red-800 border-red-200'
     };
-    return colors[status] || 'bg-gray-100 text-gray-800';
+    return colors[status] || 'bg-gray-100 text-gray-800 border-gray-200';
 };
 
 const isReviewModalOpen = ref(false)
 const viewingReview = ref(false)
+const showVendorModal = ref(false);
+const showCancellationModal = ref(false)
+const isLoading = ref(false)
 
 const serviceData = ref({
     id: props.booking.service.id,
@@ -49,36 +52,19 @@ const serviceData = ref({
     date: props.booking.formatted_date,
     bookingId: props.booking.id,
     vendorId: props.booking.vendor.id
-
 })
-
-const showVendorModal = ref(false);
-const showCancellationModal = ref(false)
-const isLoading = ref(false)
 
 const handleConfirmCancellation = (bookingData) => {
     isLoading.value = true
-    try {
-
-        router.patch(route('client.booking.cancel', props.booking.id), {
-            reason: bookingData.cancellationReason,
-            comment: bookingData.additionalComments
-        }, {
-            onFinish: () => {
-                showCancellationModal.value = false
-                isLoading.value = false
-            },
-            onError: () => {
-                isLoading.value = true
-            }
-        })
-
-
-    } catch (error) {
-        // Handle error
-    } finally {
-        isLoading.value = false
-    }
+    router.patch(route('client.booking.cancel', props.booking.id), {
+        reason: bookingData.cancellationReason,
+        comment: bookingData.additionalComments
+    }, {
+        onFinish: () => {
+            showCancellationModal.value = false
+            isLoading.value = false
+        }
+    })
 }
 
 const messageVendor = (data) => {
@@ -86,58 +72,12 @@ const messageVendor = (data) => {
     emitter.emit('chat-vendor', props.booking.vendor.user_id)
 }
 
-
-
-// const viewReviewData = ref({
-//     id: props.booking.review.id,
-//     rating: props.booking.review.rating,
-//     comment: props.booking.review.comment,
-//     reviewDate: props.booking.review.created_at,
-//     serviceName: props.booking.service.name,
-//     serviceProvider: props.booking.vendor.business_name,
-//     vendorResponse: {
-//         message: props.booking.review.response,
-//         date: props.booking.review.responded_at
-//     }
-// })
-
-// const viewReviewData = ref(null)
-
-
-
-// const reviewChecker = () => {
-//     if (props.booking.review) {
-//         console.log('Review')
-//         viewReviewData.value = {
-//             id: props.booking.review.id,
-//             rating: props.booking.review.rating,
-//             comment: props.booking.review.comment,
-//             reviewDate: props.booking.review.created_at,
-//             serviceName: props.booking.service.name,
-//             serviceProvider: props.booking.vendor.business_name,
-//             vendorResponse: {
-//                 message: props.booking.review.response,
-//                 date: props.booking.review.responded_at
-//             }
-//         }
-
-//         console.log(viewReviewData.value)
-
-//     } else {
-//         console.log(viewReviewData.value)
-//         console.log('No Review')
-//     }
-// }
-
-// reviewChecker()
-
 const bookingData = ref({
     id: props.booking.f_id,
     serviceName: props.booking.service.name,
     serviceProvider: props.booking.vendor.full_name,
     date: props.booking.formatted_date,
     startTime: props.booking.time,
-    endTime: '12:00',
     location: props.booking.event_location
 })
 
@@ -150,121 +90,193 @@ const contactData = ref({
     avatar: props.booking.vendor_avatar,
     isVerified: false
 })
-
-
-
-
 </script>
 
 <template>
     <VendorContactInformation :vendor="contactData" :is-open="showVendorModal" :is-loading="isLoading"
         @message="messageVendor" @close="showVendorModal = false" />
     <CancelBooking :booking="bookingData" :isOpen="showCancellationModal" :isLoading="isLoading"
-        @close="showCancellationModal = false" @confirm="handleConfirmCancellation"
-        @cancel="showCancellationModal = false" />
+        @close="showCancellationModal = false" @confirm="handleConfirmCancellation" />
     <LeaveReviewModal :isOpen="isReviewModalOpen" @close="isReviewModalOpen = false" :serviceData="serviceData" />
     <ViewReviewModal :isOpen="viewingReview" @close="viewingReview = false" :review="booking.review" />
-    <div class="p-6">
-        <!-- Booking Header -->
-        <div class="flex items-start justify-between mb-4">
-            <div class="flex items-start space-x-4">
-                <img :src="booking.service_image" :alt="booking.title" class="w-20 h-20 rounded-lg object-cover">
-                <div class="flex-1">
-                    <div class="flex items-center space-x-2 mb-2">
-                        <span class="text-sm font-mono text-gray-500">{{ booking.f_id }}</span>
-                        <span :class="['px-2 py-1 text-xs rounded-full', getStatusColor(booking.status)]">
-                            {{ booking.status.charAt(0).toUpperCase() + booking.status.slice(1) }}
-                        </span>
-                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                            {{ booking.category.name }}
-                        </span>
+
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200">
+        <!-- Header Section -->
+        <div class="p-4 sm:p-6 border-b border-gray-100">
+            <div class="flex items-start justify-between gap-4">
+                <!-- Left Content -->
+                <div class="flex items-start gap-3 flex-1 min-w-0">
+                    <!-- Service Image -->
+                    <img :src="booking.service_image" :alt="booking.title"
+                        class="w-12 h-12 sm:w-14 sm:h-14 rounded-lg object-cover border border-gray-200 flex-shrink-0">
+
+                    <!-- Content -->
+                    <div class="flex-1 min-w-0">
+                        <!-- Badges -->
+                        <div class="flex flex-wrap items-center gap-2 mb-2">
+                            <span class="text-xs font-mono text-gray-500 bg-gray-50 px-2 py-1 rounded">
+                                {{ booking.f_id }}
+                            </span>
+                            <span
+                                :class="['px-2.5 py-1 text-xs font-medium rounded-full border', getStatusColor(booking.status)]">
+                                {{ booking.status.charAt(0).toUpperCase() + booking.status.slice(1) }}
+                            </span>
+                            <span
+                                class="bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-full border border-blue-200">
+                                {{ booking.category.name }}
+                            </span>
+                        </div>
+
+                        <!-- Title -->
+                        <h3 class="text-lg font-semibold text-gray-900 mb-1 line-clamp-1">
+                            {{ booking.service.name }}
+                        </h3>
+
+                        <!-- Description -->
+                        <p class="text-sm text-gray-600 mb-3 line-clamp-2">
+                            {{ booking.description }}
+                        </p>
+
+                        <!-- Vendor Info -->
+                        <div class="flex items-center gap-3 text-sm">
+                            <Link :href="route('client.vendor.show', booking.vendor.id)"
+                                class="font-medium text-blue-600 hover:text-blue-700 transition-colors truncate">
+                            {{ booking.vendor.business_name }}
+                            </Link>
+                            <div class="flex items-center gap-1 text-gray-500">
+                                <Star class="w-4 h-4 text-yellow-400 fill-current" />
+                                <span v-if="booking.vendor_rating">{{ booking.vendor_rating }}/5</span>
+                                <span v-else class="text-xs">No ratings</span>
+                            </div>
+                        </div>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ booking.event_name }}</h3>
-                    <p class="text-sm text-gray-600 mb-2">{{ booking.description }}</p>
-                    <div class="flex items-center text-sm text-gray-500">
-                        <Link :href="route('client.vendor.show', booking.vendor.id)" class="font-medium text-blue-500">
-                        {{
-                            booking.vendor.business_name }}</Link>
-                        <span class="mx-2">•</span>
-                        <svg class="w-4 h-4 mr-1 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path
-                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                        <span v-if="booking.vendor_rating">Rating: {{ booking.vendor_rating }}/5</span>
-                        <span v-else>No ratings yet</span>
+                </div>
+
+                <!-- Right Content - Price & Quick Action -->
+                <div class="flex flex-col items-end gap-2 flex-shrink-0">
+                    <div class="text-right">
+                        <div class="text-xl font-bold text-gray-900">{{ formatPrice(booking.raw_amount) }}</div>
+                        <div class="text-xs text-gray-500 mt-1">Total Amount</div>
+                    </div>
+                    <button @click="showVendorModal = true"
+                        class="hidden sm:flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                        <MessageCircle class="w-4 h-4" />
+                        <span>Contact</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Section -->
+        <div class="p-4 sm:p-6 bg-gray-50 border-b border-gray-100">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                <!-- Event Name -->
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-white rounded-lg border border-gray-200 flex-shrink-0">
+                        <Target class="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Event Name</p>
+                        <p class="text-sm font-medium text-gray-900 truncate">{{ booking.event_name }}</p>
+                    </div>
+                </div>
+
+                <!-- Date & Time -->
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-white rounded-lg border border-gray-200 flex-shrink-0">
+                        <Calendar class="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Event Date</p>
+                        <p class="text-sm font-medium text-gray-900">{{ formatDate(booking.event_date) }}</p>
+                        <p class="text-xs text-gray-600">{{ booking.eventTime }}</p>
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-white rounded-lg border border-gray-200 flex-shrink-0">
+                        <MapPin class="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Location</p>
+                        <p class="text-sm font-medium text-gray-900 truncate">{{ booking.event_location }}</p>
+                    </div>
+                </div>
+
+                <!-- Notes (if available) -->
+                <div class="flex items-center gap-3" v-if="booking.notes">
+                    <div class="p-2 bg-white rounded-lg border border-gray-200 flex-shrink-0">
+                        <MessageCircle class="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Notes</p>
+                        <p class="text-sm text-gray-700 truncate">{{ booking.notes }}</p>
                     </div>
                 </div>
             </div>
-            <div class="text-right">
-                <div class="text-2xl font-bold text-gray-900">{{ formatPrice(booking.raw_amount) }}
+        </div>
+
+        <!-- Actions Section -->
+        <div class="p-4 sm:p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <!-- Mobile Contact Button -->
+                <button @click="showVendorModal = true"
+                    class="sm:hidden flex items-center justify-center gap-2 w-full py-2.5 text-blue-600 hover:text-blue-700 font-medium border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
+                    <MessageCircle class="w-4 h-4" />
+                    <span>Contact Provider</span>
+                </button>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap gap-2 w-full sm:w-auto justify-center sm:justify-end">
+                    <!-- Cancel Booking -->
+                    <button @click="showCancellationModal = true" v-if="booking.status === 'pending'"
+                        class="flex items-center gap-2 px-4 py-2.5 text-sm border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors font-medium flex-1 sm:flex-none justify-center">
+                        <XCircle class="w-4 h-4" />
+                        <span class="hidden sm:inline">Cancel Booking</span>
+                        <span class="sm:hidden">Cancel</span>
+                    </button>
+
+                    <!-- Leave Review -->
+                    <button @click="isReviewModalOpen = true"
+                        v-if="booking.status === 'completed' && booking.can_review"
+                        class="flex items-center gap-2 px-4 py-2.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex-1 sm:flex-none justify-center">
+                        <Star class="w-4 h-4" />
+                        <span class="hidden sm:inline">Leave Review</span>
+                        <span class="sm:hidden">Review</span>
+                    </button>
+
+                    <!-- View Review -->
+                    <button @click="viewingReview = true" v-if="!booking.can_review && booking.review"
+                        class="flex items-center gap-2 px-4 py-2.5 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium flex-1 sm:flex-none justify-center">
+                        <Eye class="w-4 h-4" />
+                        <span class="hidden sm:inline">View Review</span>
+                        <span class="sm:hidden">View Review</span>
+                    </button>
                 </div>
-                <!-- <div class="text-sm mt-1" :class="getPaymentStatusColor(booking.paymentStatus)">
-                                    {{ booking.paymentStatus.charAt(0).toUpperCase() + booking.paymentStatus.slice(1) }}
-                                </div> -->
-            </div>
-        </div>
-
-        <!-- Booking Details -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 bg-gray-50 rounded-lg p-4">
-            <div>
-                <p class="text-xs font-medium text-gray-500 mb-1">EVENT DATE</p>
-                <p class="text-sm font-medium text-gray-900">{{ formatDate(booking.event_date) }}</p>
-                <p class="text-xs text-gray-600">{{ booking.eventTime }}</p>
-            </div>
-            <div>
-                <p class="text-xs font-medium text-gray-500 mb-1">LOCATION</p>
-                <p class="text-sm font-medium text-gray-900">{{ booking.event_location }}</p>
-            </div>
-            <!-- <div>
-                                <p class="text-xs font-medium text-gray-500 mb-1">PAYMENT</p>
-                                <p class="text-sm font-medium text-gray-900">Paid: {{ formatPrice(booking.amountPaid) }}
-                                </p>
-                                <p class="text-xs text-gray-600" v-if="booking.balanceAmount > 0">
-                                    Balance: {{ formatPrice(booking.balanceAmount) }}
-                                </p>
-                            </div> -->
-        </div>
-
-        <!-- Notes -->
-        <div v-if="booking.notes" class="mb-4">
-            <p class="text-xs font-medium text-gray-500 mb-1">NOTES</p>
-            <p class="text-sm text-gray-700 bg-gray-50 rounded p-3">{{ booking.notes }}</p>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-            <div class="flex space-x-3">
-                <button @click="showVendorModal = true" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
-                    Contact Provider
-                </button>
-                <!-- <button @click="downloadInvoice(booking.id)" class="text-sm text-gray-600 hover:text-gray-700">
-                                    Download Invoice
-                                </button> -->
-            </div>
-            <div class="flex space-x-2">
-                <!-- <button v-if="booking.status === 'confirmed' || booking.status === 'pending'"
-                                    @click="rescheduleBooking(booking.id)"
-                                    class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors">
-                                    Reschedule
-                                </button> -->
-                <button @click="showCancellationModal = true"
-                    v-if="booking.status === 'confirmed' || booking.status === 'pending'"
-                    class="px-4 py-2 text-sm border border-red-300 text-red-700 rounded hover:bg-red-50 transition-colors">
-                    Cancel
-                </button>
-                <button @click="isReviewModalOpen = true" v-if="booking.status === 'completed' && booking.can_review"
-                    class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                    Leave Review
-                </button>
-                {{ console.log('can review: ', booking.can_review) }}
-                <button @click="viewingReview = true" v-if="!booking.can_review"
-                    class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                    View Review
-                </button>
             </div>
         </div>
     </div>
 </template>
 
+<style scoped>
+.line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
 
-<style></style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+</style>

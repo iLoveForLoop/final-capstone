@@ -41,7 +41,7 @@ const emit = defineEmits(['toggle-chat-window', 'close-chat-window', 'send-chat-
 
                     <div>
                         <p class="font-medium text-sm">{{ chat.sender }}</p>
-                        <p class="text-xs opacity-80">{{ chat.online ? 'Active now' : 'Last seen recently' }}</p>
+                        <!-- <p class="text-xs opacity-80">{{ chat.online ? 'Active now' : 'Last seen recently' }}</p> -->
                     </div>
                 </div>
                 <div class="flex items-center space-x-1">
@@ -76,6 +76,22 @@ const emit = defineEmits(['toggle-chat-window', 'close-chat-window', 'send-chat-
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <div v-if="chat.chatMessages.length == 0" class="flex flex-col items-center justify-center">
+                        <div
+                            class=" h-20  w-20 rounded-full overflow-hidden shadow-sm border border-gray-700 bg-gray-100 flex items-center justify-center text-white font-semibold text-xs">
+                            <!-- If user has an avatar image -->
+                            <img v-if="chat.avatar" :src="chat.avatar" alt="User avatar"
+                                class="w-full h-full object-cover" />
+
+                            <!-- Fallback: initials with gradient -->
+                            <span v-else
+                                class="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-700">
+                                {{ chat.initials }}
+                            </span>
+                        </div>
+                        <p class="text-center w-full mt-3 text-md">{{ chat.sender }}</p>
+                        <p class="text-center w-full mt-10 text-sm text-gray-500">No messages yet</p>
                     </div>
                 </div>
 

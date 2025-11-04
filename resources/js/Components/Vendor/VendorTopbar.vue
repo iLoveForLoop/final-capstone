@@ -291,7 +291,7 @@ const title = computed(() => {
                                                 <h3 class="font-semibold text-gray-900 dark:text-white">Notifications
                                                 </h3>
                                                 <span v-if="hasUnreadNotifications"
-                                                    class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">
+                                                    class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                                                     {{ unreadCount }}
                                                 </span>
                                             </div>
@@ -308,7 +308,7 @@ const title = computed(() => {
                                                     </svg>
                                                 </button>
                                                 <button v-if="hasUnreadNotifications" @click="markAllAsRead"
-                                                    class="text-xs font-medium text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 transition-colors duration-200"
+                                                    class="text-xs font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200"
                                                     :disabled="isLoading">
                                                     Mark all read
                                                 </button>
@@ -378,7 +378,7 @@ const title = computed(() => {
                                                                 {{ notification.title }}
                                                             </p>
                                                             <span v-if="!notification.read"
-                                                                class="h-2 w-2 flex-shrink-0 rounded-full bg-purple-600"></span>
+                                                                class="h-2 w-2 flex-shrink-0 rounded-full bg-blue-500"></span>
                                                         </div>
 
                                                         <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">

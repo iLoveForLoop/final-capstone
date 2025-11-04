@@ -34,9 +34,9 @@ class BookingObserver
         $this->notificationService->createBookingSubmittedClientNotification($booking);
 
         // Chain jobs: Email first, then SMS
-        // SendBookingEmailJob::dispatch($booking)->chain([
-        //     new SendBookingSmsJob($booking),
-        // ]);
+        SendBookingEmailJob::dispatch($booking)->chain([
+            new SendBookingSmsJob($booking),
+        ]);
 
         // SendBookingSmsJob::dispatch($booking);
     }

@@ -60,7 +60,7 @@ const tryToBook = () => {
 </script>
 
 <template>
-    <BookingModal ref="bookingModal" :service="service" />
+    <BookingModal ref="bookingModal" :service="service" :pax="service.minimumGuests" />
     <LoginModal ref="loginModal" />
     <div class="relative">
         <slot name="favorite"></slot>

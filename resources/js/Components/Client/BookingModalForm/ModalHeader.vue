@@ -11,7 +11,7 @@ const emit = defineEmits(['close-modal'])
     <div class="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="text-2xl font-bold">Book Your Event</h2>
+                <h2 class="text-2xl font-bold">Book Service</h2>
                 <p class="text-blue-100 mt-1">Complete your booking in just a few steps</p>
             </div>
             <button @click="emit('close-modal')"

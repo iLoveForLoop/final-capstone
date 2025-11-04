@@ -215,33 +215,57 @@ class UserController extends Controller
     public function update(User $user, Request $request)
     {
 
-        // dd('hi');
+    //      dd([
+    //     'request_data' => $request->all(),
+    //     'files' => $request->files->all(),
+    //     'has_profile_image' => $request->hasFile('profile_image'),
+    //     'remove_profile_image' => $request->boolean('remove_profile_image')
+    // ]);
 
         $rules = [
             'full_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
             'password' => 'nullable|confirmed|min:8',
             'profile_image' => 'nullable|image|max:2048',
+            'contact_number' => 'nullable|string|max:20',
+            'location' => 'nullable|string|max:255',
+            'first_name' => 'nullable|string|max:255',
+            'last_name' => 'nullable|string|max:255',
         ];
 
         $validated = $request->validate($rules);
 
+
+
+
         // Update user
-        $user->update([
+        $userData = [
             'name' => $validated['full_name'],
             'email' => $validated['email'],
-            'password' => isset($validated['password']) ? Hash::make($validated['password']) : $user->password
-        ]);
+            // 'password' => isset($validated['password']) ? Hash::make($validated['password']) : $user->password
+        ];
+
+        // Only update password if provided
+        if ($request->filled('password')) {
+            $userData['password'] = Hash::make($validated['password']);
+        }
+
+        $user->update($userData);
 
         // Handle profile image
         if ($request->hasFile('profile_image')) {
             // Clear existing media first if you want to replace
-            $user->clearMediaCollection('images');
+            $user->clearMediaCollection('avatar');
             $user->addMediaFromRequest('profile_image')->toMediaCollection('avatar', 'public');
         }
 
+        // Handle avatar removal
+        if ($request->boolean('remove_profile_image')) {
+            $user->clearMediaCollection('avatar');
+        }
+
         // Handle vendor/client specific updates
-        if ($request->selected_role === 'vendor') {
+        if ($user->vendor) {
             $vendorData = [
                 'business_name' => $request->business_name,
                 'description' => $request->description,
@@ -258,13 +282,29 @@ class UserController extends Controller
             }
         }
 
-        if ($request->selected_role === 'client') {
+        if ($user->client) {
 
-            $clientData = [
-                'contact_number' => $request->contact_number,
-                'location' => $request->location,
-                'full_name' => $request->full_name
-            ];
+            if($request->first_name && $request->last_name){
+                $clientData = [
+                    'contact_number' => $request->contact_number,
+                    'location' => $request->location,
+                    'full_name' => $request->first_name . ' ' . $request->last_name,
+                    'first_name' => $request->first_name,
+                    'last_name' => $request->last_name,
+                ];
+            }else{
+                $clientData = [
+                    'contact_number' => $request->contact_number,
+                    'location' => $request->location,
+                    'full_name' => $request->full_name,
+                    'first_name' => $request->first_name,
+                    'last_name' => $request->last_name,
+                ];
+            }
+
+
+
+            // dd($clientData['full_name']);
 
             $user->client()->updateOrCreate([], $clientData);
 
@@ -280,7 +320,7 @@ class UserController extends Controller
                                 'reason' => $request->reason,
                                 'ip_address' => $request->ip(),
                             ])
-                            ->log('user_updated');
+                            ->log('Admin Updated My Profile');
 
                             // dd('here');
 

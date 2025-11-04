@@ -59,7 +59,7 @@
                                     <div class="flex-1 relative">
                                         <Search class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
                                             :size="20" />
-                                        <input v-model="search" type="text"
+                                        <input v-model="search" type="text" @keyup.enter="handleSearch"
                                             placeholder="What service are you looking for?"
                                             class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all duration-300 shadow-sm">
                                     </div>
@@ -172,7 +172,7 @@
                 </section>
 
                 <!-- Vendor Categories -->
-                <section class="py-16 relative z-10">
+                <!-- <section class="py-16 relative z-10">
                     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div class="text-center mb-14 reveal-animation">
                             <h2 class="text-3xl font-bold text-gray-900 mb-3">Vendor Categories</h2>
@@ -266,10 +266,10 @@
                             </Link>
                         </div>
                     </div>
-                </section>
+                </section> -->
 
                 <!-- CTA Section -->
-                <section class="py-16 bg-blue-600 text-white relative z-10">
+                <!-- <section class="py-16 bg-blue-600 text-white relative z-10">
                     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                         <h2 class="text-3xl font-bold mb-6 reveal-animation">Ready to Plan Your Event?</h2>
                         <p class="text-xl mb-8 max-w-2xl mx-auto reveal-animation animation-delay-100">
@@ -287,7 +287,7 @@
                             </Link>
                         </div>
                     </div>
-                </section>
+                </section> -->
 
                 <!-- Footer -->
                 <footer class="bg-gradient-to-b from-gray-900 to-gray-800 text-white py-16 relative z-10">
@@ -507,7 +507,7 @@
                         <button @click="applyFilters"
                             class="flex items-center gap-2 px-6 py-3 text-sm bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg">
                             <Check :size="16" />
-                            Apply Filters
+                            Save Filters
                         </button>
                     </div>
                 </DialogContent>

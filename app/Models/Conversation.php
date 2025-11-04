@@ -73,6 +73,11 @@ class Conversation extends Model
                 ->where('users.id', '!=', $currentUserId)
                 ->first();
 
+
+            if($otherParticipant->vendor){
+                return $otherParticipant->vendor->business_name;
+            }
+
             return $otherParticipant ? $otherParticipant->name : 'Unknown User';
         }
 

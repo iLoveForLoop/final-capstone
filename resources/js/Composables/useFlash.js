@@ -1,22 +1,30 @@
+// /resources/js/Composables/useFlash.js
 import { usePage } from '@inertiajs/vue3';
-import { useToast } from 'vue-toastification';
+import { push } from 'notivue';
+import { watch } from 'vue';
 
 export default function useFlash() {
-    const toast = useToast();
-    const { props } = usePage();
+    const page = usePage();
 
-    if (props.flash.success) {
-        toast.success(props.flash.success);
-        props.flash.success = null;
-    }
+    // Watch for flash changes
+    watch(
+        () => page.props.flash,
+        (flash) => {
+            if (flash.success) {
+                push.success(flash.success);
+                flash.success = null;
+            }
 
-    if (props.flash.error) {
-        toast.error(props.flash.error);
-        props.flash.error = null;
-    }
+            if (flash.error) {
+                push.error(flash.error);
+                flash.error = null;
+            }
 
-    if (props.flash.info) {
-        toast.info(props.flash.info);
-        props.flash.info = null;
-    }
+            if (flash.info) {
+                push.info(flash.info);
+                flash.info = null;
+            }
+        },
+        { deep: true, immediate: true },
+    );
 }

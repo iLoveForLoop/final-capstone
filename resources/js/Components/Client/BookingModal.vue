@@ -23,7 +23,8 @@ const props = defineProps({
     },
     pax: {
         type: Number
-    }
+    },
+
 });
 
 // Reactive state
@@ -78,6 +79,11 @@ const hasSelectedDishesFromAllCategories = computed(() => {
         selectedDishes.value[category] && selectedDishes.value[category].length > 0
     );
 });
+
+
+const minimumGuestRequirementMet = computed(() => {
+    return props.service.minimumGuests <= form.pax
+})
 
 // Check which categories are missing selections
 const missingSelectionCategories = computed(() => {
@@ -158,6 +164,9 @@ const clearCategorySelection = (category) => {
 // Computed properties
 const totalSteps = 2;
 
+console.log('MIN', props.service.minimumGuest);
+
+
 const isStepValid = computed(() => {
     switch (currentStep.value) {
         case 1:
@@ -167,11 +176,12 @@ const isStepValid = computed(() => {
                 form.location?.trim() &&
                 form.event_date?.trim() &&
                 form.event_time?.trim()
+
             );
 
             // If it's catering and customizable, also check dish selection from all categories
             if (props.service?.category_name === 'Catering' && isCateringCustomizable.value) {
-                return basicInfoValid && hasSelectedDishesFromAllCategories.value;
+                return basicInfoValid && hasSelectedDishesFromAllCategories.value && minimumGuestRequirementMet.value;
             }
 
             console.log('Basic Info Valid: ', form.name && form.location && form.event_date && form.event_time);
@@ -360,6 +370,7 @@ const missingSelectionCategoriesText = computed(() => {
                                         :hasSelectedDishesFromAllCategories="hasSelectedDishesFromAllCategories"
                                         :missingSelectionCategoriesText="missingSelectionCategoriesText"
                                         :selectedDishes="selectedDishes"
+                                        :minimumGuestRequirementMet="minimumGuestRequirementMet"
                                         @clear-category-selection="clearCategorySelection"
                                         @toggle-dish-selection="toggleDishSelection" />
                                 </form>

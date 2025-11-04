@@ -22,7 +22,7 @@ export default defineConfig({
     //     port: 5173,
     //     cors: true,
     //     hmr: {
-    //         host: '192.168.100.5', // replace with your PC’s IP
+    //         host: '192.168.1.19',
     //     },
     // },
 });
