@@ -68,6 +68,7 @@ class PhotographyServiceController extends Controller
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? null,
                 'price' => $validated['price'],
+                'max_price' => $validated['max_price'],
                 'specifications' => $validated['specifications'] ?? [],
             ]);
 

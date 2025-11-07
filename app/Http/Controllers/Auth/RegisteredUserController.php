@@ -61,6 +61,7 @@ class RegisteredUserController extends Controller
             'email'    => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
 
+
             // Vendor (only if is_vendor is true)
             'businessName'      => ['required_if:is_vendor,true', 'string', 'max:255'],
             'businessDescription' => ['nullable', 'string'],
@@ -81,6 +82,8 @@ class RegisteredUserController extends Controller
             'servicePhotos.*'    => ['image', 'max:4096'],
             'permitFiles'        => ['nullable', 'array'],
             'permitFiles.*'      => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+
+            'facebook' => ['nullable', 'string'],
         ]);
 
 
@@ -107,6 +110,7 @@ class RegisteredUserController extends Controller
                 'latitude'               => $request->latitude,
                 'longitude'              => $request->longitude,
                 'service_coverage_areas' => $request->serviceCoverageAreas,
+                'facebook'               => $request->facebook
             ]);
 
             // Attach service categories (pivot, if needed)
@@ -127,6 +131,8 @@ class RegisteredUserController extends Controller
             foreach ($request->file('permitFiles', []) as $permit) {
                 $vendor->addMedia($permit)->toMediaCollection('permits');
             }
+
+
 
             return redirect()
                 ->route('thankyou', ['registered' => true]);

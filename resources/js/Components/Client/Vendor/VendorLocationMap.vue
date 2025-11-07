@@ -21,8 +21,8 @@ const vendorLocation = ref([props.vendor.latitude, props.vendor.longitude]); // 
         <!-- Marker at vendor location -->
         <LMarker :lat-lng="vendorLocation">
             <LPopup>
-                <strong>Vendor Name</strong><br />
-                Vendor address here
+                <strong>{{ vendor.name }}</strong><br />
+                {{ vendor.address }}
             </LPopup>
         </LMarker>
     </LMap>

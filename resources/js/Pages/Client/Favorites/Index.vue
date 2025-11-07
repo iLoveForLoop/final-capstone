@@ -1,24 +1,25 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import NewServiceCard from '@/Components/Client/NewServiceCard.vue';
 import ClientLayout from '@/Layouts/ClientLayout.vue';
 import { Heart, Plus, Search, Filter, X, Grid, List, ChevronDown, ChevronUp } from 'lucide-vue-next';
+import { useConfirmDialog } from '@/Composables/useConfirmDialog';
+import useFlash from '@/Composables/useFlash';
 
 const props = defineProps({
     favorites: {
         type: Object,
-    }
+    },
+    categories: Array
 })
 
+useFlash()
+
+const { confirm } = useConfirmDialog()
+
 // Mock data
-const mockCategories = [
-    { id: 1, name: 'Photography' },
-    { id: 2, name: 'Catering' },
-    { id: 3, name: 'Entertainment' },
-    { id: 4, name: 'Decoration' },
-    { id: 5, name: 'Transportation' }
-];
+const mockCategories = ref(props.categories)
 
 // Reactive filters
 const searchQuery = ref('');
@@ -69,8 +70,17 @@ const toggleFilters = () => {
 };
 
 // Remove from favorites
-const removeFromFavorites = (serviceId) => {
-    if (confirm('Remove this service from your favorites?')) {
+const removeFromFavorites = async (serviceId) => {
+
+    const confirmed = await confirm({
+        title: 'Clear Favorites',
+        message: 'Are you sure do you want to remove this favorite?',
+        type: 'danger',
+        confirmText: 'Yes',
+        cancelText: 'Cancel'
+    })
+
+    if (confirmed) {
         props.favorites.data = props.favorites.data.filter(service => service.id !== serviceId);
         props.favorites.total = props.favorites.data.length;
         try {
@@ -82,10 +92,21 @@ const removeFromFavorites = (serviceId) => {
 };
 
 // Clear all favorites
-const clearAllFavorites = () => {
-    if (confirm('Are you sure you want to remove all services from your favorites?')) {
-        props.favorites.data = [];
-        props.favorites.total = 0;
+const clearAllFavorites = async () => {
+
+    const confirmed = await confirm({
+        title: 'Clear Favorites',
+        message: 'Are you sure do you want clear you favorites?',
+        type: 'danger',
+        confirmText: 'Yes',
+        cancelText: 'Cancel'
+    })
+
+    if (confirmed) {
+        router.delete(route('client.favorites.clear'))
+
+        // props.favorites.data = [];
+        // props.favorites.total = 0;
     }
 };
 
@@ -119,11 +140,11 @@ const formatPrice = (price) => {
                                 <X class="w-4 h-4" />
                                 <span>Clear All</span>
                             </button>
-                            <button
+                            <Link :href="route('client.service.index')"
                                 class="w-full sm:w-auto bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium flex items-center justify-center space-x-2 shadow-sm hover:shadow-md">
-                                <Plus class="w-4 h-4" />
-                                <span>Browse Services</span>
-                            </button>
+                            <Plus class="w-4 h-4" />
+                            <span>Browse Services</span>
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -138,27 +159,7 @@ const formatPrice = (price) => {
                         </div>
 
                         <div class="flex items-center space-x-3">
-                            <!-- View Toggle -->
-                            <div class="flex rounded-lg bg-gray-100 p-1">
-                                <button @click="viewMode = 'grid'" :class="[
-                                    'px-3 py-2 text-sm rounded-md transition-all duration-200 font-medium flex items-center space-x-2',
-                                    viewMode === 'grid'
-                                        ? 'bg-white text-blue-600 shadow-sm'
-                                        : 'text-gray-600 hover:text-gray-800'
-                                ]">
-                                    <Grid class="w-4 h-4" />
-                                    <span class="hidden sm:inline">Grid</span>
-                                </button>
-                                <button @click="viewMode = 'list'" :class="[
-                                    'px-3 py-2 text-sm rounded-md transition-all duration-200 font-medium flex items-center space-x-2',
-                                    viewMode === 'list'
-                                        ? 'bg-white text-blue-600 shadow-sm'
-                                        : 'text-gray-600 hover:text-gray-800'
-                                ]">
-                                    <List class="w-4 h-4" />
-                                    <span class="hidden sm:inline">List</span>
-                                </button>
-                            </div>
+
 
                             <!-- Filter Toggle -->
                             <button @click="toggleFilters"
@@ -277,7 +278,7 @@ const formatPrice = (price) => {
                                                 <Heart class="w-4 h-4 fill-current" />
                                             </button>
                                             <div class="text-lg font-bold text-green-600">{{ formatPrice(service.price)
-                                                }}</div>
+                                            }}</div>
                                         </div>
                                     </div>
                                     <div
@@ -322,10 +323,10 @@ const formatPrice = (price) => {
                         <p class="text-gray-600 text-sm sm:text-base mb-4 sm:mb-6">
                             Start adding services to your favorites by clicking the heart icon on service cards.
                         </p>
-                        <button
+                        <Link :href="route('client.service.index')"
                             class="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                            Browse Services
-                        </button>
+                        Browse Services
+                        </Link>
                     </div>
                 </div>
 

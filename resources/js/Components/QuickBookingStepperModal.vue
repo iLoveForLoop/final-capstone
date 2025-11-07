@@ -107,6 +107,7 @@ const prevStep = () => {
 
 const validateStep = () => {
     if (currentStep.value === 0) {
+        // eventForm.pax = null
         // if (!eventForm.name || !eventForm.location || !eventForm.event_date) {
         //     alert('Please fill in all required event details');
         //     return false;
@@ -128,12 +129,13 @@ const submitSelection = () => {
 
     // console.log(eventForm.dishes);
     // console.log(eventForm.pax);
-    console.log('Triggered');
+    // console.log('Triggered');
 
 
     eventForm.post(route('client.bookings.store'), {
         preserveScroll: true,
         onSuccess: () => {
+            closeModal();
             // console.log('EVENT FORM', eventForm)
             successModal.value.open({
                 event_date: eventForm.event_date,
@@ -146,14 +148,14 @@ const submitSelection = () => {
             resetForm()
         },
         onError: () => {
-            alert('Error');
+            alert('Something went wrong');
         }
     })
 
 
     // Submit to backend here
 
-    closeModal();
+
 
 };
 
@@ -217,15 +219,15 @@ const finalNotes = ref('');
                                     <!-- Progress Line Background -->
                                     <div class="absolute top-4 left-0 right-0 h-[2px] bg-gray-100 -z-10"></div>
                                     <!-- Active Progress Line -->
-                                    <div class="absolute top-4 left-0 h-[2px] bg-[#239BA7] -z-10 transition-all duration-500"
+                                    <div class="absolute top-4 left-0 h-[2px] bg-black -z-10 transition-all duration-500"
                                         :style="{ width: `${(currentStep / (steps.length - 1)) * 100}%` }"></div>
 
                                     <div v-for="(step) in steps" :key="step.name"
                                         class="flex flex-col items-center relative z-10">
                                         <!-- Step Circle -->
                                         <div :class="{
-                                            'bg-[#239BA7] text-white': step.status === 'current',
-                                            'bg-[#E6F4F6] border border-[#239BA7] text-[#239BA7]': step.status === 'complete',
+                                            'bg-black text-white': step.status === 'current',
+                                            'bg-[#fbfbfb] border border-black text-black': step.status === 'complete',
                                             'bg-white border border-gray-200 text-gray-400': step.status === 'upcoming'
                                         }"
                                             class="flex items-center justify-center w-8 h-8 rounded-full text-xs font-medium transition-all mb-2">
@@ -240,7 +242,7 @@ const finalNotes = ref('');
                                         </div>
                                         <!-- Step Label -->
                                         <span :class="{
-                                            'text-[#239BA7] font-medium': step.status === 'current',
+                                            'text-black font-medium': step.status === 'current',
                                             'text-gray-900 font-medium': step.status === 'complete',
                                             'text-gray-400': step.status === 'upcoming'
                                         }" class="text-xs text-center max-w-16 leading-tight">
@@ -273,7 +275,8 @@ const finalNotes = ref('');
 
                                     <VendorServiceSelection :selectedCategories="selectedCategories"
                                         v-model:selectedServices="selectedServices"
-                                        v-model:selectedDishes="selectedDishes" :eventDate="eventForm.event_date" />
+                                        v-model:selectedDishes="selectedDishes" :eventDate="eventForm.event_date"
+                                        :eventPax="eventForm.pax" />
                                 </div>
 
                                 <!-- Step 4: Review & Confirmation -->
@@ -306,7 +309,7 @@ const finalNotes = ref('');
                             <!-- Next/Submit Button -->
                             <div class="order-1 sm:order-3">
                                 <button v-if="currentStep < 3" @click="nextStep" :disabled="!canProceed()" :class="{
-                                    'bg-[#239BA7] hover:bg-[#1D8A95] text-white': canProceed(),
+                                    'bg-black hover:bg-black text-white': canProceed(),
                                     'bg-gray-100 text-gray-400 cursor-not-allowed': !canProceed()
                                 }"
                                     class="w-full sm:w-auto px-6 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center">
@@ -318,7 +321,7 @@ const finalNotes = ref('');
                                 </button>
 
                                 <!-- <button v-else @click="submitSelection"
-                                    class="w-full sm:w-auto px-6 py-2.5 bg-[#239BA7] hover:bg-[#1D8A95] text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center">
+                                    class="w-full sm:w-auto px-6 py-2.5 bg-black hover:bg-[#1D8A95] text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M5 13l4 4L19 7" />

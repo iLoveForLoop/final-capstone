@@ -5,7 +5,7 @@ defineProps({
     servicePhotos: Array,
     profilePhotoUrl: String,
     servicePhotoUrls: Array,
-
+    formData: Object
 
 })
 
@@ -91,11 +91,10 @@ const emit = defineEmits(['handle-file-upload', 'remove-file'])
     </div>
 
     <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Video Portfolio
-            (Optional)</label>
-        <input type="url"
+        <label class="block text-sm font-medium text-gray-700 mb-2">Facebook Page</label>
+        <input v-model="formData.facebook" type="url"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="YouTube or Vimeo link">
+            placeholder="">
     </div>
 </template>
 

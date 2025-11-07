@@ -1,356 +1,356 @@
-<script setup>
-import { ref, onMounted, watch, nextTick } from 'vue'
-import L from 'leaflet'
+    <script setup>
+    import { ref, onMounted, watch, nextTick } from 'vue'
+    import L from 'leaflet'
 
-const props = defineProps({
-    formData: Object,
-    isEditing: Boolean
-})
-
-// Map instance and marker
-let map = null
-let marker = null
-
-// Reactive references
-const isMapReady = ref(false)
-const isGeocoding = ref(false)
-const enablePreciseMapping = ref(false)
-const addressError = ref('')
-const addressValidationMessage = ref('')
-
-// Default coordinates (you can change this to your preferred default location)
-const defaultCoords = [9.951529, 123.961890] // Manila, Philippines
-
-onMounted(async () => {
-    await nextTick()
-    // Check if coordinates already exist, auto-enable precise mapping
-    if (props.formData.latitude && props.formData.longitude) {
-        enablePreciseMapping.value = true
-        await nextTick() // Wait for DOM update
-        initializeMap()
-    }
-})
-
-const initializeMap = () => {
-    // Double check that map element exists
-    const mapElement = document.getElementById('basic-info-map')
-    if (!mapElement) {
-        console.error('Map container not found')
-        return
-    }
-
-    try {
-        // Initialize the map
-        map = L.map('basic-info-map').setView(defaultCoords, 13)
-
-        // Add tile layer with normal style
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map)
-
-        // Set map as ready
-        isMapReady.value = true
-
-        // Force map to resize (important for proper rendering)
-        setTimeout(() => {
-            if (map) {
-                map.invalidateSize()
-            }
-        }, 100)
-
-        // If coordinates exist, center map there
-        if (props.formData.latitude && props.formData.longitude) {
-            const coords = [props.formData.latitude, props.formData.longitude]
-            map.setView(coords, 15)
-            addMarker(coords)
-        }
-
-        // Add click event to map for manual pin placement
-        map.on('click', (e) => {
-            const coords = [e.latlng.lat, e.latlng.lng]
-            addMarker(coords)
-            updateCoordinates(e.latlng.lat, e.latlng.lng)
-
-            // Auto-update address with simplified version
-            reverseGeocode(e.latlng.lat, e.latlng.lng, true)
-        })
-    } catch (error) {
-        console.error('Error initializing map:', error)
-    }
-}
-
-const addMarker = (coords) => {
-    // Remove existing marker
-    if (marker) {
-        map.removeLayer(marker)
-    }
-
-    // Add new marker
-    marker = L.marker(coords, {
-        draggable: true
-    }).addTo(map)
-
-    // Add drag event to marker
-    marker.on('dragend', (e) => {
-        const position = e.target.getLatLng()
-        updateCoordinates(position.lat, position.lng)
-        reverseGeocode(position.lat, position.lng, true)
+    const props = defineProps({
+        formData: Object,
+        isEditing: Boolean
     })
-}
 
-const updateCoordinates = (lat, lng) => {
-    props.formData.latitude = lat
-    props.formData.longitude = lng
-}
+    // Map instance and marker
+    let map = null
+    let marker = null
 
-const geocodeAddress = async (address, updateMap = false) => {
-    if (!address || !address.trim()) return
+    // Reactive references
+    const isMapReady = ref(false)
+    const isGeocoding = ref(false)
+    const enablePreciseMapping = ref(false)
+    const addressError = ref('')
+    const addressValidationMessage = ref('')
 
-    isGeocoding.value = true
-    addressError.value = ''
-    addressValidationMessage.value = ''
+    // Default coordinates (you can change this to your preferred default location)
+    const defaultCoords = [9.951529, 123.961890] // Manila, Philippines
 
-    try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&addressdetails=1&countrycodes=ph`)
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-        }
-
-        const data = await response.json()
-
-        if (data && data.length > 0) {
-            const result = data[0]
-            const lat = parseFloat(result.lat)
-            const lng = parseFloat(result.lon)
-            const coords = [lat, lng]
-
-            // Always update coordinates regardless of precise mapping
-            updateCoordinates(lat, lng)
-
-            // Get simplified address in the requested format
-            const simplifiedAddress = getSimplifiedAddress(result)
-            addressValidationMessage.value = `✓ Location found: ${simplifiedAddress}`
-
-            // Only update map if precise mapping is enabled and updateMap is true
-            if (updateMap && map && enablePreciseMapping.value) {
-                map.setView(coords, 15) // Always zoom to street level
-                addMarker(coords)
-            }
-        } else {
-            addressValidationMessage.value = '⚠️ Location not found. You can still pin exact location manually on the map.'
-            addressError.value = ''
-        }
-    } catch (error) {
-        console.error('Geocoding error:', error)
-        addressError.value = 'Unable to validate address. You can still pin exact location manually on the map.'
-        addressValidationMessage.value = ''
-    } finally {
-        isGeocoding.value = false
-    }
-}
-
-// Helper function to get simplified address in the format: Pinayagan Norte, Tubigon, Bohol, Philippines
-const getSimplifiedAddress = (result) => {
-    const address = result.address
-
-    // Build address in the specific format: Pinayagan Norte, Tubigon, Bohol, Philippines
-    const addressParts = []
-
-    // Level 1: Village/Barangay
-    if (address.village) {
-        addressParts.push(address.village)
-    } else if (address.neighbourhood) {
-        addressParts.push(address.neighbourhood)
-    } else if (address.barangay) {
-        addressParts.push(address.barangay)
-    }
-
-    // Level 2: Municipality/City
-    if (address.municipality) {
-        addressParts.push(address.municipality)
-    } else if (address.town) {
-        addressParts.push(address.town)
-    } else if (address.city) {
-        addressParts.push(address.city)
-    }
-
-    // Level 3: Province
-    if (address.state) {
-        addressParts.push(address.state)
-    } else if (address.province) {
-        addressParts.push(address.province)
-    }
-
-    // Level 4: Country
-    if (address.country) {
-        addressParts.push(address.country)
-    } else {
-        addressParts.push('Philippines') // Default to Philippines if not specified
-    }
-
-    return addressParts.join(', ')
-}
-
-const reverseGeocode = async (lat, lng, updateAddress = false) => {
-    try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`)
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-        }
-
-        const data = await response.json()
-
-        if (data && data.address) {
-            // Get simplified address
-            const simplifiedAddress = getSimplifiedAddress(data)
-
-            if (updateAddress) {
-                // Update the actual address field
-                props.formData.businessAddress = simplifiedAddress
-                addressValidationMessage.value = `✓ Address updated from pinned location`
-            } else {
-                // Just show information without updating the field
-                addressValidationMessage.value = `✓ Nearby location: ${simplifiedAddress}`
-            }
-        }
-    } catch (error) {
-        console.error('Reverse geocoding error:', error)
-        // Don't show error for reverse geocoding - it's just for information
-    }
-}
-
-const useCurrentLocation = () => {
-    if (!navigator.geolocation) {
-        alert('Geolocation is not supported by this browser.')
-        return
-    }
-
-    navigator.geolocation.getCurrentPosition(
-        (position) => {
-            const lat = position.coords.latitude
-            const lng = position.coords.longitude
-            const coords = [lat, lng]
-
-            if (map) {
-                map.setView(coords, 15)
-                addMarker(coords)
-                updateCoordinates(lat, lng)
-                reverseGeocode(lat, lng, true)
-            }
-        },
-        (error) => {
-            console.error('Geolocation error:', error)
-            let errorMessage = 'Unable to retrieve your location. '
-            switch (error.code) {
-                case error.PERMISSION_DENIED:
-                    errorMessage += 'Location access denied by user.'
-                    break
-                case error.POSITION_UNAVAILABLE:
-                    errorMessage += 'Location information unavailable.'
-                    break
-                case error.TIMEOUT:
-                    errorMessage += 'Location request timed out.'
-                    break
-                default:
-                    errorMessage += 'An unknown error occurred.'
-                    break
-            }
-            alert(errorMessage + ' Please try again or pin your location manually.')
-        },
-        {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 300000
-        }
-    )
-}
-
-const searchAddress = () => {
-    const address = props.formData.businessAddress
-    if (address && address.trim()) {
-        geocodeAddress(address, true) // true to update map if enabled
-    } else {
-        alert('Please enter an address first.')
-    }
-}
-
-const validateAddressOnly = () => {
-    const address = props.formData.businessAddress
-    if (address && address.trim()) {
-        geocodeAddress(address, false) // false to not update map, just validate
-    }
-}
-
-const togglePreciseMapping = async () => {
-    if (!props.isEditing) return; // Don't allow toggling when not in edit mode
-
-    enablePreciseMapping.value = !enablePreciseMapping.value
-
-    if (enablePreciseMapping.value && !map) {
-        // Wait for DOM update and ensure map container exists
+    onMounted(async () => {
         await nextTick()
-
-        // Double check that the element exists
-        const mapElement = document.getElementById('basic-info-map')
-        if (mapElement) {
+        // Check if coordinates already exist, auto-enable precise mapping
+        if (props.formData.latitude && props.formData.longitude) {
+            enablePreciseMapping.value = true
+            await nextTick() // Wait for DOM update
             initializeMap()
-        } else {
-            // If still not found, wait a bit more
+        }
+    })
+
+    const initializeMap = () => {
+        // Double check that map element exists
+        const mapElement = document.getElementById('basic-info-map')
+        if (!mapElement) {
+            console.error('Map container not found')
+            return
+        }
+
+        try {
+            // Initialize the map
+            map = L.map('basic-info-map').setView(defaultCoords, 13)
+
+            // Add tile layer with normal style
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map)
+
+            // Set map as ready
+            isMapReady.value = true
+
+            // Force map to resize (important for proper rendering)
             setTimeout(() => {
-                const mapEl = document.getElementById('basic-info-map')
-                if (mapEl) {
-                    initializeMap()
+                if (map) {
+                    map.invalidateSize()
                 }
             }, 100)
+
+            // If coordinates exist, center map there
+            if (props.formData.latitude && props.formData.longitude) {
+                const coords = [props.formData.latitude, props.formData.longitude]
+                map.setView(coords, 15)
+                addMarker(coords)
+            }
+
+            // Add click event to map for manual pin placement
+            map.on('click', (e) => {
+                const coords = [e.latlng.lat, e.latlng.lng]
+                addMarker(coords)
+                updateCoordinates(e.latlng.lat, e.latlng.lng)
+
+                // Auto-update address with simplified version
+                reverseGeocode(e.latlng.lat, e.latlng.lng, true)
+            })
+        } catch (error) {
+            console.error('Error initializing map:', error)
         }
-    } else if (!enablePreciseMapping.value && map) {
-        // Clean up map instance
+    }
+
+    const addMarker = (coords) => {
+        // Remove existing marker
         if (marker) {
             map.removeLayer(marker)
-            marker = null
         }
-        map.remove()
-        map = null
-        isMapReady.value = false
-    }
-}
 
-// Debounced address validation
-let addressValidationTimeout = null
-const debouncedAddressValidation = (newAddress) => {
-    if (addressValidationTimeout) {
-        clearTimeout(addressValidationTimeout)
+        // Add new marker
+        marker = L.marker(coords, {
+            draggable: true
+        }).addTo(map)
+
+        // Add drag event to marker
+        marker.on('dragend', (e) => {
+            const position = e.target.getLatLng()
+            updateCoordinates(position.lat, position.lng)
+            reverseGeocode(position.lat, position.lng, true)
+        })
     }
 
-    addressValidationTimeout = setTimeout(() => {
-        if (newAddress && newAddress.trim()) {
-            validateAddressOnly()
-        } else {
-            addressError.value = ''
+    const updateCoordinates = (lat, lng) => {
+        props.formData.latitude = lat
+        props.formData.longitude = lng
+    }
+
+    const geocodeAddress = async (address, updateMap = false) => {
+        if (!address || !address.trim()) return
+
+        isGeocoding.value = true
+        addressError.value = ''
+        addressValidationMessage.value = ''
+
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&addressdetails=1&countrycodes=ph`)
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`)
+            }
+
+            const data = await response.json()
+
+            if (data && data.length > 0) {
+                const result = data[0]
+                const lat = parseFloat(result.lat)
+                const lng = parseFloat(result.lon)
+                const coords = [lat, lng]
+
+                // Always update coordinates regardless of precise mapping
+                updateCoordinates(lat, lng)
+
+                // Get simplified address in the requested format
+                const simplifiedAddress = getSimplifiedAddress(result)
+                addressValidationMessage.value = `✓ Location found: ${simplifiedAddress}`
+
+                // Only update map if precise mapping is enabled and updateMap is true
+                if (updateMap && map && enablePreciseMapping.value) {
+                    map.setView(coords, 15) // Always zoom to street level
+                    addMarker(coords)
+                }
+            } else {
+                addressValidationMessage.value = '⚠️ Location not found. You can still pin exact location manually on the map.'
+                addressError.value = ''
+            }
+        } catch (error) {
+            console.error('Geocoding error:', error)
+            addressError.value = 'Unable to validate address. You can still pin exact location manually on the map.'
             addressValidationMessage.value = ''
-            // Don't clear coordinates when address is cleared
+        } finally {
+            isGeocoding.value = false
         }
-    }, 1500) // Wait 1.5 seconds after user stops typing
-}
-
-// Watch for address changes
-watch(() => props.formData.businessAddress, (newAddress) => {
-    // Always validate address for coordinates, regardless of precise mapping
-    debouncedAddressValidation(newAddress)
-
-    // Additional map update if precise mapping is enabled
-    if (newAddress && newAddress.trim() && isMapReady.value && !isGeocoding.value && enablePreciseMapping.value) {
-        setTimeout(() => {
-            geocodeAddress(newAddress, true)
-        }, 2000) // Slightly longer delay for map updates
     }
-})
 
-// Initialize props.formData coordinates if they don't exist
-if (!props.formData.latitude) props.formData.latitude = null
-if (!props.formData.longitude) props.formData.longitude = null
+    // Helper function to get simplified address in the format: Pinayagan Norte, Tubigon, Bohol, Philippines
+    const getSimplifiedAddress = (result) => {
+        const address = result.address
+
+        // Build address in the specific format: Pinayagan Norte, Tubigon, Bohol, Philippines
+        const addressParts = []
+
+        // Level 1: Village/Barangay
+        if (address.village) {
+            addressParts.push(address.village)
+        } else if (address.neighbourhood) {
+            addressParts.push(address.neighbourhood)
+        } else if (address.barangay) {
+            addressParts.push(address.barangay)
+        }
+
+        // Level 2: Municipality/City
+        if (address.municipality) {
+            addressParts.push(address.municipality)
+        } else if (address.town) {
+            addressParts.push(address.town)
+        } else if (address.city) {
+            addressParts.push(address.city)
+        }
+
+        // Level 3: Province
+        if (address.state) {
+            addressParts.push(address.state)
+        } else if (address.province) {
+            addressParts.push(address.province)
+        }
+
+        // Level 4: Country
+        if (address.country) {
+            addressParts.push(address.country)
+        } else {
+            addressParts.push('Philippines') // Default to Philippines if not specified
+        }
+
+        return addressParts.join(', ')
+    }
+
+    const reverseGeocode = async (lat, lng, updateAddress = false) => {
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`)
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`)
+            }
+
+            const data = await response.json()
+
+            if (data && data.address) {
+                // Get simplified address
+                const simplifiedAddress = getSimplifiedAddress(data)
+
+                if (updateAddress) {
+                    // Update the actual address field
+                    props.formData.businessAddress = simplifiedAddress
+                    addressValidationMessage.value = `✓ Address updated from pinned location`
+                } else {
+                    // Just show information without updating the field
+                    addressValidationMessage.value = `✓ Nearby location: ${simplifiedAddress}`
+                }
+            }
+        } catch (error) {
+            console.error('Reverse geocoding error:', error)
+            // Don't show error for reverse geocoding - it's just for information
+        }
+    }
+
+    const useCurrentLocation = () => {
+        if (!navigator.geolocation) {
+            alert('Geolocation is not supported by this browser.')
+            return
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude
+                const lng = position.coords.longitude
+                const coords = [lat, lng]
+
+                if (map) {
+                    map.setView(coords, 15)
+                    addMarker(coords)
+                    updateCoordinates(lat, lng)
+                    reverseGeocode(lat, lng, true)
+                }
+            },
+            (error) => {
+                console.error('Geolocation error:', error)
+                let errorMessage = 'Unable to retrieve your location. '
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage += 'Location access denied by user.'
+                        break
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage += 'Location information unavailable.'
+                        break
+                    case error.TIMEOUT:
+                        errorMessage += 'Location request timed out.'
+                        break
+                    default:
+                        errorMessage += 'An unknown error occurred.'
+                        break
+                }
+                alert(errorMessage + ' Please try again or pin your location manually.')
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 300000
+            }
+        )
+    }
+
+    const searchAddress = () => {
+        const address = props.formData.businessAddress
+        if (address && address.trim()) {
+            geocodeAddress(address, true) // true to update map if enabled
+        } else {
+            alert('Please enter an address first.')
+        }
+    }
+
+    const validateAddressOnly = () => {
+        const address = props.formData.businessAddress
+        if (address && address.trim()) {
+            geocodeAddress(address, false) // false to not update map, just validate
+        }
+    }
+
+    const togglePreciseMapping = async () => {
+        if (!props.isEditing) return; // Don't allow toggling when not in edit mode
+
+        enablePreciseMapping.value = !enablePreciseMapping.value
+
+        if (enablePreciseMapping.value && !map) {
+            // Wait for DOM update and ensure map container exists
+            await nextTick()
+
+            // Double check that the element exists
+            const mapElement = document.getElementById('basic-info-map')
+            if (mapElement) {
+                initializeMap()
+            } else {
+                // If still not found, wait a bit more
+                setTimeout(() => {
+                    const mapEl = document.getElementById('basic-info-map')
+                    if (mapEl) {
+                        initializeMap()
+                    }
+                }, 100)
+            }
+        } else if (!enablePreciseMapping.value && map) {
+            // Clean up map instance
+            if (marker) {
+                map.removeLayer(marker)
+                marker = null
+            }
+            map.remove()
+            map = null
+            isMapReady.value = false
+        }
+    }
+
+    // Debounced address validation
+    let addressValidationTimeout = null
+    const debouncedAddressValidation = (newAddress) => {
+        if (addressValidationTimeout) {
+            clearTimeout(addressValidationTimeout)
+        }
+
+        addressValidationTimeout = setTimeout(() => {
+            if (newAddress && newAddress.trim()) {
+                validateAddressOnly()
+            } else {
+                addressError.value = ''
+                addressValidationMessage.value = ''
+                // Don't clear coordinates when address is cleared
+            }
+        }, 1500) // Wait 1.5 seconds after user stops typing
+    }
+
+    // Watch for address changes
+    watch(() => props.formData.businessAddress, (newAddress) => {
+        // Always validate address for coordinates, regardless of precise mapping
+        debouncedAddressValidation(newAddress)
+
+        // Additional map update if precise mapping is enabled
+        if (newAddress && newAddress.trim() && isMapReady.value && !isGeocoding.value && enablePreciseMapping.value) {
+            setTimeout(() => {
+                geocodeAddress(newAddress, true)
+            }, 2000) // Slightly longer delay for map updates
+        }
+    })
+
+    // Initialize props.formData coordinates if they don't exist
+    if (!props.formData.latitude) props.formData.latitude = null
+    if (!props.formData.longitude) props.formData.longitude = null
 </script>
 
 <template>
@@ -390,20 +390,20 @@ if (!props.formData.longitude) props.formData.longitude = null
         </div>
 
         <!-- Website -->
-        <div>
+        <!-- <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Website</label>
             <input v-model="formData.website" :disabled="!isEditing"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
                 type="url" />
-        </div>
+        </div> -->
 
         <!-- Years of Experience -->
-        <div>
+        <!-- <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Years of Experience</label>
             <input v-model="formData.yearsOfExperience" :disabled="!isEditing"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
                 type="number" />
-        </div>
+        </div> -->
     </div>
 
     <!-- Business Description -->
@@ -558,7 +558,7 @@ if (!props.formData.longitude) props.formData.longitude = null
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div v-for="(value, platform) in formData.socialMedia" :key="platform">
                 <label class="block text-sm font-medium text-gray-700 mb-2 capitalize">{{ platform
-                }}</label>
+                    }}</label>
                 <input v-model="formData.socialMedia[platform]" :disabled="!isEditing"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
                     type="text" />

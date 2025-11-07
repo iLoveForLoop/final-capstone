@@ -4,6 +4,7 @@ import { ref, computed } from 'vue';
 import { Star, MessageCircle, Calendar, User, Filter, Search, TrendingUp, Award, Clock, Reply, ChevronDown, ExternalLink, Download, MoreVertical } from 'lucide-vue-next';
 import { router } from '@inertiajs/vue3';
 import CustomerReportDialog from '@/Components/Vendor/Report/CustomerReportDialog.vue';
+import useFlash from '@/Composables/useFlash';
 const props = defineProps({
     reviews: {}
 })
@@ -76,7 +77,8 @@ const submitResponse = () => {
                 responseText.value = '';
                 selectedReview.value = null;
 
-                alert('done');
+                // alert('done');
+                useFlash()
             }
         })
 
@@ -336,7 +338,7 @@ const reportCustomer = (user) => {
                                         <div class="flex items-center space-x-1">
                                             <Calendar class="h-4 w-4" />
                                             <span>Event: {{ new Date(review.booking.event_date).toLocaleDateString()
-                                            }}</span>
+                                                }}</span>
                                         </div>
                                         <div class="flex items-center space-x-1">
                                             <span>Booking: {{ review.booking.id }}</span>
@@ -384,7 +386,7 @@ const reportCustomer = (user) => {
                                     <div class="flex items-center space-x-4">
                                         <!-- {{ console.log('USERRR: ', review) }} -->
                                         <button @click="reportCustomer(review.user)"
-                                            class="text-gray-500 hover:text-gray-700 transition-colors text-sm">
+                                            class="text-red-500 hover:text-red-700 transition-colors text-sm">
                                             Report
                                         </button>
 

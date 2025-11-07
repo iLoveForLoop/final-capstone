@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref, computed } from 'vue';
+import { onBeforeUnmount, onMounted, ref, computed, onUnmounted } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
@@ -18,6 +18,7 @@ import {
 import 'notivue/notification-progress.css';
 import ConfirmDialog from '@/Components/ConfirmDialog.vue';
 
+
 const showingNavigationDropdown = ref(false);
 const showingSidebar = ref(false);
 
@@ -28,6 +29,7 @@ function handleScreenChange(e) {
 }
 
 onMounted(() => {
+
     handleScreenChange(lgQuery);
     lgQuery.addEventListener('change', handleScreenChange);
 });
@@ -35,6 +37,8 @@ onMounted(() => {
 onBeforeUnmount(() => {
     lgQuery.removeEventListener('change', handleScreenChange);
 });
+
+
 
 // Dynamic greeting based on time of day
 const currentGreeting = computed(() => {
@@ -65,6 +69,9 @@ const greetingEmoji = computed(() => {
         return '✨';
     }
 });
+
+
+
 </script>
 
 <template>

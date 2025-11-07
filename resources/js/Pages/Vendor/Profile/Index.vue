@@ -51,8 +51,7 @@ const formData = useForm({
     currency: props.vendor.currency ?? 'USD',
     packageTypes: props.vendor.package_types || [],
     socialMedia: props.vendor.social_media || {
-        facebook: '',
-        instagram: '',
+        facebook: props.vendor.facebook,
 
         // twitter: '',
         // linkedin: ''

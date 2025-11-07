@@ -48,7 +48,9 @@ const formData = useForm({
     servicePhotos: [],
     permitFiles: [],
 
-    is_vendor: true
+    is_vendor: true,
+
+    facebook: '',
 })
 
 // UI State
@@ -112,8 +114,9 @@ const isStep1Valid = computed(() => {
 })
 
 const isStep2Valid = computed(() => {
-    return formData.address.trim() !== '' &&
-        formData.serviceCoverageAreas.length > 0
+    // return formData.address.trim() !== '' &&
+    //     formData.serviceCoverageAreas.length > 0
+    return formData.address.trim()
 })
 
 const isStep3Valid = computed(() => {
@@ -448,7 +451,7 @@ const goBack = () => {
                     <div class="flex justify-between items-center mb-3">
                         <span class="text-xs sm:text-sm font-medium text-gray-700">Step {{ currentStep }} of {{
                             totalSteps
-                        }}</span>
+                            }}</span>
                         <span class="text-xs sm:text-sm font-medium text-purple-500">{{ Math.round((currentStep /
                             totalSteps)
                             * 100) }}% Complete</span>
@@ -500,7 +503,7 @@ const goBack = () => {
                             <MediaAndPortfolio :errors="errors" :profilePhoto="profilePhoto"
                                 :profilePhotoUrl="profilePhotoUrl" :servicePhotos="servicePhotos"
                                 :servicePhotoUrls="servicePhotoUrls" @handle-file-upload="handleFileUpload"
-                                @remove-file="removeFile" />
+                                @remove-file="removeFile" :formData="formData" />
                         </div>
 
                         <!-- Step 4: Legal & Compliance -->

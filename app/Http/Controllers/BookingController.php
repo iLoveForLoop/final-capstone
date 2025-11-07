@@ -233,9 +233,9 @@ class BookingController extends Controller
             ->where('status', 'pending')
             ->firstOrFail();
 
-        // $booking->update([
-        //     'status' => 'declined'
-        // ]);
+        $booking->update([
+            'status' => 'declined'
+        ]);
 
         // Optional: Send notification to user
         // $this->sendBookingCancellationNotification($booking, $request->get('reason'));

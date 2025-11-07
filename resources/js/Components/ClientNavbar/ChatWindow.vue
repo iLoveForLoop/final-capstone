@@ -10,7 +10,7 @@ const emit = defineEmits(['toggle-chat-window', 'close-chat-window', 'send-chat-
 </script>
 
 <template>
-    <div class="fixed bottom-0 right-4 z-50 flex items-end space-x-2">
+    <div class="fixed bottom-0 right-4 z-50 flex items-end space-x-2 chatindex">
         <div v-for="chat in openChats" :key="chat.id"
             class="bg-white border border-gray-200 rounded-t-lg shadow-lg overflow-hidden chat-window"
             :class="{ 'minimized': chat.minimized }">
@@ -112,4 +112,4 @@ const emit = defineEmits(['toggle-chat-window', 'close-chat-window', 'send-chat-
     </div>
 </template>
 
-<style></style>
+<style scoped></style>

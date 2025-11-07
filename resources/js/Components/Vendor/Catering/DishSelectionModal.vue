@@ -1,5 +1,17 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
+import {
+    X,
+    Check,
+    Utensils,
+    Trash2,
+    ShoppingCart,
+    AlertCircle,
+    ChevronRight,
+    Star,
+    Users,
+    Sparkles
+} from 'lucide-vue-next';
 
 const props = defineProps({
     service: {
@@ -161,172 +173,207 @@ defineExpose({
 
 <template>
     <Transition name="modal" @after-leave="$emit('close')">
-        <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
             <!-- Backdrop -->
             <Transition name="fade">
-                <div v-if="isOpen" class="absolute inset-0 bg-black bg-opacity-50" @click="closeModal"></div>
+                <div v-if="isOpen" class="absolute inset-0 bg-gray-600/40 backdrop-blur-sm" @click="closeModal"></div>
             </Transition>
 
             <!-- Modal -->
             <Transition name="slide">
                 <div v-if="isOpen"
-                    class="relative bg-white rounded-lg max-w-4xl w-full max-h-[90vh] flex flex-col shadow-xl transform transition-all duration-300">
+                    class="relative bg-white rounded-lg sm:rounded-xl max-w-full sm:max-w-6xl w-full max-h-[95vh] flex flex-col shadow-lg transform transition-all duration-300 border border-gray-200">
+
                     <!-- Modal Header -->
-                    <div class="px-4 md:px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                        <div>
-                            <h3 class="text-base md:text-lg font-semibold text-gray-900">Select Your Dishes</h3>
-                            <p class="text-xs md:text-sm text-gray-600 mt-1">
-                                Total selected: {{ getTotalSelectedCount() }} dishes
-                            </p>
+                    <div
+                        class="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-100 bg-white rounded-t-lg sm:rounded-t-xl">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center space-x-2 sm:space-x-3">
+                                <div class="p-1.5 sm:p-2 bg-gray-100 rounded-lg">
+                                    <Utensils :size="18" class="text-gray-700 sm:text-gray-800" />
+                                </div>
+                                <div>
+                                    <h3 class="text-lg sm:text-xl font-semibold text-gray-900">Customize Your Menu</h3>
+                                    <p class="text-gray-600 text-xs sm:text-sm mt-1 flex items-center">
+                                        <Sparkles :size="12" class="mr-1 text-gray-500 sm:text-gray-600" />
+                                        Total selected: {{ getTotalSelectedCount() }} dishes
+                                    </p>
+                                </div>
+                            </div>
+                            <button @click="closeModal"
+                                class="text-gray-400 hover:text-gray-600 p-1.5 sm:p-2 transition-all duration-200 hover:bg-gray-100 rounded-lg">
+                                <X :size="18" class="sm:w-5 sm:h-5" />
+                            </button>
                         </div>
-                        <button @click="closeModal"
-                            class="text-gray-400 hover:text-gray-600 p-1 transition-colors duration-200">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
                     </div>
 
                     <!-- Modal Content -->
-                    <div class="overflow-y-auto flex-1 px-4 md:px-6 py-4 md:py-6">
-                        <TransitionGroup name="category" tag="div">
+                    <div class="overflow-y-auto flex-1 px-3 sm:px-6 py-4 sm:py-6 bg-gray-50/30">
+                        <TransitionGroup name="category" tag="div" class="space-y-4 sm:space-y-6">
                             <div v-for="(dishes, category) in service.catering_service.dishes" :key="category"
-                                class="mb-6 md:mb-8">
+                                class="bg-white rounded-lg border border-gray-200 shadow-sm transition-all duration-300">
 
                                 <!-- Category Header -->
-                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                                    <div class="flex items-center gap-3">
-                                        <h4 class="text-base md:text-lg font-medium text-gray-900">{{ category }}</h4>
-                                        <span class="bg-[#239BA7] text-white rounded px-2 py-1 text-xs font-medium">
-                                            {{ dishes.length }} available
-                                        </span>
-                                        <span class="bg-gray-100 text-gray-700 rounded px-2 py-1 text-xs font-medium">
-                                            Select up to {{ getSelectionLimit(category) }}
-                                        </span>
-                                    </div>
+                                <div class="p-3 sm:p-5 border-b border-gray-100 bg-white rounded-t-lg">
+                                    <div
+                                        class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
+                                        <div class="flex items-center gap-3 sm:gap-4">
+                                            <div class="flex items-center space-x-2 sm:space-x-3">
+                                                <div
+                                                    class="w-8 h-8 sm:w-10 sm:h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                                                    <Star :size="16" class="text-gray-700 sm:text-gray-800" />
+                                                </div>
+                                                <div>
+                                                    <h4 class="text-base sm:text-lg font-semibold text-gray-900">{{
+                                                        category }}</h4>
+                                                    <div class="flex flex-wrap gap-2 mt-1">
+                                                        <span
+                                                            class="bg-gray-100 text-gray-700 rounded-full px-2 py-1 text-xs font-medium flex items-center">
+                                                            <Check :size="10" class="mr-1" />
+                                                            {{ dishes.length }} option
+                                                        </span>
+                                                        <span
+                                                            class="bg-gray-50 text-gray-600 rounded-full px-2 py-1 text-xs font-medium flex items-center">
+                                                            <Users :size="10" class="mr-1" />
+                                                            Select up to {{ getSelectionLimit(category) }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
 
-                                    <div class="flex items-center gap-3">
-                                        <span class="text-xs md:text-sm text-gray-600">
-                                            {{ getSelectedCount(category) }}/{{ getSelectionLimit(category) }} selected
-                                        </span>
-                                        <button v-if="getSelectedCount(category) > 0"
-                                            @click="clearCategorySelection(category)"
-                                            class="text-red-600 hover:text-red-800 text-xs md:text-sm font-medium transition-colors duration-200">
-                                            Clear
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Progress Bar -->
-                                <div class="mb-4">
-                                    <div class="w-full bg-gray-200 rounded-full h-1.5">
-                                        <div class="bg-[#239BA7] h-1.5 rounded-full transition-all duration-500 ease-out"
-                                            :style="{ width: `${(getSelectedCount(category) / getSelectionLimit(category)) * 100}%` }">
+                                        <div class="flex items-center gap-3 sm:gap-4 mt-2 sm:mt-0">
+                                            <div class="text-right">
+                                                <div class="text-xs sm:text-sm font-medium text-gray-700">
+                                                    {{ getSelectedCount(category) }}/{{ getSelectionLimit(category) }}
+                                                    selected
+                                                </div>
+                                                <div class="w-20 sm:w-24 bg-gray-200 rounded-full h-1.5 mt-1">
+                                                    <div class="bg-gray-800 h-1.5 rounded-full transition-all duration-500 ease-out"
+                                                        :style="{ width: `${(getSelectedCount(category) / getSelectionLimit(category)) * 100}%` }">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button v-if="getSelectedCount(category) > 0"
+                                                @click="clearCategorySelection(category)"
+                                                class="text-gray-500 hover:text-red-500 p-1.5 sm:p-2 transition-all duration-200 hover:bg-red-50 rounded-lg flex items-center space-x-1">
+                                                <Trash2 :size="14" class="sm:w-4 sm:h-4" />
+                                                <span
+                                                    class="text-xs sm:text-sm font-medium hidden sm:block">Clear</span>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Dishes Grid -->
-                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
-                                    <TransitionGroup name="dish" tag="div" class="contents">
-                                        <div v-for="dish in dishes" :key="dish"
-                                            @click="toggleDishSelection(category, dish)"
-                                            class="border rounded-lg p-3 cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-[1.02]"
-                                            :class="{
-                                                'border-[#239BA7] bg-[#E6F4F6]': isDishSelected(category, dish),
-                                                'border-gray-200 hover:border-[#239BA7]': !isDishSelected(category, dish) && !isSelectionLimitReached(category),
-                                                'border-gray-200 opacity-50 cursor-not-allowed': !isDishSelected(category, dish) && isSelectionLimitReached(category)
-                                            }">
+                                <div class="p-3 sm:p-5">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3">
+                                        <TransitionGroup name="dish" tag="div" class="contents">
+                                            <div v-for="dish in dishes" :key="dish"
+                                                @click="toggleDishSelection(category, dish)"
+                                                class="group border rounded-lg p-3 sm:p-4 cursor-pointer transition-all duration-200 ease-in-out hover:shadow-sm"
+                                                :class="{
+                                                    'border-gray-800 bg-gray-50 shadow-sm': isDishSelected(category, dish),
+                                                    'border-gray-200 hover:border-gray-400 bg-white': !isDishSelected(category, dish) && !isSelectionLimitReached(category),
+                                                    'border-gray-100 opacity-50 cursor-not-allowed': !isDishSelected(category, dish) && isSelectionLimitReached(category)
+                                                }">
 
-                                            <div class="flex items-center">
-                                                <div class="mr-3">
-                                                    <div class="w-4 h-4 border-2 rounded flex items-center justify-center transition-all duration-300"
-                                                        :class="{
-                                                            'bg-[#239BA7] border-[#239BA7]': isDishSelected(category, dish),
-                                                            'border-gray-300': !isDishSelected(category, dish)
-                                                        }">
-                                                        <svg v-if="isDishSelected(category, dish)"
-                                                            class="w-3 h-3 text-white transition-all duration-300"
-                                                            viewBox="0 0 20 20" fill="currentColor">
-                                                            <path fill-rule="evenodd"
-                                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                                clip-rule="evenodd" />
-                                                        </svg>
+                                                <div class="flex items-center justify-between">
+                                                    <div class="flex items-center space-x-2 sm:space-x-3">
+                                                        <div class="w-4 h-4 sm:w-5 sm:h-5 border rounded flex items-center justify-center transition-all duration-200 group-hover:border-gray-600"
+                                                            :class="{
+                                                                'bg-gray-800 border-gray-800': isDishSelected(category, dish),
+                                                                'border-gray-300': !isDishSelected(category, dish)
+                                                            }">
+                                                            <Check v-if="isDishSelected(category, dish)" :size="10"
+                                                                class="text-white transition-all duration-200 sm:w-3 sm:h-3" />
+                                                        </div>
+                                                        <div class="flex-1 min-w-0">
+                                                            <h5 class="font-medium text-sm sm:text-base transition-colors duration-200 line-clamp-1"
+                                                                :class="{ 'text-gray-800': isDishSelected(category, dish), 'text-gray-900': !isDishSelected(category, dish) }">
+                                                                {{ dish }}
+                                                            </h5>
+                                                        </div>
+                                                    </div>
+                                                    <div v-if="isDishSelected(category, dish)"
+                                                        class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0 ml-2">
+                                                        <ChevronRight :size="14" class="text-gray-600 sm:w-4 sm:h-4" />
                                                     </div>
                                                 </div>
-                                                <div class="flex-1">
-                                                    <h5 class="text-sm md:text-base font-medium text-gray-900 transition-colors duration-300"
-                                                        :class="{ 'text-[#239BA7]': isDishSelected(category, dish) }">
-                                                        {{ dish }}
-                                                    </h5>
-                                                    <!-- <p v-if="!isDishSelected(category, dish) && isSelectionLimitReached(category)"
-                                                        class="text-xs text-gray-500 mt-1">
-                                                        Selection limit reached
-                                                    </p> -->
-                                                </div>
+                                            </div>
+                                        </TransitionGroup>
+                                    </div>
+
+                                    <!-- Selected Items Preview -->
+                                    <Transition name="fade">
+                                        <div v-if="getSelectedCount(category) > 0"
+                                            class="mt-3 sm:mt-4 p-2 sm:p-4 bg-gray-50 rounded-lg border border-gray-200 transition-all duration-200">
+                                            <div class="flex items-center space-x-2 mb-2 sm:mb-3">
+                                                <ShoppingCart :size="12"
+                                                    class="text-gray-600 sm:w-4 sm:h-4 flex-shrink-0" />
+                                                <h6 class="text-xs font-medium text-gray-900">Selected from {{ category
+                                                    }}:</h6>
+                                            </div>
+                                            <div class="flex flex-wrap gap-1.5 sm:gap-2">
+                                                <TransitionGroup name="tag">
+                                                    <span v-for="dish in selectedDishes[category]" :key="dish"
+                                                        class="inline-flex items-center px-2 py-0.5 sm:px-3 sm:py-1.5 rounded-full text-xs font-medium bg-gray-800 text-white border border-gray-800 transition-all duration-200 hover:bg-gray-700">
+                                                        <Utensils :size="8"
+                                                            class="mr-1 sm:mr-2 sm:w-3 sm:h-3 flex-shrink-0" />
+                                                        <span
+                                                            class="line-clamp-1 max-w-[80px] xs:max-w-[100px] sm:max-w-[120px] md:max-w-none">{{
+                                                            dish }}</span>
+                                                        <button @click.stop="toggleDishSelection(category, dish)"
+                                                            class="ml-1 sm:ml-2 hover:bg-gray-600 rounded-full p-0.5 transition-colors duration-200 flex-shrink-0">
+                                                            <X :size="8" class="text-white sm:w-3 sm:h-3" />
+                                                        </button>
+                                                    </span>
+                                                </TransitionGroup>
                                             </div>
                                         </div>
-                                    </TransitionGroup>
+                                    </Transition>
                                 </div>
-
-                                <!-- Selected Items -->
-                                <Transition name="fade">
-                                    <div v-if="getSelectedCount(category) > 0"
-                                        class="p-3 bg-gray-50 rounded-lg transition-all duration-300">
-                                        <h6 class="text-sm font-medium text-gray-700 mb-2">Selected from {{ category }}:
-                                        </h6>
-                                        <div class="flex flex-wrap gap-2">
-                                            <TransitionGroup name="tag">
-                                                <span v-for="dish in selectedDishes[category]" :key="dish"
-                                                    class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-[#239BA7] text-white transition-all duration-300">
-                                                    {{ dish }}
-                                                    <button @click.stop="toggleDishSelection(category, dish)"
-                                                        class="ml-1 hover:bg-white hover:bg-opacity-20 rounded p-0.5 transition-colors duration-200">
-                                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path fill-rule="evenodd"
-                                                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                                                clip-rule="evenodd" />
-                                                        </svg>
-                                                    </button>
-                                                </span>
-                                            </TransitionGroup>
-                                        </div>
-                                    </div>
-                                </Transition>
                             </div>
                         </TransitionGroup>
                     </div>
 
                     <!-- Modal Footer -->
                     <div
-                        class="px-4 md:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3">
-                        <div class="flex flex-col sm:flex-row items-center gap-3">
-                            <button @click="clearSelection"
-                                class="px-3 py-2 text-sm text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-all duration-300"
-                                :disabled="getTotalSelectedCount() === 0">
-                                Clear All
-                            </button>
+                        class="px-3 sm:px-6 py-4 sm:py-5 border-t border-gray-200 bg-white rounded-b-lg sm:rounded-b-xl">
+                        <div class="flex flex-col lg:flex-row justify-between items-center gap-3 sm:gap-4">
+                            <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                                <button @click="clearSelection" :disabled="getTotalSelectedCount() === 0"
+                                    class="flex items-center space-x-2 px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm text-gray-600 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto justify-center">
+                                    <Trash2 :size="14" class="sm:w-4 sm:h-4" />
+                                    <span>Clear All</span>
+                                </button>
 
-                            <div class="text-xs md:text-sm text-gray-600 transition-all duration-300">
-                                <span v-if="hasValidSelections()" class="text-green-600 font-medium">
-                                    ✓ All categories completed
-                                </span>
-                                <span v-else class="text-amber-600 font-medium">
-                                    Please select dishes from all categories
-                                </span>
+                                <div class="flex items-center space-x-2 text-xs sm:text-sm w-full sm:w-auto justify-center sm:justify-start"
+                                    :class="hasValidSelections() ? 'text-green-600' : 'text-amber-600'">
+                                    <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center"
+                                        :class="hasValidSelections() ? 'bg-green-100' : 'bg-amber-100'">
+                                        <Check v-if="hasValidSelections()" :size="12"
+                                            class="text-green-600 sm:w-3.5 sm:h-3.5" />
+                                        <AlertCircle v-else :size="12" class="text-amber-600 sm:w-3.5 sm:h-3.5" />
+                                    </div>
+                                    <span class="font-medium text-center sm:text-left">
+                                        {{ hasValidSelections() ? 'All categories completed' :
+                                            'Select dishes from all categories' }}
+                                    </span>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="flex gap-3 w-full sm:w-auto">
-                            <button @click="closeModal"
-                                class="flex-1 sm:flex-initial px-4 py-2 text-sm text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-all duration-300">
-                                Cancel
-                            </button>
-                            <button @click="saveSelection" :disabled="!hasValidSelections()"
-                                class="flex-1 sm:flex-initial px-4 py-2 bg-[#239BA7] text-white text-sm font-medium rounded-lg hover:bg-[#1D8E99] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
-                                Save Selection ({{ getTotalSelectedCount() }})
-                            </button>
+                            <div class="flex gap-2 sm:gap-3 w-full sm:w-auto">
+                                <button @click="closeModal"
+                                    class="flex-1 sm:flex-initial flex items-center justify-center space-x-2 px-3 py-2.5 sm:px-5 sm:py-2.5 text-xs sm:text-sm text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-all duration-200 min-h-[44px]">
+                                    <span>Cancel</span>
+                                </button>
+                                <button @click="saveSelection" :disabled="!hasValidSelections()"
+                                    class="flex-1 sm:flex-initial flex items-center justify-center space-x-2 px-3 py-2.5 sm:px-5 sm:py-2.5 bg-gray-900 text-white text-xs sm:text-sm font-medium rounded-lg hover:bg-gray-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md min-h-[44px]">
+                                    <ShoppingCart :size="14" class="sm:w-4 sm:h-4" />
+                                    <span>Save ({{ getTotalSelectedCount() }})</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -360,23 +407,23 @@ defineExpose({
 
 /* Slide transition for modal */
 .slide-enter-active {
-    transition: all 0.3s ease-out;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .slide-leave-active {
-    transition: all 0.3s ease-in;
+    transition: all 0.25s cubic-bezier(0.4, 0, 1, 1);
 }
 
 .slide-enter-from,
 .slide-leave-to {
     opacity: 0;
-    transform: translateY(20px) scale(0.95);
+    transform: translateY(20px) scale(0.98);
 }
 
 /* Category transitions */
 .category-enter-active,
 .category-leave-active {
-    transition: all 0.4s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .category-enter-from,
@@ -386,38 +433,76 @@ defineExpose({
 }
 
 .category-move {
-    transition: transform 0.4s ease;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Dish transitions */
 .dish-enter-active,
 .dish-leave-active {
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dish-enter-from,
 .dish-leave-to {
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.9) translateY(8px);
 }
 
 .dish-move {
-    transition: transform 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Tag transitions */
 .tag-enter-active,
 .tag-leave-active {
-    transition: all 0.3s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tag-enter-from,
 .tag-leave-to {
     opacity: 0;
-    transform: scale(0.8) translateY(10px);
+    transform: scale(0.9) translateY(5px);
 }
 
 .tag-move {
-    transition: transform 0.3s ease;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Line clamp utility */
+.line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Custom scrollbar */
+.overflow-y-auto::-webkit-scrollbar {
+    width: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 2px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Mobile touch targets */
+@media (max-width: 640px) {
+    button {
+        min-height: 44px;
+    }
+
+    .min-h-\[44px\] {
+        min-height: 44px;
+    }
 }
 </style>

@@ -15,8 +15,15 @@ const props = defineProps({
     isDateAvailable: {
         type: Boolean,
         default: false
+    },
+    isPaxMinimum: {
+        type: Boolean,
+        default: true
     }
 })
+
+// console.log('IS MIIs', props.service)
+
 
 const emit = defineEmits(['select', 'view'])
 
@@ -128,7 +135,7 @@ watch(() => props.isSelected, (newValue) => {
 
                 <!-- Price and Buffet Type -->
                 <div class="flex items-center justify-between mb-3">
-                    <div class="text-base sm:text-lg font-bold text-green-600">
+                    <div v-if="!service.max_price" class="text-base sm:text-lg font-bold text-green-600">
                         {{ formatPrice(service.catering_service.price) }}
                         <span v-if="service.catering_service.price !== service.catering_service.package_price"
                             class="text-xs sm:text-sm font-normal text-gray-600 ml-1 sm:ml-1">
@@ -136,6 +143,14 @@ watch(() => props.isSelected, (newValue) => {
                         </span>
                         <span v-else class="text-xs sm:text-sm font-normal text-gray-600 ml-1 sm:ml-1">
                             package
+                        </span>
+                    </div>
+                    <div v-if="service.max_price" class="text-lg font-bold text-green-600">
+                        {{
+                            formatPrice(service.price)
+                        }}
+                        <span v-if="service.max_price" class="text-sm text-gray-500 font-thin">
+                            up to {{ formatPrice(service.max_price) }}
                         </span>
                     </div>
 
@@ -171,7 +186,8 @@ watch(() => props.isSelected, (newValue) => {
                 </div>
 
                 <!-- Action Buttons -->
-                <div v-if="isDateAvailable" class="flex space-x-2 sm:space-x-3 pt-3 border-t border-gray-100">
+                <div v-if="isDateAvailable && isPaxMinimum"
+                    class="flex space-x-2 sm:space-x-3 pt-3 border-t border-gray-100">
                     <button @click="handleView"
                         class="flex-1 border border-gray-300 text-gray-700 py-2.5 sm:py-2 px-3 sm:px-4 rounded-lg text-xs sm:text-sm hover:bg-gray-50 transition-colors font-medium min-h-[44px]">
                         View Details
@@ -196,11 +212,19 @@ watch(() => props.isSelected, (newValue) => {
                     </button>
                 </div>
 
+                <div v-else-if="!isPaxMinimum" class="pt-3 border-t border-gray-100">
+                    <p class="text-xs sm:text-sm text-red-500 text-center px-2">
+                        Sorry, the minimum pax for this service is {{ service.catering_service.min_pax }}
+                    </p>
+                </div>
+
                 <div v-else class="pt-3 border-t border-gray-100">
                     <p class="text-xs sm:text-sm text-red-500 text-center px-2">
                         Sorry, the date you selected is not available
                     </p>
                 </div>
+
+
             </div>
         </div>
     </div>

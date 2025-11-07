@@ -20,9 +20,24 @@ class ClientController extends Controller
      */
     public function index()
     {
+        $user = auth()->user();
+
+        // $favorites = auth()->user()->favorites()->count();
+        $events = $user->events()->with('bookings')->get();
 
         $query = Service::with(['category', 'vendor', 'cateringService'])->where('is_available', true);
         $categories = ServiceCategory::all();
+
+        $stats = [
+            'active' => $events->filter(fn($event) => $event->status === 'pending')->count(),
+            'completed' => $events->filter(fn($event) => $event->status === 'completed')->count(),
+            'favorites' => $user->favorites()->count(),
+            'upcoming' => $events
+                ->filter(fn($event) => $event->status === 'confirmed' && $event->status !== 'cancelled' && $event->event_date > now())
+                ->count(),
+        ];
+
+
 
         $services = $query->paginate(6)->withQueryString()->through(fn($service) => [
 
@@ -30,6 +45,7 @@ class ClientController extends Controller
             'name' => $service->name,
             'description' => $service->description,
             'price' => $service->price,
+            'max_price' => $service->max_price,
             'image_url' => $service->getFirstMediaUrl('images'),
             'category_name' => $service->category->name,
             'dateAdded' => $service->created_at->format('Y-m-d'),
@@ -41,7 +57,7 @@ class ClientController extends Controller
         ]);
 
 
-    return inertia('Client/Index', compact('services', 'categories'));
+    return inertia('Client/Index', compact('services', 'categories', 'stats'));
 
     }
 
@@ -246,6 +262,7 @@ class ClientController extends Controller
             'name' => $service->name,
             'description' => $service->description,
             'price' => $service->price,
+            'max_price' => $service->max_price,
             'image_url' => $service->getFirstMediaUrl('images'),
             'category_name' => $service->category->name,
             'dateAdded' => $service->created_at->format('Y-m-d'),
@@ -409,6 +426,7 @@ class ClientController extends Controller
             'user_id' => $vendor->user->id,
             'name' => $vendor->business_name,
             'categories' => $vendor->serviceCategories->pluck('name'),
+            'facebook' => $vendor->facebook,
             'rating' => $vendor->averageRating(),
             'reviewCount' => $vendor->reviews()->count(),
             'location' => $vendor->location ?? null,
@@ -439,8 +457,14 @@ class ClientController extends Controller
             ]),
 
             'legalDocuments' => $vendor->getMedia('permitFiles')->map(fn($media) => [
-                'url' => $media->getUrl()
+                'id' => $media->id,                // Include media ID (useful for delete or update actions)
+                'file_name' => $media->file_name,  // The original file name
+                'url' => $media->getUrl(),         // Direct URL to the file
+                'mime_type' => $media->mime_type,  // MIME type of the file
+                'size' => $media->size,            // File size (in bytes)
+                'created_at' => $media->created_at, // The date the file was uploaded
             ]) ?? null,
+
 
             'ratingBreakdown' => $vendor->ratingBreakdown(),
 
@@ -659,7 +683,21 @@ class ClientController extends Controller
         'pending' => $allBookings->where('status', 'pending')->count(),
         'completed' => $allBookings->where('status', 'completed')->count(),
         'cancelled' => $allBookings->where('status', 'cancelled')->count(),
-        'total_spent' => $allBookings->where('status', 'completed')->sum('service.price')
+        'total_spent' => $allBookings
+            ->where('status', 'completed')
+            ->sum(function ($booking) {
+                $service = $booking->service;
+                $price = $service->price ?? 0;
+
+
+                if (!empty($service->cateringService) && !is_null($booking->pax)) {
+                    return $price * $booking->pax;
+                }
+
+
+                return $price;
+            }),
+
     ];
 
     // 🔹 Paginate + transform filtered results
@@ -683,7 +721,11 @@ class ClientController extends Controller
             'status' => $booking->status,
             'price' => '₱' . number_format($booking->service->price ?? 0, 0),
             'notes' => $booking->event->description ?? 'No additional notes',
-            'raw_amount' => $booking->service->price ?? 0,
+            'raw_amount' => (
+                !empty($booking->service->cateringService) && !is_null($booking->pax)
+            )
+                ? ($booking->service->price * $booking->pax)
+                : ($booking->service->price ?? 0),
             'formatted_date' => Carbon::parse($booking->booking_date)->format('Y-m-d'),
             'created_at' => $booking->created_at,
             'service' => $booking->service,
@@ -693,6 +735,7 @@ class ClientController extends Controller
             'vendor' => $booking->service->vendor,
             'vendor_avatar' => $booking->service->vendor->getFirstMediaUrl('images') ?? null,
             'vendor_rating' => $booking->service->vendor->averageRating(),
+            'selected_catering_dishes' => $booking->catering_dishes,
             'can_review' => !$booking->hasReviewFrom(auth()->id()),
             'review' => $booking->review ? [
                 'id' => $booking->review->id,
@@ -730,6 +773,8 @@ class ClientController extends Controller
             'status' => session('status'),
         ]);
     }
+
+
 
 
 

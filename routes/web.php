@@ -118,6 +118,9 @@ Route::prefix('admin')->as('admin.')->middleware(['auth', 'role:admin'])->group(
     //Account
     Route::get('/account', [AdminController::class, 'account'])->name('account.index');
 
+    //Pending Vendor Notification
+    Route::get('/unread-pending-counts', [VendorApplicationController::class, 'getPendingVendors'])->name('admin.pending-application');
+
 });
 
 
@@ -131,6 +134,7 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'role:vendor', 'user
 
     //service page
     Route::resource('services', ServiceController::class);
+
     Route::patch('/services/{service}/toggle-availability', [ServiceController::class, 'toggleAvailability'])
     ->name('services.toggle-availability');
 
@@ -252,7 +256,10 @@ Route::prefix('client')->as('client.')->middleware(['auth', 'role:client', 'user
     //Favorites
     Route::get('/favorites', [FavoritesController::class, 'index'])->name('favorites.index');
     Route::post('/favorites/{service}', [FavoritesController::class, 'store'])->name('favorites.store');
+    Route::delete('/favorites/clear', [FavoritesController::class, 'clearFavorites'])->name('favorites.clear');
     Route::delete('/favorites/{service}', [FavoritesController::class, 'destroy'])->name('favorites.destroy');
+
+
 
 
     // Show Events

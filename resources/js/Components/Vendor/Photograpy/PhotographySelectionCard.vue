@@ -87,13 +87,25 @@ const handleServiceViewClose = () => {
 
                 <!-- Price and Rating - Keep side by side on mobile -->
                 <div class="flex items-center justify-between mb-3">
-                    <div class="text-base sm:text-lg font-bold text-green-600">
+                    <!-- <div class="text-base sm:text-lg font-bold text-green-600">
                         {{ showPriceRange(service) }}
-                        <span v-if="service.photography_service?.coverage_type"
-                            class="text-xs sm:text-sm font-normal text-gray-600 ml-1 sm:ml-2">
-                            • {{ service.photography_service.coverage_type }}
+
+                    </div> -->
+
+                    <div v-if="!service.max_price" class="text-lg font-bold text-green-600">{{
+                        formatPrice(service.price) }}
+
+                    </div>
+
+                    <div v-if="service.max_price" class="text-lg font-bold text-green-600">
+                        {{
+                            formatPrice(service.price)
+                        }}
+                        <span v-if="service.max_price" class="text-sm text-gray-600 font-thin">
+                            up to <span class="bold text-black"> {{ formatPrice(service.max_price) }}</span>
                         </span>
                     </div>
+
 
                     <!-- Rating -->
                     <div class="flex items-center text-xs sm:text-sm text-gray-500">
@@ -118,10 +130,9 @@ const handleServiceViewClose = () => {
 
                 <!-- Vendor Information -->
                 <div v-if="service.vendor" class="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-                    <a :href="route('client.vendor.show', service.vendor.id)"
-                        class="font-medium cursor-pointer text-blue-500 hover:text-blue-600 transition-colors break-words">
+                    <p class="font-medium cursor-pointer transition-colors break-words">
                         {{ service.vendor.business_name }}
-                    </a>
+                    </p>
                     <span class="mx-1">•</span>
                     <span class="text-gray-500">{{ service.vendor.location }}</span>
                 </div>

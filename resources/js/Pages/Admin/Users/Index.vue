@@ -45,6 +45,9 @@ const props = defineProps({
     }
 });
 
+console.log('UCC', props.service_categories);
+
+
 const roles = [
     { value: 'all', label: 'All Users' },
     { value: 'admin', label: 'Admins' },

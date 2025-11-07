@@ -17,6 +17,8 @@ const props = defineProps({
     isSubmitting: { type: Boolean, default: false }
 })
 
+const isSubmitting = ref(false)
+
 // Emit events to parent
 const emit = defineEmits(['update:show', 'submit', 'cancel'])
 
@@ -29,13 +31,20 @@ watch(
     (val) => (showReportModal.value = val)
 )
 
-watch(showReportModal, (val) => emit('update:show', val))
+watch(showReportModal, (val) => {
+    isSubmitting.value = false
+    emit('update:show', val)
+})
 
 // Internal actions
 const closeReportModal = () => {
     emit('cancel')
 }
 const submitReport = () => {
+    if (isSubmitting.value) return
+
+    isSubmitting.value = true
+
     emit('submit')
 }
 </script>

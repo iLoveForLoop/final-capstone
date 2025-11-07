@@ -21,6 +21,7 @@ import NewNavLink from '../NewNavLink.vue';
 import { onMounted, onUnmounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 
+
 const ui = ref(useUIStore())
 
 // Get the notification store and reactive refs
@@ -30,6 +31,9 @@ const { bookingUnreadCount, isInitialized } = storeToRefs(notificationStore)
 // Get the navbar store
 const navbarStore = useNavbarStore()
 const { unreadMessages } = storeToRefs(navbarStore)
+
+
+
 
 // Polling interval in milliseconds (e.g., every 30 seconds)
 const POLLING_INTERVAL = 10000
@@ -64,6 +68,7 @@ const stopPolling = () => {
 // Start polling when component mounts
 onMounted(() => {
     // Initialize conversations data if not already loaded
+
     if (navbarStore.conversations.length === 0) {
         navbarStore.loadConversations()
     }

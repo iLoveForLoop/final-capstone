@@ -9,7 +9,7 @@ import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 
-import { Expand, CheckCircle, ChevronLeft, ChevronRight, Phone, Mail, Globe } from 'lucide-vue-next'
+import { Expand, CheckCircle, ChevronLeft, ChevronRight, Phone, Mail, Globe, Facebook, FacebookIcon } from 'lucide-vue-next'
 
 const props = defineProps({
     vendor: {
@@ -70,7 +70,9 @@ const nextImage = () => {
             <!-- Photo Gallery -->
             <Card>
                 <CardHeader class="flex flex-row items-center justify-between">
-                    <CardTitle>Portfolio Gallery</CardTitle>
+                    <CardTitle>
+                        <h1 class="text-lg">Portfolio Gallery</h1>
+                    </CardTitle>
                     <span class="text-sm text-gray-500">{{ vendor.gallery.length }}
                         photos</span>
                 </CardHeader>
@@ -90,22 +92,18 @@ const nextImage = () => {
             </Card>
 
             <!-- About Section -->
-            <Card class="bg-gradient-to-br from-gray-50 to-gray-100 border-0">
-                <CardHeader>
-                    <CardTitle>About {{ vendor.name }}</CardTitle>
+            <Card class="border-0 shadow-md">
+                <CardHeader class="pb-4">
+                    <CardTitle class="text-xl font-bold text-gray-900">About {{ vendor.name }}</CardTitle>
                 </CardHeader>
                 <CardContent class="space-y-6">
-                    <p class="text-gray-700 leading-relaxed text-base md:text-lg">{{
-                        vendor.description }}</p>
+                    <p class="text-gray-700 leading-relaxed text-base">{{ vendor.description }}</p>
                     <div>
-                        <h3 class="text-xl md:text-2xl font-semibold text-gray-900 mb-6">
-                            Specialties & Services</h3>
-                        <div class="flex flex-col flex-wrap gap-3">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Services & Expertise</h3>
+                        <div class="flex flex-wrap gap-2">
                             <div v-for="specialty in vendor.specialties" :key="specialty"
-                                class="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-full transition-colors duration-200">
-                                <div class="w-2 h-2 bg-indigo-600 rounded-full"></div>
-                                <span class="text-sm font-medium text-gray-700">{{ specialty
-                                }}</span>
+                                class="px-3 py-2 bg-blue-50 border border-blue-100 rounded-md text-sm text-blue-800 font-medium">
+                                {{ specialty }}
                             </div>
                         </div>
                     </div>
@@ -135,12 +133,6 @@ const nextImage = () => {
                 <CardContent>
                     <div class="calendar-container">
                         <FullCalendar :options="calendarOptions" class="vendor-calendar" />
-                        <!-- <div class="calendar-info mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                            <div class="flex items-center gap-3">
-                                <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-                                <p class="text-sm text-blue-700 font-medium">Click on available dates to book</p>
-                            </div>
-                        </div> -->
                         <div class="calendar-legend mt-4 flex justify-center gap-6">
                             <div class="legend-item flex items-center gap-2">
                                 <div class="w-3 h-3 bg-white rounded-sm border border-gray-300"></div>
@@ -162,39 +154,7 @@ const nextImage = () => {
 
         <!-- Enhanced Sidebar -->
         <div class="space-y-6">
-            <!-- Pricing Packages -->
-            <!-- <Card>
-                <CardHeader>
-                    <CardTitle class="text-xl sm:text-2xl font-bold text-gray-900">Service
-                        Packages
-                    </CardTitle>
-                </CardHeader>
-                <CardContent class="space-y-4">
-                    <Card v-for="p in vendor.packages" :key="p.id"
-                        class="border-2 hover:border-primary transition-colors cursor-pointer">
-                        <CardHeader class="pb-4">
-                            <div class="flex justify-between items-start">
-                                <CardTitle class="text-lg sm:text-xl">{{ p.name }}</CardTitle>
-                                <div class="text-right">
-                                    <span class="text-2xl sm:text-3xl font-bold text-primary">₱{{
-                                        p.price.toLocaleString() }}</span>
-                                    <p class="text-xs sm:text-sm text-muted-foreground">starting
-                                        price</p>
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <ul class="space-y-2 sm:space-y-3">
-                                <li v-for="feature in p.features" :key="feature"
-                                    class="flex items-center gap-3 text-sm sm:text-base">
-                                    <CheckCircle class="h-4 w-4 text-green-500 flex-shrink-0" />
-                                    <span>{{ feature }}</span>
-                                </li>
-                            </ul>
-                        </CardContent>
-                    </Card>
-                </CardContent>
-            </Card> -->
+
             <Card>
                 <CardHeader>
                     <CardTitle>Contact Information</CardTitle>
@@ -213,7 +173,7 @@ const nextImage = () => {
                     </div>
                     <div class="contact-item group">
                         <div
-                            class="contact-icon bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white">
+                            class="contact-icon bg-purple-100 text-purple-600 group-hover:bg-purple-600 group-hover:text-white">
                             <Mail :size="18" />
                         </div>
                         <div>
@@ -223,15 +183,17 @@ const nextImage = () => {
                             <p class="text-gray-600 text-sm md:text-base">{{ vendor.email }}</p>
                         </div>
                     </div>
-                    <div class="contact-item group">
+                    {{ console.log('FB', vendor)
+                    }}
+                    <div v-if="vendor.facebook" class="contact-item group">
                         <div
-                            class="contact-icon bg-purple-100 text-purple-600 group-hover:bg-purple-600 group-hover:text-white">
-                            <Globe :size="18" />
+                            class="contact-icon bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white">
+                            <FacebookIcon :size="18" />
                         </div>
                         <div>
-                            <p class="font-semibold text-gray-900 text-sm md:text-base">Website
+                            <p class="font-semibold text-gray-900 text-sm md:text-base">Facebook
                             </p>
-                            <p class="text-gray-600 text-sm md:text-base">Visit our site</p>
+                            <p class="text-gray-600 text-sm md:text-base">{{ vendor.facebook }}</p>
                         </div>
                     </div>
                 </CardContent>

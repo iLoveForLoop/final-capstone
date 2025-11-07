@@ -64,12 +64,12 @@ const updateEventTime = (time) => {
 
 
 onMounted(async () => {
-    try {
-        const res = await axios.get(`/api/vendor/${props.vendorId}/booked-dates`);
-        booked.value = res.data.bookedDates || []
-    } catch (error) {
-        console.error('Failed to fetch booked dates:', error)
-    }
+    // try {
+    //     const res = await axios.get(`/api/vendor/${props.vendorId}/booked-dates`);
+    //     booked.value = res.data.bookedDates || []
+    // } catch (error) {
+    //     console.error('Failed to fetch booked dates:', error)
+    // }
 
     console.log('Event Form Mounted');
 
@@ -96,7 +96,7 @@ function doesCategoryExist(categoryName) {
             <div class="form-group">
                 <label for="event-name" class="form-label">
                     Event name
-                    <span class="text-[#239BA7] ml-1">*</span>
+                    <span class="text-black ml-1">*</span>
                 </label>
                 <input id="event-name" type="text" v-model="eventForm.name" class="form-input"
                     placeholder="Wedding, corporate event, birthday...">
@@ -107,7 +107,7 @@ function doesCategoryExist(categoryName) {
             <div class="form-group">
                 <label for="event-location" class="form-label">
                     Location
-                    <span class="text-[#239BA7] ml-1">*</span>
+                    <span class="text-black ml-1">*</span>
                 </label>
                 <input id="event-location" type="text" v-model="eventForm.location" class="form-input"
                     placeholder="Venue name or full address">
@@ -120,7 +120,7 @@ function doesCategoryExist(categoryName) {
                 <div class="form-group">
                     <label for="event-date" class="form-label">
                         Date
-                        <span class="text-[#239BA7] ml-1">*</span>
+                        <span class="text-black ml-1">*</span>
                     </label>
                     <VueDatePicker v-model="pickerDate" @update:model-value="updateEventDate"
                         :enable-time-picker="false" :min-date="tom" placeholder="Select date" class="w-full" auto-apply
@@ -152,22 +152,22 @@ function doesCategoryExist(categoryName) {
                     </label>
                     <div class="relative">
                         <input id="event-pax" type="number" v-model="eventForm.pax"
-                            class="form-input catering-input pr-16" placeholder="50" min="1" max="5000">
+                            class="form-input catering-input pr-16" placeholder="0" min="1" max="5000">
                         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                             <span class="text-sm text-gray-500 font-medium">guests</span>
                         </div>
                     </div>
-                    <p class="form-hint text-[#239BA7]">If you have exact guest </p>
+                    <p class="form-hint text-black">If you have exact guest </p>
                 </div>
             </div>
 
             <!-- Catering Enhancement Banner -->
             <!-- <div class="catering-banner" v-if="doesCategoryExist('Catering')" key="catering-banner">
                 <div
-                    class="bg-gradient-to-r from-[#239BA7]/5 to-[#239BA7]/10 border border-[#239BA7]/20 rounded-xl p-4">
+                    class="bg-gradient-to-r from-black/5 to-black/10 border border-black/20 rounded-xl p-4">
                     <div class="flex items-start gap-3">
                         <div class="flex-shrink-0 mt-1">
-                            <div class="w-8 h-8 bg-[#239BA7] rounded-full flex items-center justify-center">
+                            <div class="w-8 h-8 bg-black rounded-full flex items-center justify-center">
                                 <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -175,7 +175,7 @@ function doesCategoryExist(categoryName) {
                             </div>
                         </div>
                         <div class="flex-1">
-                            <h4 class="text-sm font-semibold text-[#239BA7] mb-1">
+                            <h4 class="text-sm font-semibold text-black mb-1">
                                 Catering service selected
                             </h4>
                             <p class="text-xs text-gray-600 mb-3">
@@ -183,19 +183,19 @@ function doesCategoryExist(categoryName) {
                             </p>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600">
                                 <div class="flex items-center gap-2">
-                                    <span class="w-1.5 h-1.5 bg-[#239BA7] rounded-full"></span>
+                                    <span class="w-1.5 h-1.5 bg-black rounded-full"></span>
                                     <span>Dietary restrictions or preferences</span>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <span class="w-1.5 h-1.5 bg-[#239BA7] rounded-full"></span>
+                                    <span class="w-1.5 h-1.5 bg-black rounded-full"></span>
                                     <span>Meal type (breakfast/lunch/dinner)</span>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <span class="w-1.5 h-1.5 bg-[#239BA7] rounded-full"></span>
+                                    <span class="w-1.5 h-1.5 bg-black rounded-full"></span>
                                     <span>Service style preference</span>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <span class="w-1.5 h-1.5 bg-[#239BA7] rounded-full"></span>
+                                    <span class="w-1.5 h-1.5 bg-black rounded-full"></span>
                                     <span>Budget range (optional)</span>
                                 </div>
                             </div>
@@ -217,55 +217,55 @@ function doesCategoryExist(categoryName) {
                         {{ eventForm.description?.length || 0 }}/500
                     </div>
                 </div>
-                <p class="form-hint" :class="{ 'text-[#239BA7]': doesCategoryExist('Catering') }">Help vendors
+                <p class="form-hint" :class="{ 'text-black': doesCategoryExist('Catering') }">Help vendors
                     understand your needs
                 </p>
             </div>
         </div>
 
         <!-- Tips Card with dynamic content -->
-        <div class="bg-[#F5FBFB] border border-[#D6EDF0] rounded-lg p-4">
+        <div class="bg-gray-100 border border-gray-100 rounded-lg p-4">
             <div class="flex items-start gap-3">
                 <div class="flex-shrink-0 mt-0.5">
-                    <svg class="h-4 w-4 text-[#239BA7]" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="h-4 w-4 text-black" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd"
                             d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z"
                             clip-rule="evenodd" />
                     </svg>
                 </div>
                 <div>
-                    <h4 class="text-sm font-medium text-[#239BA7] mb-2">
+                    <h4 class="text-sm font-medium text-black mb-2">
                         <!-- {{ doesCategoryExist('Catering') ? 'Catering tips for better quotes' : 'Helpful tips' }}  -->
                         Helpful tips
                     </h4>
                     <ul class="text-xs text-gray-600 space-y-1.5">
                         <!-- <template v-if="doesCategoryExist('Catering')">
                             <li class="flex items-start">
-                                <span class="text-[#239BA7] mr-1.5">•</span> Be as accurate as possible with guest count
+                                <span class="text-black mr-1.5">•</span> Be as accurate as possible with guest count
                             </li>
                             <li class="flex items-start">
-                                <span class="text-[#239BA7] mr-1.5">•</span> Mention any food allergies or dietary
+                                <span class="text-black mr-1.5">•</span> Mention any food allergies or dietary
                                 restrictions
                             </li>
                             <li class="flex items-start">
-                                <span class="text-[#239BA7] mr-1.5">•</span> Specify if you need serving equipment or
+                                <span class="text-black mr-1.5">•</span> Specify if you need serving equipment or
                                 staff
                             </li>
                             <li class="flex items-start">
-                                <span class="text-[#239BA7] mr-1.5">•</span> Include your preferred budget range
+                                <span class="text-black mr-1.5">•</span> Include your preferred budget range
                             </li>
                         </template>
 <template v-else> -->
                         <li class="flex items-start">
-                            <span class="text-[#239BA7] mr-1.5">•</span> Include guest count and budget in
+                            <span class="text-black mr-1.5">•</span> Include guest count and budget in
                             description
                         </li>
                         <li class="flex items-start">
-                            <span class="text-[#239BA7] mr-1.5">•</span> Specify any venue restrictions or
+                            <span class="text-black mr-1.5">•</span> Specify any venue restrictions or
                             requirements
                         </li>
                         <li class="flex items-start">
-                            <span class="text-[#239BA7] mr-1.5">•</span> Mention preferred style or theme if
+                            <span class="text-black mr-1.5">•</span> Mention preferred style or theme if
                             relevant
                         </li>
                         <!-- </template> -->
@@ -287,11 +287,11 @@ function doesCategoryExist(categoryName) {
 }
 
 .form-input {
-    @apply w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#239BA7] focus:border-[#239BA7] transition-colors bg-white;
+    @apply w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-colors bg-white;
 }
 
 .form-textarea {
-    @apply w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#239BA7] focus:border-[#239BA7] transition-colors bg-white resize-none;
+    @apply w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-colors bg-white resize-none;
 }
 
 .form-hint {
@@ -309,7 +309,7 @@ function doesCategoryExist(categoryName) {
 }
 
 .catering-input {
-    @apply focus:border-[#239BA7] focus:ring-[#239BA7]/20 font-medium;
+    @apply focus:border-black focus:ring-black/20 font-medium;
     box-shadow: 0 1px 3px rgba(35, 155, 167, 0.1);
 }
 

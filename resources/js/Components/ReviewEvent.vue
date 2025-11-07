@@ -94,7 +94,7 @@ const submitBooking = async () => {
 
     await new Promise(resolve => setTimeout(resolve, 1000))
     emit('submit-selection')
-    isSubmitting.value = false
+
 }
 </script>
 
@@ -168,7 +168,7 @@ const submitBooking = async () => {
                     <label
                         class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">Description</label>
                     <p class="text-gray-700 text-sm sm:text-base leading-relaxed break-words">{{ eventForm.description
-                        }}</p>
+                    }}</p>
                 </div>
             </div>
 
@@ -269,24 +269,24 @@ const submitBooking = async () => {
 
             <!-- Additional Information -->
             <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 lg:p-6">
-                <h2
+                <!-- <h2
                     class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
                     <FileText class="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
                     Additional Information
-                </h2>
+                </h2> -->
 
                 <div class="space-y-4 sm:space-y-6">
                     <!-- Special Instructions -->
-                    <div>
+                    <!-- <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Special Instructions</label>
                         <textarea v-model="eventForm.final_notes" rows="3"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder-gray-400 resize-none"
                             placeholder="Any special requests or instructions for vendors..."></textarea>
                         <p class="text-xs text-gray-500 mt-1">This will be shared with all selected vendors</p>
-                    </div>
+                    </div> -->
 
                     <!-- Terms and Conditions -->
-                    <div class="border-t border-gray-200 pt-4 sm:pt-6">
+                    <div class=" border-gray-200 pt-4 sm:pt-6">
                         <div class="flex items-start gap-3">
                             <input type="checkbox" v-model="agreedToTerms" id="terms"
                                 class="mt-0.5 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 flex-shrink-0">
@@ -296,12 +296,14 @@ const submitBooking = async () => {
                                 </label>
                                 <p class="text-xs text-gray-600 leading-relaxed break-words">
                                     I agree to the
-                                    <Link class="text-blue-600 hover:text-blue-800 font-medium"
-                                        :href="route('termsandcondition')" target="_blank">booking terms</Link>,
-                                    <Link href="#" class="text-blue-600 hover:text-blue-800 font-medium">cancellation
-                                    policy</Link>, and
-                                    <Link href="#" class="text-blue-600 hover:text-blue-800 font-medium">privacy
-                                    policy</Link>.
+                                    <a class="text-blue-600 hover:text-blue-800 font-medium" href="/termsandcondition"
+                                        target="_blank">booking terms</a>,
+                                    <a href="/termsandcondition" target="_blank"
+                                        class="text-blue-600 hover:text-blue-800 font-medium">cancellation
+                                        policy</a>, and
+                                    <a href="/termsandcondition" target="_blank"
+                                        class="text-blue-600 hover:text-blue-800 font-medium">privacy
+                                        policy</a>.
                                     I understand this request will be sent to vendors and a deposit may be required.
                                 </p>
                             </div>
@@ -362,7 +364,7 @@ const submitBooking = async () => {
                             <div>
                                 <p class="text-gray-500 font-medium">Location</p>
                                 <p class="text-gray-900 text-xs sm:text-sm truncate">{{ eventForm.location || 'Not set'
-                                    }}</p>
+                                }}</p>
                             </div>
                             <div v-if="eventForm?.pax">
                                 <p class="text-gray-500 font-medium">Guests</p>

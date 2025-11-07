@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 // Import shadcn-vue components
 import { Button } from '@/Components/ui/button'
 import { Badge } from '@/Components/ui/badge'
@@ -11,12 +11,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/Components/ui/textarea'
 import { router, useForm } from '@inertiajs/vue3'
 import VendorReportDialog from './VendorReportDialog.vue'
+import { useUIStore } from '@/store/ui'
+import { usePage } from '@inertiajs/vue3'
+import useFlash from '@/Composables/useFlash'
+
+
 
 const props = defineProps({
     vendor: {
         type: Object,
     },
 })
+
+const ui = useUIStore()
 
 import {
     ArrowLeft,
@@ -33,6 +40,7 @@ import {
     TriangleAlert,
 } from 'lucide-vue-next'
 import emitter from '@/utils/eventBus'
+import { push } from 'notivue'
 
 const reportForm = useForm({
     reported_id: props.vendor.user_id,
@@ -59,9 +67,10 @@ const reportVendor = () => {
     showReportModal.value = true
 }
 
-import { usePage } from '@inertiajs/vue3'
+
 
 const page = usePage()
+useFlash()
 
 const submitReport = () => {
     console.log(reportForm)
@@ -69,40 +78,29 @@ const submitReport = () => {
     reportForm.post('/reports', {
         preserveScroll: true,
         onSuccess: () => {
-            // Access flash from the page composable
-            console.log('The flash: ', page.props.flash)
-            if (page.props.flash.success) {
-                alert(page.props.flash.success)
-            } else if (page.props.flash.error) {
-                alert(page.props.flash.error)
-            }
-            else {
-                alert('Report submitted successfully! We will review it within 24 hours.')
-            }
             closeReportModal()
             reportForm.reset()
         },
         onError: (errors) => {
             // Access flash from the page composable
             if (page.props.flash.error) {
-                alert(page.props.flash.error)
+                // alert(page.props.flash.error)
             }
             // Handle validation errors
             else if (errors.reason || errors.description || errors.reported_id) {
                 const errorMessages = Object.values(errors).flat().join(', ')
-                alert(`Please fix the following errors: ${errorMessages}`)
+                // alert(`Please fix the following errors: ${errorMessages}`)
             }
             else {
-                alert('Failed to submit report. Please check the form and try again.')
+                // alert('Failed to submit report. Please check the form and try again.')
             }
-            console.error('Report submission errors:', errors)
+            // console.error('Report submission errors:', errors)
         },
         onFinish: () => {
             isSubmittingReport.value = false
         }
     })
 }
-
 
 
 const goBack = () => {
@@ -113,10 +111,31 @@ const goBack = () => {
     }
 }
 
+const isMessaging = ref(false)
 
 const chatVendor = () => {
+
+    if (isMessaging.value) return // prevent multiple clicks
+
+    isMessaging.value = true
+
+    // Emit the event (you might be opening a chat modal or redirecting)
     emitter.emit('chat-vendor', props.vendor.user_id)
+
+    // Simulate loading duration or wait for your actual chat logic
+    setTimeout(() => {
+        isMessaging.value = false
+    }, 1000)
 }
+
+
+// Compute initials (handles 1 or multiple names)
+const initials = computed(() => {
+    if (!props.vendor.name) return '?'
+    const words = props.vendor.name.trim().split(' ')
+    if (words.length === 1) return words[0].charAt(0).toUpperCase()
+    return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase()
+})
 
 
 </script>
@@ -137,22 +156,13 @@ const chatVendor = () => {
             <!-- Vendor Info Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start text-white">
                 <!-- Avatar Section -->
-                <div class="lg:col-span-3 flex justify-center lg:justify-start">
+                <div class="lg:col-span-3 flex justify-center lg:justify-start  ">
                     <div class="relative">
                         <Avatar class="w-32 h-32 md:w-40 md:h-40 border-4 border-white/30 shadow-2xl">
                             <AvatarImage :src="vendor.avatar" :alt="vendor.name" />
-                            <AvatarFallback>SS</AvatarFallback>
+                            <AvatarFallback>{{ initials }}</AvatarFallback>
                         </Avatar>
-                        <!-- Verified Badge -->
-                        <Badge v-if="vendor.verified"
-                            class="absolute -bottom-2 -right-2 bg-green-500 text-white rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center border-4 border-slate-900 shadow-lg p-0">
-                            <Check :size="16" />
-                        </Badge>
-                        <!-- Status Indicator -->
-                        <Badge class="absolute -top-2 -left-2 px-3 py-1 text-xs font-medium"
-                            :class="vendor.available ? 'bg-green-500' : 'bg-red-500'">
-                            {{ vendor.available ? 'Available' : 'Busy' }}
-                        </Badge>
+
                     </div>
                 </div>
 
@@ -184,10 +194,10 @@ const chatVendor = () => {
 
                     <!-- Simple Stats -->
                     <div class="flex flex-wrap gap-3 justify-center lg:justify-start">
-                        <span class="flex items-center px-4 py-2 bg-white/10 text-white text-sm rounded-full">
+                        <!-- <span class="flex items-center px-4 py-2 bg-white/10 text-white text-sm rounded-full">
                             <Clock class="h-4 w-4 mr-2" />
                             {{ vendor.responseTime }} response
-                        </span>
+                        </span> -->
                         <span class="flex items-center px-4 py-2 bg-white/10 text-white text-sm rounded-full">
                             <CalendarCheck class="h-4 w-4 mr-2" />
                             {{ vendor.completedEvents }}+ Events
@@ -202,14 +212,15 @@ const chatVendor = () => {
 
                 <!-- Action Buttons - Simplified -->
                 <div class="lg:col-span-2 flex flex-col gap-4">
-                    <Button @click="chatVendor" size="lg"
-                        class="w-full bg-blue-500 text-white hover:bg-blue-600 font-semibold transition-colors duration-200">
-                        <MessageCircle class="h-5 w-5 mr-2" />
+                    <Button @click="chatVendor" :disabled="isMessaging || ui.isInMessage"
+                        class="w-full bg-blue-500 hover:bg-blue-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                        <MessageCircle class="h-5 w-5 mr-1" />
                         Message
                     </Button>
+
                     <Button @click="reportVendor" variant="ghost"
                         class="w-full bg-white/10 text-white hover:bg-white/20 border-0 transition-colors duration-200">
-                        <TriangleAlert class="h-5 w-5 mr-2" />
+                        <TriangleAlert class="h-5 w-5 mr-1" />
                         Report
                     </Button>
                 </div>
@@ -218,7 +229,7 @@ const chatVendor = () => {
 
         <!-- Report Dialog -->
         <VendorReportDialog v-model:show="showReportModal" :vendor="vendor" :report-form="reportForm"
-            :is-submitting="isSubmittingReport" @submit="submitReport" @cancel="closeReportModal" />
+            :isSubmitting="isSubmittingReport" @submit="submitReport" @cancel="closeReportModal" />
     </div>
 </template>
 

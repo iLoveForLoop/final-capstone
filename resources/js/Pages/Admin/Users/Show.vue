@@ -97,10 +97,10 @@ const {
                     </div>
                 </div>
                 <div class="flex gap-3">
-                    <button @click="showResetPasswordModal = true"
+                    <!-- <button @click="showResetPasswordModal = true"
                         class="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition">
                         Reset Password
-                    </button>
+                    </button> -->
                     <button @click="openActionModal(user)"
                         class="px-4 py-2 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 transition">
                         Update User Status

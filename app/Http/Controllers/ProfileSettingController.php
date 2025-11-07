@@ -149,7 +149,8 @@ class ProfileSettingController extends Controller
 
 
             if($request->hasFile('profileImageFile')){
-                $user->clearMediaCollection('images');
+                // dd('here');
+                $user->clearMediaCollection('avatar');
                 $user->addMediaFromRequest('profileImageFile')->toMediaCollection('avatar', 'public');
             }
 

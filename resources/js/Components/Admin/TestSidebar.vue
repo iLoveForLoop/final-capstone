@@ -16,9 +16,20 @@ import {
 import { useUIStore } from '@/store/ui';
 import NewNavLink from '../NewNavLink.vue';
 import LogoPlaceholder from '../LogoPlaceholder.vue';
-import { ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
+import { usePendingVendorStore } from '@/store/pendingVendorsNotification';
 
 const ui = ref(useUIStore())
+
+const pendingVendorStore = usePendingVendorStore()
+
+onMounted(() => {
+    pendingVendorStore.startPolling(10000);
+})
+
+onUnmounted(() => {
+    pendingVendorStore.stopPolling();
+})
 </script>
 
 <template>
@@ -67,6 +78,7 @@ const ui = ref(useUIStore())
                     </NewNavLink>
 
                     <NewNavLink :href="route('admin.vendor-application.index')"
+                        :notificationCount="pendingVendorStore.pendingCount"
                         :active="route().current('admin.vendor-application.index')" :isCollapsed="ui.sidebarCollapsed">
                         <template #icon>
                             <ShieldCheck class="h-5 w-5" />

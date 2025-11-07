@@ -50,6 +50,7 @@ class ServiceController extends Controller
             'name'               => $service->name,
             'description'        => $service->description,
             'price'              => $service->price,
+            'max_price'              => $service->max_price,
             'is_available'       => $service->is_available,
             'image_url'          => $service->getFirstMediaUrl('images'),
             'category'           => $service->category,
@@ -104,6 +105,7 @@ class ServiceController extends Controller
         $vendor = auth()->user()->vendor;
 
         // dd($request->service_category_id);
+        // dd('herer');
 
         $validated = $request->validate([
             // General service fields
@@ -115,7 +117,7 @@ class ServiceController extends Controller
 
             // Multiple images validation
             'cover_images' => 'nullable|array',
-            'cover_images.*' => 'image|mimes:jpeg,png,jpg|max:2048', // Max 2MB per image
+            'cover_images.*' => 'image|mimes:jpeg,png,jpg|max:5048', // Max 2MB per image
 
             'specifications' => 'nullable|array',
             'specifications.*' => 'string|max:255',
@@ -225,7 +227,7 @@ class ServiceController extends Controller
 
             // Images validation
             'cover_images' => 'nullable|array',
-            'cover_images.*' => 'image|mimes:jpeg,png,jpg|max:2048',
+            'cover_images.*' => 'image|mimes:jpeg,png,jpg|max:5048',
             'delete_images' => 'nullable|array',
             'delete_images.*' => 'integer|exists:media,id',
         ]);
@@ -316,6 +318,8 @@ class ServiceController extends Controller
     try {
         // Get the event date from request if provided
         $eventDate = $request->query('event_date');
+        $eventPax = $request->query('event_pax');
+
 
         $services = Service::with(['vendor', 'category'])
             ->where('is_available', true)
@@ -329,13 +333,21 @@ class ServiceController extends Controller
                 }
             })
             ->get()
-            ->map(function($service) use ($eventDate) {
+            ->map(function($service) use ($eventDate, $eventPax) {
                 $isAvailableOnDate = $this->checkServiceAvailabilityOnDate($service, $eventDate);
+                if($eventPax){
+                    $isPaxMinimum = $this->checkIfPaxMinimum($service, $eventPax);
+                }
+
+
+
+
 
                 return [
                     'id' => $service->id,
                     'name' => $service->name,
                     'price' => $service->price,
+                    'max_price' => $service->max_price,
                     'description' => $service->description,
                     'image_url' => $service->getFirstMediaUrl('images'),
                     'vendor' => $service->vendor ?? null,
@@ -348,6 +360,7 @@ class ServiceController extends Controller
                     ] : null,
                     'is_available' => $service->is_available,
                     'is_available_on_date' => $isAvailableOnDate, // New field
+                    'is_pax_minimum' => $isPaxMinimum ?? false,
                     'catering_service' => $service->cateringService ?? null,
                     'photography_service' => $service->photographyService ?? null,
                     'media' => $service->media->map(fn($media) => [
@@ -399,6 +412,16 @@ private function checkServiceAvailabilityOnDate($service, $eventDate)
         ->count();
 
     return $confirmedCount < 1;
+}
+
+private function checkIfPaxMinimum($service, $pax){
+
+    if($service->cateringService && $pax){
+        return $pax >= $service->cateringService->min_pax;
+    }
+
+    return false;
+
 }
 
 }

@@ -44,6 +44,9 @@ defineProps({
     },
     categories: {
         type: Array
+    },
+    stats: {
+        type: Array
     }
 });
 
@@ -247,26 +250,33 @@ const activeFilterCount = computed(() => {
             <!-- Quick Stats -->
             <section class="py-16 relative z-10">
                 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="grid grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
                         <div
                             class="text-center bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 reveal-animation">
-                            <div class="text-3xl font-bold text-blue-600 mb-2">3</div>
+                            <div class="text-3xl font-bold text-blue-600 mb-2">{{ stats.active }}</div>
                             <div class="text-sm text-gray-600 font-medium flex items-center justify-center">
                                 <Calendar class="h-4 w-4 mr-1" /> Active Bookings
                             </div>
                         </div>
                         <div
                             class="text-center bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 reveal-animation animation-delay-100">
-                            <div class="text-3xl font-bold text-blue-600 mb-2">12</div>
+                            <div class="text-3xl font-bold text-blue-600 mb-2">{{ stats.completed }}</div>
                             <div class="text-sm text-gray-600 font-medium flex items-center justify-center">
                                 <Users class="h-4 w-4 mr-1" /> Completed Events
                             </div>
                         </div>
                         <div
                             class="text-center bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 reveal-animation animation-delay-200">
-                            <div class="text-3xl font-bold text-blue-600 mb-2">8</div>
+                            <div class="text-3xl font-bold text-blue-600 mb-2">{{ stats.favorites }}</div>
                             <div class="text-sm text-gray-600 font-medium flex items-center justify-center">
                                 <Heart class="h-4 w-4 mr-1" /> Saved Vendors
+                            </div>
+                        </div>
+                        <div
+                            class="text-center bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 reveal-animation">
+                            <div class="text-3xl font-bold text-blue-600 mb-2">{{ stats.upcoming }}</div>
+                            <div class="text-sm text-gray-600 font-medium flex items-center justify-center">
+                                <Calendar class="h-4 w-4 mr-1" /> Upcoming Bookings
                             </div>
                         </div>
                     </div>
@@ -301,16 +311,9 @@ const activeFilterCount = computed(() => {
             <!-- Footer -->
             <footer class="bg-gradient-to-b from-gray-900 to-gray-800 text-white py-16 relative z-10">
                 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="grid md:grid-cols-4 gap-10">
-                        <div class="reveal-animation">
-                            <div class="text-2xl font-bold mb-5">Eventory</div>
-                            <p class="text-gray-400 text-sm leading-relaxed">
-                                Connecting event planners with trusted local vendors.
-                            </p>
-                        </div>
-                    </div>
 
-                    <div class="border-t border-gray-800 mt-12 pt-8 reveal-animation">
+
+                    <div class="border-t border-gray-800  pt-8 reveal-animation">
                         <p class="text-gray-400 text-sm text-center">
                             © 2024 Eventory. All rights reserved. | Capstone Project
                         </p>

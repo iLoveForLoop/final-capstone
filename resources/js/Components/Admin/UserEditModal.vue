@@ -45,8 +45,6 @@ const open = (user) => {
     currentUser.value = user;
     currentUserId.value = user.id;
 
-    // console.log('Client Number: ', user)
-
     // Update form with user data
     form.full_name = user.name;
     form.email = user.email;
@@ -85,7 +83,6 @@ const handleFileUpload = (event) => {
 };
 
 const submit = () => {
-    // console.log('full_name: ', form.name)
     form.selected_role = selectedRole.value;
     form.post(route('admin.users.update', currentUserId.value), {
         preserveScroll: true,
@@ -93,7 +90,6 @@ const submit = () => {
             show.value = false;
             form.reset();
             push.success({
-                // title: 'Success',
                 message: 'User Edited Successfully'
             })
         }
@@ -103,7 +99,6 @@ const submit = () => {
 defineExpose({
     show: open
 });
-
 </script>
 
 <template>
@@ -144,23 +139,6 @@ defineExpose({
                         <!-- Modal Body -->
                         <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <div class="space-y-6">
-                                <!-- Role Selection -->
-                                <!-- <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">User Role</label>
-                                    <div class="grid grid-cols-3 gap-3">
-                                        <div v-for="option in roleOptions" :key="option.value"
-                                            class="flex items-center">
-                                            <input :id="`role-${option.value}`" v-model="selectedRole"
-                                                :value="option.value" type="radio"
-                                                class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300">
-                                            <label :for="`role-${option.value}`"
-                                                class="ml-2 block text-sm text-gray-700">
-                                                {{ option.label }}
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div> -->
-
                                 <!-- Common Fields -->
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
@@ -234,7 +212,7 @@ defineExpose({
                                                     Categories</label>
                                                 <div class="mt-1 relative">
                                                     <div @click="toggleCategoryDropdown"
-                                                        class="cursor-pointer relative border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                                        class="cursor-pointer relative border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm min-h-[42px] flex items-center">
                                                         <span v-if="form.service_categories.length === 0"
                                                             class="text-gray-400">Select categories...</span>
                                                         <div v-else class="flex flex-wrap gap-1">
@@ -266,7 +244,7 @@ defineExpose({
                                                         </span>
                                                     </div>
 
-                                                    <!-- Category Dropdown -->
+                                                    <!-- Category Dropdown - Fixed positioning -->
                                                     <transition enter-active-class="transition ease-out duration-100"
                                                         enter-from-class="transform opacity-0 scale-95"
                                                         enter-to-class="transform opacity-100 scale-100"
@@ -274,16 +252,21 @@ defineExpose({
                                                         leave-from-class="transform opacity-100 scale-100"
                                                         leave-to-class="transform opacity-0 scale-95">
                                                         <div v-show="categoryDropdownOpen"
-                                                            class="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg max-h-60 overflow-auto">
+                                                            class="absolute z-50 mt-1 w-full rounded-md bg-white shadow-lg border border-gray-200 max-h-60 overflow-y-auto dropdown-container">
                                                             <ul class="py-1">
                                                                 <li v-for="category in props.categories"
                                                                     :key="category.id"
-                                                                    class="px-3 py-2 text-sm text-gray-900 hover:bg-indigo-100 cursor-pointer flex items-center"
+                                                                    class="px-3 py-2 text-sm text-gray-900 hover:bg-indigo-50 cursor-pointer flex items-center"
                                                                     @click="toggleCategory(category.id)">
                                                                     <input type="checkbox"
                                                                         :checked="form.service_categories.includes(category.id)"
                                                                         class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mr-2">
                                                                     <span>{{ category.name }}</span>
+                                                                </li>
+                                                                <!-- Empty state -->
+                                                                <li v-if="props.categories.length === 0"
+                                                                    class="px-3 py-2 text-sm text-gray-500 italic">
+                                                                    No categories available
                                                                 </li>
                                                             </ul>
                                                         </div>
@@ -323,20 +306,6 @@ defineExpose({
                                                     form.errors.description
                                                     }}</p>
                                             </div>
-                                            <!-- <div>
-                                                <label for="profile_image"
-                                                    class="block text-sm font-medium text-gray-700">Profile
-                                                    Image</label>
-                                                <input type="file" id="profile_image" @change="handleFileUpload"
-                                                    class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                                                <p v-if="form.errors.profile_image" class="mt-1 text-sm text-red-600">{{
-                                                    form.errors.profile_image }}</p>
-                                                <div v-if="currentUser?.image_url" class="mt-2 flex items-center">
-                                                    <span class="text-xs text-gray-500 mr-2">Current:</span>
-                                                    <img :src="currentUser.image_url"
-                                                        class="h-8 w-8 rounded-full object-cover">
-                                                </div>
-                                            </div> -->
                                         </div>
                                     </div>
                                 </transition>
@@ -404,11 +373,46 @@ defineExpose({
 </template>
 
 <style scoped>
+/* Custom scrollbar for dropdown */
+.dropdown-container {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 #f7fafc;
+}
+
+.dropdown-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dropdown-container::-webkit-scrollbar-track {
+    background: #f7fafc;
+    border-radius: 3px;
+}
+
+.dropdown-container::-webkit-scrollbar-thumb {
+    background-color: #cbd5e0;
+    border-radius: 3px;
+}
+
+.dropdown-container::-webkit-scrollbar-thumb:hover {
+    background-color: #a0aec0;
+}
+
+/* Ensure dropdown can extend beyond modal boundaries */
+.dropdown-container {
+    position: fixed !important;
+    z-index: 9999 !important;
+}
+
 /* Line clamp for description */
 .line-clamp-3 {
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+/* Ensure dropdown has proper z-index */
+.z-50 {
+    z-index: 50;
 }
 </style>

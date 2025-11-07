@@ -26,6 +26,7 @@ class WelcomeController extends Controller
             'name' => $service->name,
             'description' => $service->description,
             'price' => $service->price,
+            'max_price' => $service->max_price,
             'image_url' => $service->getFirstMediaUrl('images'),
             'category_name' => $service->category->name,
             'dateAdded' => $service->created_at->format('Y-m-d'),

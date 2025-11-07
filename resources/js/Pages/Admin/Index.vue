@@ -117,7 +117,8 @@ const pendingVendors = ref([
                                 </button>
                             </div>
                         </li>
-                        <li v-if="pendingVendors.length === 0" class="text-center py-8 text-gray-400">
+
+                        <li v-if="stats.pending_vendors <= 0" class="text-center py-8 text-gray-400">
                             No pending applications
                         </li>
                     </ul>
@@ -161,7 +162,7 @@ const pendingVendors = ref([
                                         </div>
                                         <div class="ml-4">
                                             <div class="text-sm font-medium text-gray-900">{{ vendor.user?.name ?? 'N/A'
-                                            }}</div>
+                                                }}</div>
                                             <div class="text-sm text-gray-500">{{ vendor.business_name }}</div>
                                         </div>
                                     </div>

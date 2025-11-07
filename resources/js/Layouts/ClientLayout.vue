@@ -9,9 +9,11 @@ import {
     pastelTheme
 } from 'notivue';
 import 'notivue/notification-progress.css';
+import ConfirmDialog from '@/Components/ConfirmDialog.vue';
 </script>
 
 <template>
+    <ConfirmDialog />
     <!-- Navigation -->
     <ClientNavbar class="relative z-20" />
     <AIChatbot />

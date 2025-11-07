@@ -24,8 +24,8 @@ const toggleCategory = (category) => {
         </div>
 
         <!-- Selection Status -->
-        <div v-if="selectedCategories.length > 0" class="bg-[#E6F4F6] border border-[#239BA7]/30 rounded-lg px-3 py-2">
-            <p class="text-xs text-[#239BA7]">
+        <div v-if="selectedCategories.length > 0" class="bg-gray-100 border border-black/30 rounded-lg px-3 py-2">
+            <p class="text-xs text-black">
                 <span class="font-medium">{{ selectedCategories.length }}</span>
                 {{ selectedCategories.length === 1 ? 'category' : 'categories' }} selected
             </p>
@@ -34,13 +34,13 @@ const toggleCategory = (category) => {
         <!-- Categories Grid -->
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <button v-for="category in categories" :key="category.id" @click="toggleCategory(category)" :class="{
-                'border-[#239BA7] bg-[#F5FBFB] ring-1 ring-[#239BA7]': selectedCategories.some(c => c.id === category.id),
-                'border-gray-200 hover:border-[#239BA7]/50 hover:bg-gray-50': !selectedCategories.some(c => c.id === category.id)
+                'border-black bg-[#F5FBFB] ring-1 ring-black': selectedCategories.some(c => c.id === category.id),
+                'border-gray-200 hover:border-black/50 hover:bg-gray-50': !selectedCategories.some(c => c.id === category.id)
             }" class="p-3 rounded-lg border transition-colors duration-150 flex flex-col items-center relative">
                 <!-- Selection Indicator -->
                 <div class="absolute top-2 right-2">
                     <div :class="{
-                        'bg-[#239BA7] text-white': selectedCategories.some(c => c.id === category.id),
+                        'bg-black text-white': selectedCategories.some(c => c.id === category.id),
                         'bg-gray-200 text-transparent': !selectedCategories.some(c => c.id === category.id)
                     }" class="w-4 h-4 rounded-full flex items-center justify-center transition-colors">
                         <svg v-if="selectedCategories.some(c => c.id === category.id)" class="w-2.5 h-2.5"
@@ -54,7 +54,7 @@ const toggleCategory = (category) => {
 
                 <!-- Category Icon -->
                 <div :class="{
-                    'bg-[#239BA7] text-white': selectedCategories.some(c => c.id === category.id),
+                    'bg-black text-white': selectedCategories.some(c => c.id === category.id),
                     'bg-gray-100 text-gray-500': !selectedCategories.some(c => c.id === category.id)
                 }" class="w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,7 +65,7 @@ const toggleCategory = (category) => {
 
                 <!-- Category Name -->
                 <span :class="{
-                    'text-[#239BA7] font-medium': selectedCategories.some(c => c.id === category.id),
+                    'text-black font-medium': selectedCategories.some(c => c.id === category.id),
                     'text-gray-700': !selectedCategories.some(c => c.id === category.id)
                 }" class="text-xs text-center">
                     {{ category.name }}

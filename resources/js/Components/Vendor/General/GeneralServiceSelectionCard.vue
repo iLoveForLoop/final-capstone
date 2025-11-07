@@ -67,7 +67,6 @@ const handleServiceViewClose = () => {
             <!-- Content Container -->
             <div class="md:w-3/5 p-3 sm:p-4 flex flex-col">
                 <!-- Category and Date Added - Keep side by side on mobile -->
-                <!-- Category and Date Added - Keep side by side on mobile -->
                 <div class="flex items-center justify-between mb-3">
                     <span v-if="service.category_name" class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
                         {{ service.category_name }}

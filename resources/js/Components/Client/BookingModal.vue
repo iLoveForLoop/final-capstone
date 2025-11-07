@@ -41,7 +41,7 @@ const form = useForm({
     event_date: props.date ?? '',
     event_time: props.time ?? '',
     description: '',
-    pax: props.pax ?? 50,
+    pax: props.pax ?? null,
     dishes: {},
     vendors: [props.service]
 });
@@ -163,8 +163,6 @@ const clearCategorySelection = (category) => {
 
 // Computed properties
 const totalSteps = 2;
-
-console.log('MIN', props.service.minimumGuest);
 
 
 const isStepValid = computed(() => {

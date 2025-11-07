@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendVendorApplicationAcceptedEmailJob;
 use App\Models\User;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
@@ -87,6 +88,10 @@ class VendorApplicationController extends Controller
     public function approve(Vendor $vendor)
     {
         $vendor->update(['is_approved' => true]);
+
+        SendVendorApplicationAcceptedEmailJob::dispatch($vendor);
+
+
         return back()->with('success', 'Vendor approved successfully');
     }
 
@@ -94,5 +99,14 @@ class VendorApplicationController extends Controller
     {
         $vendor->user->delete();
         return back()->with('success', 'Vendor application rejected');
+    }
+
+    public function getPendingVendors(){
+
+        $pendingVendors = Vendor::where('is_approved', false)->count();
+
+        return response()->json([
+            'pending_vendors' => $pendingVendors,
+        ]);
     }
 }

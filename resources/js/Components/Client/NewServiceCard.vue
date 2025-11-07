@@ -84,9 +84,19 @@ const tryToBook = () => {
         <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ service.description }}</p>
         <div class="flex items-center justify-between mb-3">
             <!-- {{ console.log(isPricePackage()) }} -->
-            <div class="text-lg font-bold text-green-600">{{ formatPrice(service.price) }} <span
-                    class="text-sm text-gray-600">{{ isPricePackage(service)
-                    }}</span> </div>
+            <div v-if="!service.max_price" class="text-lg font-bold text-green-600">{{ formatPrice(service.price) }}
+                <span class="text-sm text-gray-600">{{ isPricePackage(service)
+                }}</span>
+            </div>
+
+            <div v-if="service.max_price" class="text-lg font-bold text-green-600">
+                {{
+                    formatPrice(service.price)
+                }}
+                <span v-if="service.max_price" class="text-sm text-gray-500 font-thin">
+                    up to {{ formatPrice(service.max_price) }}
+                </span>
+            </div>
             <div class="flex items-center text-sm text-gray-500">
                 <svg class="w-4 h-4 mr-1 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                     <path

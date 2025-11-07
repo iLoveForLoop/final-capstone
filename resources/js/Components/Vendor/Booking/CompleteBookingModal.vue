@@ -49,12 +49,16 @@ const emit = defineEmits(['close-modals', 'complete-booking', 'cancel'])
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <Calendar class="w-4 h-4 text-gray-400" />
+                                    <span class="text-sm text-gray-600">{{ selectedBooking.event_name }}</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <Calendar class="w-4 h-4 text-gray-400" />
                                     <span class="text-sm text-gray-600">{{ formatDate(selectedBooking.date) }} at {{
                                         selectedBooking.time }}</span>
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <MapPin class="w-4 h-4 text-gray-400" />
-                                    <span class="text-sm text-gray-600">{{ selectedBooking.event_name }}</span>
+                                    <span class="text-sm text-gray-600">{{ selectedBooking.event_location }}</span>
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <CreditCard class="w-4 h-4 text-gray-400" />

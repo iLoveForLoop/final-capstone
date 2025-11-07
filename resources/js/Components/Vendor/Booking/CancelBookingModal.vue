@@ -51,13 +51,21 @@ const emit = defineEmits(['close-modals', 'cancel-booking', 'cancel'])
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <Calendar class="w-4 h-4 text-gray-400" />
+                                    <span class="text-sm text-gray-600">{{ selectedBooking.event_name }}</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <Calendar class="w-4 h-4 text-gray-400" />
                                     <span class="text-sm text-gray-600">{{ formatDate(selectedBooking.date) }} at {{
                                         selectedBooking.time }}</span>
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <MapPin class="w-4 h-4 text-gray-400" />
-                                    <span class="text-sm text-gray-600">{{ selectedBooking.event_name }}</span>
+                                    <span class="text-sm text-gray-600">{{ selectedBooking.event_location }}</span>
                                 </div>
+                                <!-- <div class="flex items-center space-x-2">
+                                    <CreditCard class="w-4 h-4 text-gray-400" />
+                                    <span class="text-sm font-medium text-gray-900">{{ selectedBooking.price }}</span>
+                                </div> -->
                             </div>
                         </div>
 
@@ -76,7 +84,7 @@ const emit = defineEmits(['close-modals', 'cancel-booking', 'cancel'])
                         </div>
 
                         <!-- Cancellation Policy Notice -->
-                        <div class="p-3 mb-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <!-- <div class="p-3 mb-4 bg-blue-50 border border-blue-200 rounded-lg">
                             <div class="flex space-x-2">
                                 <Info class="w-4 h-4 text-blue-500 mt-0.5" />
                                 <div class="flex-1">
@@ -86,7 +94,7 @@ const emit = defineEmits(['close-modals', 'cancel-booking', 'cancel'])
                                     </p>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
 
                         <!-- Reason Input -->
                         <div class="mb-6">

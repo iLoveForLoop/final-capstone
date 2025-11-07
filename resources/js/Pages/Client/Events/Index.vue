@@ -79,7 +79,7 @@ const eventStats = computed(() => {
 
     return {
         total: events.length,
-        upcoming: events.filter(e => new Date(e.start) >= today).length,
+        upcoming: events.filter(e => new Date(e.start) >= today && e.status !== 'cancelled').length,
         confirmed: events.filter(e => e.status === 'confirmed').length,
         completed: events.filter(e => e.status === 'completed').length,
         pending: events.filter(e => e.status === 'pending').length,

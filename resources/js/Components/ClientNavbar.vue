@@ -436,14 +436,7 @@ onMounted(() => {
                 const conv = res.data;
 
                 const message = {
-                    // id: conv.id,
-                    // sender: conv.title,
-                    // initials: getInitials(conv.title),
-                    // message: conv.last_message?.content || 'No messages yet',
-                    // time: formatTimestamp(conv.last_message?.created_at),
-                    // read: conv.unread_count === 0,
-                    // online: false,
-                    // chatMessages: [],
+
 
                     id: conv.id,
                     sender: conv.title,
@@ -500,8 +493,7 @@ onUnmounted(() => {
                     <!-- Logo -->
                     <div class="flex flex-1 justify-start">
                         <Link href="/" class="group flex flex-shrink-0 items-center space-x-2">
-                        <span
-                            class="text-2xl font-bold text-gray-900 transition-colors duration-300 group-hover:text-yellow-400">
+                        <span class="text-2xl font-bold text-gray-900 transition-colors duration-300 ">
                             Eventory
                         </span>
                         </Link>

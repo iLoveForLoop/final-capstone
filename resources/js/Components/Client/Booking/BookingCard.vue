@@ -5,8 +5,10 @@ import ViewReviewModal from '@/Components/ViewReviewModal.vue';
 import { Link, router } from '@inertiajs/vue3';
 import CancelBooking from './CancelBooking.vue';
 import VendorContactInformation from './VendorContactInformation.vue';
+
 import emitter from '@/utils/eventBus';
 import { MapPin, Calendar, Star, MessageCircle, XCircle, Eye, Target } from 'lucide-vue-next';
+import ClientBookingDetailsModal from './ClientBookingDetailsModal.vue';
 
 const props = defineProps({
     booking: {
@@ -43,7 +45,11 @@ const isReviewModalOpen = ref(false)
 const viewingReview = ref(false)
 const showVendorModal = ref(false);
 const showCancellationModal = ref(false)
+const showBookingDetailsModal = ref(false) // Add this ref
 const isLoading = ref(false)
+
+// Create a template ref for the modal
+const bookingDetailsModal = ref(null)
 
 const serviceData = ref({
     id: props.booking.service.id,
@@ -90,9 +96,19 @@ const contactData = ref({
     avatar: props.booking.vendor_avatar,
     isVerified: false
 })
+
+// Function to open booking details modal
+const openBookingDetails = () => {
+    if (bookingDetailsModal.value) {
+        bookingDetailsModal.value.open(props.booking)
+    }
+}
 </script>
 
 <template>
+    <!-- Add the Booking Details Modal -->
+    <ClientBookingDetailsModal ref="bookingDetailsModal" />
+
     <VendorContactInformation :vendor="contactData" :is-open="showVendorModal" :is-loading="isLoading"
         @message="messageVendor" @close="showVendorModal = false" />
     <CancelBooking :booking="bookingData" :isOpen="showCancellationModal" :isLoading="isLoading"
@@ -100,7 +116,9 @@ const contactData = ref({
     <LeaveReviewModal :isOpen="isReviewModalOpen" @close="isReviewModalOpen = false" :serviceData="serviceData" />
     <ViewReviewModal :isOpen="viewingReview" @close="viewingReview = false" :review="booking.review" />
 
-    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200">
+    <!-- Make the entire card clickable -->
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer"
+        @click="openBookingDetails">
         <!-- Header Section -->
         <div class="p-4 sm:p-6 border-b border-gray-100">
             <div class="flex items-start justify-between gap-4">
@@ -140,7 +158,8 @@ const contactData = ref({
                         <!-- Vendor Info -->
                         <div class="flex items-center gap-3 text-sm">
                             <Link :href="route('client.vendor.show', booking.vendor.id)"
-                                class="font-medium text-blue-600 hover:text-blue-700 transition-colors truncate">
+                                class="font-medium text-blue-600 hover:text-blue-700 transition-colors truncate"
+                                @click.stop>
                             {{ booking.vendor.business_name }}
                             </Link>
                             <div class="flex items-center gap-1 text-gray-500">
@@ -156,9 +175,9 @@ const contactData = ref({
                 <div class="flex flex-col items-end gap-2 flex-shrink-0">
                     <div class="text-right">
                         <div class="text-xl font-bold text-gray-900">{{ formatPrice(booking.raw_amount) }}</div>
-                        <div class="text-xs text-gray-500 mt-1">Total Amount</div>
+                        <div class="text-xs text-gray-500 mt-1">Estimated Total Amount</div>
                     </div>
-                    <button @click="showVendorModal = true"
+                    <button @click.stop="showVendorModal = true"
                         class="hidden sm:flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
                         <MessageCircle class="w-4 h-4" />
                         <span>Contact</span>
@@ -221,7 +240,7 @@ const contactData = ref({
         <div class="p-4 sm:p-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <!-- Mobile Contact Button -->
-                <button @click="showVendorModal = true"
+                <button @click.stop="showVendorModal = true"
                     class="sm:hidden flex items-center justify-center gap-2 w-full py-2.5 text-blue-600 hover:text-blue-700 font-medium border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
                     <MessageCircle class="w-4 h-4" />
                     <span>Contact Provider</span>
@@ -230,7 +249,7 @@ const contactData = ref({
                 <!-- Action Buttons -->
                 <div class="flex flex-wrap gap-2 w-full sm:w-auto justify-center sm:justify-end">
                     <!-- Cancel Booking -->
-                    <button @click="showCancellationModal = true" v-if="booking.status === 'pending'"
+                    <button @click.stop="showCancellationModal = true" v-if="booking.status === 'pending'"
                         class="flex items-center gap-2 px-4 py-2.5 text-sm border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors font-medium flex-1 sm:flex-none justify-center">
                         <XCircle class="w-4 h-4" />
                         <span class="hidden sm:inline">Cancel Booking</span>
@@ -238,7 +257,7 @@ const contactData = ref({
                     </button>
 
                     <!-- Leave Review -->
-                    <button @click="isReviewModalOpen = true"
+                    <button @click.stop="isReviewModalOpen = true"
                         v-if="booking.status === 'completed' && booking.can_review"
                         class="flex items-center gap-2 px-4 py-2.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex-1 sm:flex-none justify-center">
                         <Star class="w-4 h-4" />
@@ -247,7 +266,7 @@ const contactData = ref({
                     </button>
 
                     <!-- View Review -->
-                    <button @click="viewingReview = true" v-if="!booking.can_review && booking.review"
+                    <button @click.stop="viewingReview = true" v-if="!booking.can_review && booking.review"
                         class="flex items-center gap-2 px-4 py-2.5 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium flex-1 sm:flex-none justify-center">
                         <Eye class="w-4 h-4" />
                         <span class="hidden sm:inline">View Review</span>

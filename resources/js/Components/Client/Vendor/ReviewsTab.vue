@@ -32,7 +32,7 @@ const formatDate = (dateString) => {
                         :class="['text-yellow-400', n <= vendor.rating ? 'opacity-100' : 'opacity-30']" />
                 </div>
                 <p class="text-gray-600 font-medium text-sm md:text-base">{{ vendor.reviewCount
-                }} total reviews</p>
+                    }} total reviews</p>
             </CardContent>
         </Card>
 
@@ -140,7 +140,7 @@ const formatDate = (dateString) => {
             </div>
 
             <!-- Review Actions -->
-            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+            <!-- <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
                 <div class="flex items-center space-x-4">
                     <button
                         class="text-sm text-gray-600 hover:text-blue-600 transition-colors flex items-center py-1 px-2 rounded-lg hover:bg-gray-100">
@@ -158,7 +158,7 @@ const formatDate = (dateString) => {
                     <Flag :size="14" class="mr-1 text-gray-400" />
                     Report
                 </button>
-            </div>
+            </div> -->
         </div>
     </div>
 </template>
