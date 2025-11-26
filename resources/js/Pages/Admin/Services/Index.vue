@@ -7,6 +7,7 @@ import AdminEditServiceForm from '@/Components/Admin/Services/AdminEditServiceFo
 import AdminViewService from '@/Components/Admin/Services/AdminViewService.vue';
 import { useConfirmDialog } from '@/Composables/useConfirmDialog';
 import Pagination from '@/Components/Pagination.vue';
+import useFlash from '@/Composables/useFlash';
 
 
 const toast = useToast();
@@ -59,7 +60,7 @@ function closeViewModal() {
 
 function handleUpdated() {
     closeEditModal()
-    toast.success('Service updated successfully')
+    // toast.success('Service updated successfully')
     router.reload({ preserveScroll: true })
 }
 
@@ -80,10 +81,10 @@ const deleteService = async (serviceId) => {
         // In a real implementation, you would call an API endpoint here
         router.delete(route('admin.service.destroy', serviceId), {
             onSuccess: () => {
-                toast.success('Service deleted successfully');
+                // toast.success('Service deleted successfully');
             },
             onError: () => {
-                toast.error('Service Failed to delete');
+                // toast.error('Service Failed to delete');
             }
         })
 
@@ -107,7 +108,7 @@ watch([vendor, category, search], () => {
 })
 
 
-
+useFlash()
 </script>
 
 <template>

@@ -306,6 +306,12 @@ const copyLink = async () => {
                                 <div v-if="service.description">
                                     <h3 class="text-xl font-semibold mb-4">About This Service</h3>
                                     <p class="text-gray-700 leading-relaxed mb-6">{{ service.description }}</p>
+                                    <p v-if="service.category_name === 'Catering' && service.catering_service.min_pax"
+                                        class="text-gray-700 leading-relaxed mb-6">Minumun Pax: {{
+                                            service.catering_service.min_pax }}</p>
+                                    <p v-if="service.category_name === 'Catering' && service.catering_service.max_pax"
+                                        class="text-gray-700 leading-relaxed mb-6">Minumun Pax: {{
+                                            service.catering_service.max_pax }}</p>
                                 </div>
 
                                 <div v-if="service.specifications.length > 0">
@@ -325,8 +331,10 @@ const copyLink = async () => {
                                 </div>
 
 
+
                                 <h4 v-if="service.category_name === 'Catering'" class="text-lg font-semibold mb-3">
                                     Menu:</h4>
+
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                                     <div v-for="(dishes, category) in service.menuCategories" :key="category"
                                         class="bg-gray-50 rounded-lg p-4">
@@ -432,12 +440,12 @@ const copyLink = async () => {
                                 </div>
                             </div>
 
-                            <div class="mt-4 pt-4 border-t border-gray-200">
+                            <!-- <div class="mt-4 pt-4 border-t border-gray-200">
                                 <div class="flex items-center justify-between text-sm">
                                     <span class="text-gray-600">Response time:</span>
                                     <span class="font-medium text-green-600">Within 4 hours</span>
                                 </div>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 </div>

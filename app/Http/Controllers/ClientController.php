@@ -407,7 +407,8 @@ class ClientController extends Controller
             'description' => $event->description,
             'status' => $event->status,
             'services' => $event->bookings->map(fn ($booking) => [
-                'name' => $booking->service->category->name,
+                'name' => $booking->service->name,
+                'category' => $booking->service->category->name,
                 'provider' => $booking->service->vendor->business_name,
                 'status' => $booking->status
             ]),
@@ -590,6 +591,8 @@ class ClientController extends Controller
         return back()->with('error', 'Unauthorized.');
     }
 
+    // dd('here');
+
     $categories = ServiceCategory::all();
 
     // 🔹 Client bookings query
@@ -600,7 +603,8 @@ class ClientController extends Controller
             'event',
             'service.vendor',
             'review',
-            'service.vendor.user'
+            'service.vendor.user',
+            'user.client'
         ]);
 
     // 🔹 Search filter
@@ -717,6 +721,8 @@ class ClientController extends Controller
             'event_location' => $booking->event->location ?? 'N/A',
             'date' => $booking->booking_date,
             'event_date' => $booking->event->event_date ?? $booking->booking_date,
+            'client' => $booking->user->client,
+            'client_email' => $booking->user->email,
             'time' => $eventTime,
             'status' => $booking->status,
             'price' => '₱' . number_format($booking->service->price ?? 0, 0),
@@ -733,7 +739,7 @@ class ClientController extends Controller
             'is_per_pax' => $is_per_pax,
             'service_image' => $booking->service->getFirstMediaUrl('images'),
             'vendor' => $booking->service->vendor,
-            'vendor_avatar' => $booking->service->vendor->getFirstMediaUrl('images') ?? null,
+            'vendor_avatar' => $booking->service->vendor->user->getFirstMediaUrl('avatar') ?? null,
             'vendor_rating' => $booking->service->vendor->averageRating(),
             'selected_catering_dishes' => $booking->catering_dishes,
             'can_review' => !$booking->hasReviewFrom(auth()->id()),

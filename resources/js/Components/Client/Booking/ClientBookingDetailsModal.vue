@@ -496,22 +496,24 @@ onUnmounted(() => {
                                             </h4>
                                             <div class="space-y-3">
                                                 <div>
+                                                    <!-- {{ console.log('CLIENT', booking.user) }} -->
                                                     <label class="text-xs text-gray-500">Name</label>
                                                     <p class="text-sm text-gray-900 mt-1">
-                                                        {{ booking?.user?.client?.full_name || booking?.client || 'N/A'
+                                                        {{ booking?.user?.client?.full_name || booking?.client.full_name
+                                                            || 'N/A'
                                                         }}
                                                     </p>
                                                 </div>
                                                 <div>
                                                     <label class="text-xs text-gray-500">Contact Number</label>
                                                     <p class="text-sm text-gray-900 mt-1">
-                                                        {{ booking?.user?.client?.contact_number || 'N/A' }}
+                                                        {{ booking?.client.contact_number || 'N/A' }}
                                                     </p>
                                                 </div>
                                                 <div>
                                                     <label class="text-xs text-gray-500">Email</label>
                                                     <p class="text-sm text-gray-900 mt-1">
-                                                        {{ booking?.user?.email || booking?.client_email || 'N/A' }}
+                                                        {{ booking?.client_email || 'N/A' }}
                                                     </p>
                                                 </div>
                                             </div>

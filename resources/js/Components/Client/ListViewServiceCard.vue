@@ -106,17 +106,7 @@ const getServiceInfo = (service) => {
             <div class="flex items-start justify-between">
                 <div class="flex-1">
                     <!-- Service Type and Availability -->
-                    <div class="flex items-center mb-2">
-                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-2 capitalize">
-                            {{ getServiceInfo(service).type }}
-                        </span>
-                        <span v-if="service.is_available" class="bg-green-500 text-white px-2 py-1 text-xs rounded">
-                            Available
-                        </span>
-                        <span v-else class="bg-red-500 text-white px-2 py-1 text-xs rounded">
-                            Unavailable
-                        </span>
-                    </div>
+
 
                     <!-- Service Name and Category -->
                     <h3 class="font-semibold text-gray-900 mb-1">{{ service.name }}</h3>

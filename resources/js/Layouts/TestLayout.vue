@@ -17,6 +17,7 @@ import {
 } from 'notivue';
 import 'notivue/notification-progress.css';
 import ConfirmDialog from '@/Components/ConfirmDialog.vue';
+import AIChatbot from '@/Components/AIChatbot.vue';
 
 
 const showingNavigationDropdown = ref(false);
@@ -76,6 +77,7 @@ const greetingEmoji = computed(() => {
 
 <template>
     <div class="h-screen bg-slate-50 dark:bg-gray-900 flex flex-col">
+        <!-- <AIChatbot /> -->
         <ConfirmDialog />
         <!-- Notivue container -->
         <Notivue v-slot="item">

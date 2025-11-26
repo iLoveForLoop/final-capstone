@@ -97,6 +97,9 @@ const contactData = ref({
     isVerified: false
 })
 
+console.log('Booking: ', props.booking);
+
+
 // Function to open booking details modal
 const openBookingDetails = () => {
     if (bookingDetailsModal.value) {

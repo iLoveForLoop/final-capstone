@@ -149,16 +149,16 @@ const {
                         </div>
 
                         <div class="border-t border-gray-200 px-6 py-4">
-                            <div class="grid grid-cols-2 gap-4 text-center">
+                            <div class="grid grid-cols-1 gap-4 text-center">
                                 <div>
                                     <p class="text-sm text-gray-500">Joined</p>
                                     <p class="text-sm font-medium">{{ formatDate(user.created_at) }}</p>
                                 </div>
-                                <div>
+                                <!-- <div>
                                     <p class="text-sm text-gray-500">Last Login</p>
                                     <p class="text-sm font-medium">{{ user.last_login_at ?
                                         formatDate(user.last_login_at) : 'Never' }}</p>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                     </div>

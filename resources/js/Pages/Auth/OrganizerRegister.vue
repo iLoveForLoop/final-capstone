@@ -465,7 +465,7 @@ const goBack = () => {
                     <div class="flex justify-between items-center mb-3">
                         <span class="text-xs sm:text-sm font-medium text-gray-700">Step {{ currentStep }} of {{
                             totalSteps
-                        }}</span>
+                            }}</span>
                         <span class="text-xs sm:text-sm font-medium text-blue-600">{{ Math.round((currentStep /
                             totalSteps)
                             * 100) }}% Complete</span>
@@ -503,7 +503,7 @@ const goBack = () => {
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         :class="{ 'border-red-500': errors.first_name }" />
                                     <p v-if="errors.first_name" class="mt-1 text-sm text-red-600">{{ errors.first_name
-                                    }}
+                                        }}
                                     </p>
                                 </div>
 
@@ -526,7 +526,7 @@ const goBack = () => {
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         :class="{ 'border-red-500': errors.phoneNumber }" />
                                     <p v-if="errors.phoneNumber" class="mt-1 text-sm text-red-600">{{ errors.phoneNumber
-                                    }}
+                                        }}
                                     </p>
                                 </div>
 
@@ -708,18 +708,18 @@ const goBack = () => {
                                     <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                         <span class="text-xs sm:text-sm text-gray-600">Name</span>
                                         <span class="text-xs sm:text-sm text-gray-900">{{ fullName
-                                        }}</span>
+                                            }}</span>
                                     </div>
                                     <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                         <span class="text-xs sm:text-sm text-gray-600">Email</span>
                                         <span class="text-xs sm:text-sm text-gray-900">{{ formData.email
-                                        }}</span>
+                                            }}</span>
                                     </div>
                                     <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                         <span class="text-xs sm:text-sm text-gray-600">Phone</span>
                                         <span class="text-xs sm:text-sm text-gray-900">{{
                                             formData.phoneNumber
-                                        }}</span>
+                                            }}</span>
                                     </div>
                                     <div class="flex justify-between items-start py-2">
                                         <span class="text-xs sm:text-sm text-gray-600">Address</span>
@@ -741,11 +741,13 @@ const goBack = () => {
                                     class="mt-0.5 w-4 h-4 text-blue-600 focus:ring-blue-500 rounded border-gray-300"
                                     :class="{ 'border-red-500': errors.terms }" />
                                 <label for="terms" class="ml-2 text-xs sm:text-sm text-gray-700">
-                                    I agree to the <a href="#" class="text-blue-600 underline hover:no-underline">Terms
+                                    I agree to the <a href="/termsandcondition" target="_blank"
+                                        class="text-blue-600 underline hover:no-underline">Terms
                                         of
                                         Service</a>
                                     and
-                                    <a href="#" class="text-blue-600 underline hover:no-underline">Privacy
+                                    <a href="/termsandcondition" target="_blank"
+                                        class="text-blue-600 underline hover:no-underline">Privacy
                                         Policy</a>
                                 </label>
                             </div>

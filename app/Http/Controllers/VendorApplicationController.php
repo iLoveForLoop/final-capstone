@@ -24,7 +24,7 @@ class VendorApplicationController extends Controller
                 'url' => $media->getUrl(),
                 'id' => $media->id
             ]) ?? [];
-            $vendor->permit_files = $vendor->getMedia('permits')->map(fn ($media) => [
+            $vendor->permit_files = $vendor->getMedia('permitFiles')->map(fn ($media) => [
                 'url' => $media->getUrl(),
                 'mime_type' => $media->mime_type,
                 'id' => $media->id

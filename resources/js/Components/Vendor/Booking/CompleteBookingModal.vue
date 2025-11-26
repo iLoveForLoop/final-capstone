@@ -1,5 +1,6 @@
 <script setup>
 import { Calendar, Check, CircleCheck, CreditCard, Info, MapPin, User } from 'lucide-vue-next'
+import { isPricePackage } from '@/utils/packageIdentifier'
 
 defineProps({
     showCompleteModal: Boolean,
@@ -62,7 +63,8 @@ const emit = defineEmits(['close-modals', 'complete-booking', 'cancel'])
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <CreditCard class="w-4 h-4 text-gray-400" />
-                                    <span class="text-sm font-medium text-gray-900">{{ selectedBooking.price }}</span>
+                                    <span class="text-sm font-medium text-gray-900">{{ selectedBooking.price }} {{
+                                        isPricePackage(selectedBooking.service) }}</span>
                                 </div>
                             </div>
                         </div>

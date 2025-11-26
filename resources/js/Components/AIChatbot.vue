@@ -17,10 +17,12 @@ const ui = useUIStore()
 
 // Suggestions
 const suggestions = [
-    'How do I find vendors?',
-    'Tell me about bookings',
-    'What are bundled deals?',
-    'How does pricing work?'
+    'What is eventory?',
+    'How do I find and book vendors?',
+    'Can I book multiple services for one event?',
+    // 'How does the 4-step booking process work?',
+    'Does Eventory handle payments?',
+    'How do I register as a vendor?',
 ];
 
 // Lifecycle hooks

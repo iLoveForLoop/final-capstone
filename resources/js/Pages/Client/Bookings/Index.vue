@@ -109,7 +109,7 @@ const eventModal = ref(null);
                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
                         <div class="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4 text-center">
                             <div class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">{{ booking_stats.total
-                            }}
+                                }}
                             </div>
                             <div class="text-xs sm:text-sm text-gray-600">Total</div>
                         </div>
@@ -121,7 +121,7 @@ const eventModal = ref(null);
                         <div class="bg-amber-50 rounded-lg sm:rounded-xl p-3 sm:p-4 text-center">
                             <div class="text-lg sm:text-xl lg:text-2xl font-bold text-amber-600">{{
                                 booking_stats.pending
-                            }}</div>
+                                }}</div>
                             <div class="text-xs sm:text-sm text-amber-600">Pending</div>
                         </div>
                         <div class="bg-blue-50 rounded-lg sm:rounded-xl p-3 sm:p-4 text-center">
@@ -132,7 +132,7 @@ const eventModal = ref(null);
                         <div class="bg-red-50 rounded-lg sm:rounded-xl p-3 sm:p-4 text-center">
                             <div class="text-lg sm:text-xl lg:text-2xl font-bold text-red-600">{{
                                 booking_stats.cancelled
-                            }}</div>
+                                }}</div>
                             <div class="text-xs sm:text-sm text-red-600">Cancelled</div>
                         </div>
                         <div class="bg-purple-50 rounded-lg sm:rounded-xl p-3 sm:p-4 text-center">
@@ -159,6 +159,8 @@ const eventModal = ref(null);
                     <div v-for="booking in bookings.data" :key="booking.id"
                         class="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200/60 hover:shadow-md transition-all duration-200">
                         <BookingCard :booking="booking" />
+                        {{ console.log('BOOKING DATA: ', booking)
+                        }}
                     </div>
                 </div>
 

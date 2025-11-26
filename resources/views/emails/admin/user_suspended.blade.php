@@ -130,16 +130,7 @@
                                             </span>
                                         </td>
                                     </tr>
-                                    {{-- @if ($violationType)
-                                        <tr>
-                                            <td width="140"
-                                                style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 500;">
-                                                Violation:</td>
-                                            <td style="padding: 8px 0; color: #1e293b; font-size: 14px;">
-                                                {{ $violationType }}
-                                            </td>
-                                        </tr>
-                                    @endif --}}
+
                                 </table>
                             </td>
                         </tr>
@@ -322,8 +313,8 @@
                                             Service</a>
                                     </li>
                                     <li style="margin-bottom: 8px;">Submit a formal appeal through our <a
-                                            href="{{ route('appeal.form') }}"
-                                            style="color: #4f46e5; text-decoration: none;">Appeal Form</a></li>
+                                            href="#" style="color: #4f46e5; text-decoration: none;">Appeal
+                                            Form</a></li>
                                     <li style="margin-bottom: 8px;">Provide a detailed explanation of how you'll comply
                                         with our policies moving forward</li>
                                     <li>Appeals are typically reviewed within 5-7 business days</li>

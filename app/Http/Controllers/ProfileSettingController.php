@@ -114,7 +114,7 @@ class ProfileSettingController extends Controller
                 // Files
                 'profileImageFile'      => 'nullable|image|max:2048',
                 'portfolioImages'       => 'nullable|array',
-                'portfolioImages.*'     => 'file|mimes:jpg,jpeg,png|max:9048',
+                'portfolioImages.*'     => 'file|mimes:jpg,jpeg,png|max:50048',
                 'removedImagedIds'      => 'nullable|array',
 
                 'showcaseVideos' => 'nullable|array',

@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Events\MessageSent;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class MessageController extends Controller
@@ -225,7 +227,9 @@ class MessageController extends Controller
     }
 
     public function createConversation(Request $request)
-    {
+{
+    try {
+        // Validate request input
         $request->validate([
             'participants' => 'required|array|min:1',
             'participants.*' => 'exists:users,id',
@@ -235,6 +239,12 @@ class MessageController extends Controller
         ]);
 
         $user = auth()->user();
+
+        if (!$user) {
+            Log::warning('createConversation: Unauthorized access attempt.');
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
         $participants = array_map(
             'intval',
             array_unique(array_merge($request->participants, [$user->id]))
@@ -250,11 +260,11 @@ class MessageController extends Controller
             })
             ->first();
 
-        $existingOtherUser = $existingConversation->users()
+        if ($existingConversation) {
+            $existingOtherUser = $existingConversation->users()
                 ->where('id', '!=', $user->id)
                 ->first();
 
-        if ($existingConversation) {
             return response()->json([
                 'id' => $existingConversation->id,
                 'title' => $existingConversation->getDisplayName($user->id),
@@ -263,11 +273,12 @@ class MessageController extends Controller
                 'last_message' => $existingConversation->lastMessage,
                 'unread_count' => $existingConversation->getUnreadCountForUser($user->id),
                 'participants' => $existingConversation->users()->get(['id', 'name', 'email']),
-                'otherUserAvatar' => $existingOtherUser?->getFirstMediaUrl('avatar'),
+                'otherUserAvatar' => $existingOtherUser?->getFirstMediaUrl('avatar') ?? null,
                 'already_exists' => true
             ]);
         }
 
+        // Create new conversation
         $conversation = Conversation::create([
             'title' => $request->title,
             'type' => $request->type ?? 'direct',
@@ -277,8 +288,8 @@ class MessageController extends Controller
         ]);
 
         $newOtherUser = $conversation->users()
-                ->where('id', '!=', $user->id)
-                ->first();
+            ->where('id', '!=', $user->id)
+            ->first();
 
         return response()->json([
             'id' => $conversation->id,
@@ -291,7 +302,28 @@ class MessageController extends Controller
             'otherUserAvatar' => $newOtherUser?->getFirstMediaUrl('avatar'),
             'already_exists' => false
         ]);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        // Handle validation errors
+        Log::error('Validation error in createConversation', [
+            'errors' => $e->errors(),
+            'request' => $request->all(),
+        ]);
+        return response()->json(['error' => 'Validation failed', 'details' => $e->errors()], 422);
+
+    } catch (Exception $e) {
+        // Catch all other exceptions
+        Log::error('Error in createConversation', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString(),
+            'request' => $request->all(),
+        ]);
+        return response()->json([
+            'error' => 'An unexpected error occurred while creating the conversation.'
+        ], 500);
     }
+}
 
     // API route to get conversations for AJAX calls
     public function getConversations()

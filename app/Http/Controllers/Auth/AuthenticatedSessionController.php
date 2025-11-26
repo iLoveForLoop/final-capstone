@@ -48,8 +48,8 @@ class AuthenticatedSessionController extends Controller
         $user = auth()->user();
 
 
-    // return redirect()->intended($redirect);
     return RedirectHelper::redirectBasedOnRole($user);
+
     }
 
     /**

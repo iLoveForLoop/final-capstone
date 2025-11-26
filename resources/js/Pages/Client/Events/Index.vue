@@ -525,6 +525,9 @@ const eventModal = ref(null)
                                         class="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border border-gray-200">
                                         <div class="flex-1 min-w-0">
                                             <p class="text-sm font-medium text-gray-900 truncate">{{ service.name }}</p>
+                                            <p class="text-xs font-medium text-gray-900 truncate my-2">{{
+                                                service.category }}
+                                            </p>
                                             <p class="text-xs text-gray-600 mt-1 truncate">{{ service.provider }}</p>
                                         </div>
                                         <span :class="[

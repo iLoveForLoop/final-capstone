@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\Admin\UserBanMail;
+use App\Mail\Admin\UserSuspendedMail;
 use App\Models\ServiceCategory;
 use App\Models\User;
 use Carbon\Carbon;
@@ -48,7 +49,7 @@ class UserController extends Controller
         });
     }
 
-    $users = $query->paginate(5);
+    $users = $query->paginate(10);
     // dd('here');
     $users->getCollection()->transform(function ($user) {
         return [
@@ -182,7 +183,7 @@ class UserController extends Controller
         'client' => $user->client ?? null,
         'roles' => $user->roles,
         'created_at' => $user->created_at,
-        'image_url' => $user->getFirstMediaUrl('images'),
+        'image_url' => $user->getFirstMediaUrl('avatar'),
         'status' => $user->status,
         'activities' => $user->activities->sortByDesc('created_at')->values()->map(function ($activity) {
             return [
@@ -198,6 +199,7 @@ class UserController extends Controller
 
     return inertia('Admin/Users/Show', [
         'user' => $userData,
+
     ]);
 }
 
@@ -423,6 +425,13 @@ class UserController extends Controller
                             'ban_reason' => null,
                         ]);
 
+                        // 📨 Send Suspension Email
+                        $suspensionType = $request->suspended_until ? 'temporary' : 'indefinite';
+                        $role = $user->role ?? 'user'; // or whatever field holds the user’s role
+
+                        // dd('here');
+
+                        Mail::to($user->email)->queue(new UserSuspendedMail($user, $suspensionType, $role));
 
 
                         // Log the suspension
@@ -452,7 +461,7 @@ class UserController extends Controller
 
                         // dd($user->email);
 
-                        // Mail::to($user->email)->queue(new UserBanMail($user, $role));
+                        Mail::to($user->email)->queue(new UserBanMail($user, $role));
                         // Log the ban
                         activity()
                             ->causedBy(auth()->user())
